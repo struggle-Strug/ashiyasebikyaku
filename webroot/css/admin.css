@@ -1,0 +1,21 @@
+.msg-staff {
+    color: #444 !important;
+    background-color: #ead2d2 !important;
+    border: 2px solid #ead2d2 !important;
+}
+.msg-staff::after, .msg-staff:before {
+    border-left-color: #ead2d2 !important;
+}
+
+.msg-admin {
+    color: #444 !important;
+    background-color: #ccb8b8 !important;
+    border: 2px solid #ccb8b8 !important;
+}
+.msg-admin::after, .msg-admin:before {
+    border-left-color: #ccb8b8 !important;
+}
+
+div, td, p {
+    word-break: break-all;
+}

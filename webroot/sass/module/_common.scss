@@ -1,0 +1,114 @@
+@use "../variable/index" as *;
+
+html {
+  font-size: 62.5%;
+}
+
+.only-sp {
+
+  @include mq(md) {
+    display: none !important;
+  }
+}
+
+.only-pc {
+  display: none !important;
+
+  @include mq(md) {
+    display: block !important;
+  }
+}
+
+
+.sec-top {
+  border-bottom: 1px solid #CCB8B8;
+  padding-bottom: 16px;
+  margin-bottom: 40px;
+  text-align: center;
+
+  @include mq(lg) {
+    margin-bottom: 58px;
+  }
+
+  &--feature {
+
+    @include mq(xl) {
+      margin-bottom: 120px;
+    }
+  }
+
+  &--flow {
+    margin-bottom: 32px;
+  }
+
+  &--contact {
+    margin-bottom: 14px;
+    @include mq(lg) {
+      margin-bottom: 64px;
+    }
+  }
+}
+
+.title {
+  font-size: 2.4rem;
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300;
+  letter-spacing: .05em;
+  text-align: center;
+
+  @include mq(lg) {
+    font-size: 3.6rem;
+    letter-spacing: .07em;
+  }
+
+  &--white {
+    color: #fff;
+    font-size: 2.4rem;
+
+    @include mq(ssm) {
+      font-size: 2rem;
+    }
+
+    @include mq(lg) {
+      font-size: 3.6rem;
+    }
+  }
+
+  &--point,
+  &--feature {
+    line-height: 1.2;
+
+    @include mq(md) {
+      line-height: initial;
+    }
+  }
+}
+
+.title span {
+  color: $color-main;
+  font-size: 5rem;
+
+  @include mq(lg) {
+    font-size: 7rem;
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+}
+
+.sec-top__ruby {
+  color: $color-main;
+  font-size: 1.8rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  letter-spacing: .05em;
+
+  @include mq(lg) {
+    font-size: 2.4rem;
+    letter-spacing: .07em;
+  }
+
+  &--white {
+    color: #fff;
+  }
+}
+
