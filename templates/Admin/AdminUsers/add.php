@@ -10,6 +10,11 @@
                 <?= $this->Form->text('loginid', ['class' => 'form-control', 'placeholder' => 'loginid']) ?>
                 <span class="text-danger"><?= $this->Form->error('loginid') ?></span>
             </div>
+            <label for="" class="col-sm-2 col-form-label text-md-right">名前</label>
+            <div class="col-sm-4">
+                <?= $this->Form->text('name', ['class' => 'form-control', 'placeholder' => 'name']) ?>
+                <span class="text-danger"><?= $this->Form->error('name') ?></span>
+            </div>
             <label for="" class="col-sm-2 col-form-label text-md-right">パスワード</label>
             <div class="col-sm-4">
                 <?= $this->Form->password('password', ['class' => 'form-control', 'placeholder' => 'パスワード']) ?>

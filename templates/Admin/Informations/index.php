@@ -23,7 +23,7 @@
                     <?php foreach ($informations as $information): ?>
                     <tr>
                         <td>
-                            <small><?= nl2br($information->content) ?></small>
+                            <small><?= $this->Link->linkify($information->content) ?></small>
                         </td>
                         <td>
                             <?php if ($information->target == '1') : ?>

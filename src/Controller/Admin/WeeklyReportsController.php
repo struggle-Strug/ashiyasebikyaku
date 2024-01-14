@@ -9,6 +9,8 @@ use Cake\ORM\Query;
 use Cake\Core\Configure;
 use Cake\Filesystem\Folder;
 use Cake\Filesystem\File;
+use ZipArchive;
+
 
 /**
  * WeeklyReports Controller
@@ -108,4 +110,38 @@ class WeeklyReportsController extends AppController
 
         $this->set(compact('weeklyReports', 'photoName', 'users', 'param'));
     }
+
+
+public function downloadImages($weeklyReportId)
+{
+    $weeklyReport = $this->WeeklyReports->get($weeklyReportId, [
+        'contain' => ['Photos']
+    ]);
+
+
+
+    $zip = new ZipArchive();
+    $zipFilename = tempnam(sys_get_temp_dir(), 'zip') . '.zip';
+
+    if ($zip->open($zipFilename, ZipArchive::CREATE) === TRUE) {
+        foreach ($weeklyReport->photos as $photo) {
+            // 画像ファイルのパスを取得
+            $filePath = WWW_ROOT . $photo->image_url; // 実際のファイルパスに置き換えてください
+            if (file_exists($filePath)) {
+                $zip->addFile($filePath, basename($filePath));
+            }
+        }
+        $zip->close();
+
+        $this->response = $this->response->withFile(
+            $zipFilename,
+            ['download' => true, 'name' => 'weekly_report_images.zip']
+        );
+
+        return $this->response;
+    } else {
+        $this->Flash->error(__('Unable to create ZIP file.'));
+        return $this->redirect($this->referer());
+    }
+}
 }

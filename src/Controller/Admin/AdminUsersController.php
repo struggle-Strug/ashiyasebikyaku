@@ -32,8 +32,6 @@ class AdminUsersController extends AppController
 
         $result = $this->Authentication->getResult();
 
-        debug($result);
-
         // Login successful or Already logged in
         if ($result->isValid()) {
             $redirect = $this->request->getQuery('redirect', [
@@ -87,4 +85,20 @@ class AdminUsersController extends AppController
         }
         $this->set(compact('adminUser'));
     }
+
+    public function add()
+    {
+        $adminUser = $this->AdminUsers->newEmptyEntity();
+        if ($this->request->is('post')) {
+            $adminUser = $this->AdminUsers->patchEntity($adminUser, $this->request->getData());
+            if ($this->AdminUsers->save($adminUser)) {
+                $this->Flash->success(__('The admin user has been saved.'));
+                return $this->redirect(['controller' => 'Users', 'action' => 'index']);
+            }
+            var_dump($adminUser->getErrors());
+            $this->Flash->error(__('Unable to add the admin user.'));
+        }
+        $this->set('adminUser', $adminUser);
+    }
+
 }

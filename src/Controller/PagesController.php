@@ -53,10 +53,6 @@ class PagesController extends AppController
         }
         $page = $subpage = null;
 
-        $this->loadModel('Users');
-        $users = $this->Users->find('all');
-        var_dump($users);
-
         if (!empty($path[0])) {
             $page = $path[0];
         }

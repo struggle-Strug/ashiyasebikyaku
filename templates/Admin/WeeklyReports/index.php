@@ -60,6 +60,7 @@
                             <?php foreach ($photoName as $key => $name): ?>
                                 <th nowrap style="min-width:120px"><?= h($name) ?></th>
                             <?php endforeach ?>
+                            <th nowrap>ダウンロード</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -88,6 +89,15 @@
                                         <?php endif ?>
                                     </td>
                                 <?php endforeach ?>
+                                <td nowrap style="text-align:right">
+                                </td>
+                                <td nowrap style="text-align:right">
+                                </td>
+                                <td nowrap style="text-align:right">
+                                </td>
+                                <td nowrap style="text-align:right">
+                                    <?php echo $this->Html->link('一括ダウンロード', ['controller' => 'WeeklyReports', 'action' => 'downloadImages', $weeklyReport->id], ['class' => 'btn btn-primary']); ?>
+                                </td>
                             </tr>
                         <?php endforeach ?>
                     </tbody>
