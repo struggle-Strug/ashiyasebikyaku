@@ -5,7 +5,7 @@
     <?php foreach ($informations as $information): ?>
         <div class="alert alert-info alert-with-icon" data-notify="container">
             <span data-notify="icon" class="ti-alert"></span>
-            <span data-notify="message">[<?= h($information->start_datetime) ?>]<br><?= nl2br($information->content) ?></span>
+            <span data-notify="message">[<?= h($information->start_datetime) ?>]<br><?= $this->Link->linkify($information->content) ?></span>
         </div>
     <?php endforeach ?>
 </div>
