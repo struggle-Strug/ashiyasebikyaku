@@ -5,6 +5,13 @@
 /logs/*
 /tmp/*
 /vendor/*
+/config/app.php
+/config/app_local.php
+/webroot/img/
+/webroot/files/
+/webroot/uploads/
+
+
 
 # OS generated files #
 ######################
