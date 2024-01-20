@@ -154,6 +154,15 @@
                                 </p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="<?= $this->Url->build(['controller' => 'StaffWeeklyMessages', 'action' => 'index']); ?>"
+                                class="nav-link <?php if ($this->request->getParam('controller') == 'StaffWeeklyMessages') echo 'active'; ?>">
+                                <i class="nav-icon fa-solid fa-film"></i>
+                                <p>
+                                    今週のワーク履歴
+                                </p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->

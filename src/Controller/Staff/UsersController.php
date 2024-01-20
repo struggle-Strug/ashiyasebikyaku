@@ -24,37 +24,37 @@ class UsersController extends AppController
     public function index()
     {
         $query = $this->Users->find('all')
-        ->contain([
-            'Messages' => function (Query $q) {
-                return $q->where([
-                    'Messages.staff_id' => $this->Authentication->getIdentity()->id,
-                    'Messages.sender' => '1',
-                    'Messages.is_read' => 0
-                ]);
-            },
-            'UserPoints' => function (Query $q) {
-                return $q->order([
-                    'UserPoints.created' => 'desc'
-                ]);
-            },
-            'DailyReports' => function (Query $q) {
-                return $q->order([
-                    'DailyReports.report_date' => 'desc'
-                ]);
-            },
-            'WeeklyReports' => function (Query $q) {
-                return $q->order([
-                    'WeeklyReports.report_date' => 'desc'
-                ]);
-            }
-        ])
-        ->where([
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            'Users.is_deleted' => 0
-        ])
-        ->order([
-            'Users.id' => 'desc'
-        ]);
+            ->contain([
+                'Messages' => function (Query $q) {
+                    return $q->where([
+                        'Messages.staff_id' => $this->Authentication->getIdentity()->id,
+                        'Messages.sender' => '1',
+                        'Messages.is_read' => 0
+                    ]);
+                },
+                'UserPoints' => function (Query $q) {
+                    return $q->order([
+                        'UserPoints.created' => 'desc'
+                    ]);
+                },
+                'DailyReports' => function (Query $q) {
+                    return $q->order([
+                        'DailyReports.report_date' => 'desc'
+                    ]);
+                },
+                'WeeklyReports' => function (Query $q) {
+                    return $q->order([
+                        'WeeklyReports.report_date' => 'desc'
+                    ]);
+                }
+            ])
+            ->where([
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'Users.is_deleted' => 0
+            ])
+            ->order([
+                'Users.id' => 'desc'
+            ]);
 
         // 検索
         $param = $this->request->getQuery();
@@ -95,13 +95,20 @@ class UsersController extends AppController
     public function edit($userId = null)
     {
         // ユーザー情報の確認
+        $this->loadModel('Staffs');
+        $this->loadModel('StaffWeeklyMessages');
         $user = $this->Users->find('all')
-        ->where([
-            'Users.id' => $userId,
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            'Users.is_deleted' => 0
-        ])
-        ->first();
+            ->where([
+                'Users.id' => $userId,
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
+        $staff = $this->Staffs->find('all')
+            ->where([
+                'id' => $this->Authentication->getIdentity()->id,
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -109,8 +116,21 @@ class UsersController extends AppController
 
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
-
             $user = $this->Users->patchEntity($user, $data);
+
+            $staffMessage = $this->StaffWeeklyMessages->newEmptyEntity();
+            $staffMessage->user_id = $userId;
+            $staffMessage->name = $user->last_name . $user->first_name;
+            $staffMessage->staff_id = $this->Authentication->getIdentity()->id;
+            $staffMessage->staff_name = $staff->name;
+            $staffMessage->staff_week_message = $data["staff_week_message"];
+
+            $staffMessage = $this->StaffWeeklyMessages->patchEntity($staffMessage, $data);
+            if ($this->StaffWeeklyMessages->save($staffMessage)) {
+                $this->Flash->success(__('今週のワーク履歴に追加しました。'));
+            } else {
+                $this->Flash->error(__('今週のワーク履歴にデータを登録できませんでした。'));
+            }
 
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('更新しました。'));
@@ -134,19 +154,19 @@ class UsersController extends AppController
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
-        ->contain([
-            'UserPoints' => function (Query $q) {
-                return $q->order([
-                    'UserPoints.created' => 'desc'
-                ]);
-            },
-        ])
-        ->where([
-            'Users.id' => $userId,
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            'Users.is_deleted' => 0
-        ])
-        ->first();
+            ->contain([
+                'UserPoints' => function (Query $q) {
+                    return $q->order([
+                        'UserPoints.created' => 'desc'
+                    ]);
+                },
+            ])
+            ->where([
+                'Users.id' => $userId,
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -166,19 +186,19 @@ class UsersController extends AppController
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
-        ->contain([
-            'UserPoints' => function (Query $q) {
-                return $q->order([
-                    'UserPoints.created' => 'desc'
-                ]);
-            },
-        ])
-        ->where([
-            'Users.id' => $userId,
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            'Users.is_deleted' => 0
-        ])
-        ->first();
+            ->contain([
+                'UserPoints' => function (Query $q) {
+                    return $q->order([
+                        'UserPoints.created' => 'desc'
+                    ]);
+                },
+            ])
+            ->where([
+                'Users.id' => $userId,
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -212,19 +232,19 @@ class UsersController extends AppController
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
-        ->contain([
-            'UserPoints' => function (Query $q) {
-                return $q->order([
-                    'UserPoints.created' => 'desc'
-                ]);
-            },
-        ])
-        ->where([
-            'Users.id' => $userId,
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            'Users.is_deleted' => 0
-        ])
-        ->first();
+            ->contain([
+                'UserPoints' => function (Query $q) {
+                    return $q->order([
+                        'UserPoints.created' => 'desc'
+                    ]);
+                },
+            ])
+            ->where([
+                'Users.id' => $userId,
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -232,11 +252,11 @@ class UsersController extends AppController
 
         // ポイントを取得
         $userPoint = $this->Users->UserPoints->find('all')
-        ->where([
-            'user_id' => $userId,
-            'id' => $id
-        ])
-        ->first();
+            ->where([
+                'user_id' => $userId,
+                'id' => $id
+            ])
+            ->first();
 
         if (!$userPoint) {
             return $this->redirect(['action' => 'point', $userId]);
@@ -269,19 +289,19 @@ class UsersController extends AppController
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
-        ->contain([
-            'UserPoints' => function (Query $q) {
-                return $q->order([
-                    'UserPoints.created' => 'desc'
-                ]);
-            },
-        ])
-        ->where([
-            'Users.id' => $userId,
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            'Users.is_deleted' => 0
-        ])
-        ->first();
+            ->contain([
+                'UserPoints' => function (Query $q) {
+                    return $q->order([
+                        'UserPoints.created' => 'desc'
+                    ]);
+                },
+            ])
+            ->where([
+                'Users.id' => $userId,
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -289,11 +309,11 @@ class UsersController extends AppController
 
         // ポイントを取得
         $userPoint = $this->Users->UserPoints->find('all')
-        ->where([
-            'user_id' => $userId,
-            'id' => $id
-        ])
-        ->first();
+            ->where([
+                'user_id' => $userId,
+                'id' => $id
+            ])
+            ->first();
 
         if (!$userPoint) {
             return $this->redirect(['action' => 'point', $userId]);
@@ -317,12 +337,12 @@ class UsersController extends AppController
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
-        ->where([
-            'Users.id' => $userId,
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            'Users.is_deleted' => 0
-        ])
-        ->first();
+            ->where([
+                'Users.id' => $userId,
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -343,16 +363,16 @@ class UsersController extends AppController
 
         // メッセージを取得
         $messages = $this->Users->Messages->find('all')
-        ->contain([
-            'Users',
-            'Staffs'
-        ])
-        ->where([
-            'Messages.staff_id' => $this->Authentication->getIdentity()->id,
-            'Messages.user_id' => $user->id,
-            'Messages.is_deleted' => 0
-        ])
-        ->all();
+            ->contain([
+                'Users',
+                'Staffs'
+            ])
+            ->where([
+                'Messages.staff_id' => $this->Authentication->getIdentity()->id,
+                'Messages.user_id' => $user->id,
+                'Messages.is_deleted' => 0
+            ])
+            ->all();
 
         $this->set(compact('messages', 'user'));
     }

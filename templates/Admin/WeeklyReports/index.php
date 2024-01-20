@@ -45,6 +45,7 @@
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                        <th nowrap>ダウンロード</th>
                             <th nowrap>測定日</th>
                             <th nowrap>体重</th>
                             <th nowrap>体脂肪率</th>
@@ -60,12 +61,15 @@
                             <?php foreach ($photoName as $key => $name): ?>
                                 <th nowrap style="min-width:120px"><?= h($name) ?></th>
                             <?php endforeach ?>
-                            <th nowrap>ダウンロード</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($weeklyReports as $key => $weeklyReport): ?>
                             <tr>
+                            <td nowrap style="text-align:right">
+                                    <?php echo $this->Html->link('一括ダウンロード', ['controller' => 'WeeklyReports', 'action' => 'downloadImages', $weeklyReport->id], ['class' => 'btn btn-primary']); ?>
+                                </td>
                                 <td nowrap><?= date('Y年n月j日', strtotime($weeklyReport->report_date)) ?></td>
                                 <td nowrap style="text-align:right"><?= h($weeklyReport->weight) ?> kg</td>
                                 <td nowrap style="text-align:right"><?= h($weeklyReport->fat_percent) ?> %</td>
@@ -95,14 +99,13 @@
                                 </td>
                                 <td nowrap style="text-align:right">
                                 </td>
-                                <td nowrap style="text-align:right">
-                                    <?php echo $this->Html->link('一括ダウンロード', ['controller' => 'WeeklyReports', 'action' => 'downloadImages', $weeklyReport->id], ['class' => 'btn btn-primary']); ?>
-                                </td>
+                                
                             </tr>
                         <?php endforeach ?>
                     </tbody>
                     <tfoot>
                         <tr>
+                        <th nowrap>ダウンロード</th>
                             <th nowrap>測定日</th>
                             <th nowrap>体重</th>
                             <th nowrap>体脂肪率</th>
