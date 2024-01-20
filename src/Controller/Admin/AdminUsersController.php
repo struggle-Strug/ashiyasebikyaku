@@ -62,6 +62,23 @@ class AdminUsersController extends AppController
         }
     }
 
+    public function index()
+    {
+        $param = $this->request->getQuery();
+        $query = $this->AdminUsers->find("all");
+
+        if (!empty($param['name'])) {
+            $query->where([
+                'AdminUsers.name LIKE' => '%' . $param['name'] . '%',
+            ]);
+        } else {
+            $param['name'] = '';
+        }
+
+        $adminUsers = $this->paginate($query);
+        $this->set(compact('param', 'adminUsers'));
+    }
+
     /**
      * Edit method
      *
@@ -99,6 +116,24 @@ class AdminUsersController extends AppController
             $this->Flash->error(__('Unable to add the admin user.'));
         }
         $this->set('adminUser', $adminUser);
+    }
+
+    public function delete($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']); // 安全のために POST または DELETE メソッドのみを許可
+
+        $admin = $this->AdminUsers->get($id);
+        if (!$admin) {
+            throw new NotFoundException(__('Invalid admin'));
+        }
+
+        if ($this->AdminUsers->delete($admin)) {
+            $this->Flash->success(__('管理者を削除しました。', h($id)));
+        } else {
+            $this->Flash->error(__('管理者を削除できませんでした。'));
+        }
+
+        return $this->redirect(['action' => 'index']);
     }
 
 }

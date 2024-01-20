@@ -101,6 +101,16 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="<?= $this->Url->build(['controller' => 'AdminUsers', 'action' => 'index']); ?>"
+                                class="nav-link <?php if ($this->request->getParam('controller') == 'AdminUsers') echo 'active'; ?>">
+                                <!-- <i class=" fa-solid fa-user-pen"></i> -->
+                                <i class="nav-icon fa-solid fa-address-book"></i>
+                                <p>
+                                    管理者管理
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'Courses', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'Courses' || $this->request->getParam('controller') == 'CourseMovies') echo 'active'; ?>">
                                 <i class="nav-icon fa-solid fa-book"></i>

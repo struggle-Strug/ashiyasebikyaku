@@ -7,7 +7,7 @@
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">パスワード</label>
             <div class="col-sm-10">
-                <?= $this->Form->password('password', ['class' => 'form-control', 'placeholder' => 'パスワード']) ?>
+                <?= $this->Form->password('password', ['class' => 'form-control', 'placeholder' => 'パスワード', 'default' => ""]) ?>
                 <span class="text-danger"><?= $this->Form->error('password') ?></span>
             </div>
         </div>
