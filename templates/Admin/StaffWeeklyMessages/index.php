@@ -38,7 +38,7 @@
         <td><?= h($message->name) ?></td>
         <td><?= h($message->staff_name) ?></td>
         <td><?= h($message->staff_week_message) ?></td>
-        <td><?= h($message->updated_at) ?></td>
+        <td><?= h($message->created) ?></td>
         <td nowrap>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $message->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('削除してよろしいですか？', $message->id)]) ?>
                         </td>

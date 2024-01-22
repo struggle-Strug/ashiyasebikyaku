@@ -9,6 +9,7 @@ class StaffWeeklyMessagesTable extends Table
     {
         $this->setTable('staff_weekly_messages');
         $this->setPrimaryKey('id');
+        $this->addBehavior('Timestamp');
         // 他の初期化コード（リレーション、ビヘイビアなど）
     }
 }

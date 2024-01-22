@@ -29,6 +29,7 @@
                         <th style="width:150px">ID</th>
                         <th nowrap>管理者名</th>
                         <th nowrap>ログインID</th>
+                        <th style="width:150px">更新日時</th>
                         <th style="width:150px"></th>
                     </tr>
                     </tr>
@@ -39,6 +40,7 @@
         <td><?= h($admin->id) ?></td>
         <td><?= h($admin->name) ?></td>
         <td><?= h($admin->loginid) ?></td>
+        <td><?= h($admin->created) ?></td>
         <td nowrap>
         <a href="<?= $this->Url->build(['action' => 'edit', $admin->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $admin->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('削除してよろしいですか？', $admin->id)]) ?>
