@@ -24,10 +24,10 @@
                 <thead>
                     <tr>
                     <tr>
-                        <th nowrap>会員番号</th>
-                        <th nowrap>氏名</th>
+                        <th style="width:150px">氏名</th>
                         <th nowrap>スタッフ名</th>
                         <th nowrap>今週のワーク</th>
+                        <th style="width:150px">更新日時</th>
                         <th style="width:100px"></th>
                     </tr>
                     </tr>
@@ -35,10 +35,10 @@
                 <tbody>
                 <?php foreach ($staffWeeklyMessages as $message): ?>
                     <tr>
-        <td><?= h($message->id) ?></td>
         <td><?= h($message->name) ?></td>
         <td><?= h($message->staff_name) ?></td>
         <td><?= h($message->staff_week_message) ?></td>
+        <td><?= h($message->updated_at) ?></td>
         <td nowrap>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $message->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('削除してよろしいですか？', $message->id)]) ?>
                         </td>

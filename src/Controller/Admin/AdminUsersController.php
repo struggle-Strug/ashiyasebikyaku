@@ -109,11 +109,11 @@ class AdminUsersController extends AppController
         if ($this->request->is('post')) {
             $adminUser = $this->AdminUsers->patchEntity($adminUser, $this->request->getData());
             if ($this->AdminUsers->save($adminUser)) {
-                $this->Flash->success(__('The admin user has been saved.'));
-                return $this->redirect(['controller' => 'Users', 'action' => 'index']);
+                $this->Flash->success(__('管理者を追加しました。'));
+                return $this->redirect(['controller' => 'AdminUsers', 'action' => 'index']);
             }
             var_dump($adminUser->getErrors());
-            $this->Flash->error(__('Unable to add the admin user.'));
+            $this->Flash->error(__('管理者を追加できませんでした。'));
         }
         $this->set('adminUser', $adminUser);
     }

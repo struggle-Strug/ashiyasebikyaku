@@ -141,7 +141,7 @@ public function downloadImages($weeklyReportId)
         return $this->response;
     } else {
         $this->Flash->error(__('Unable to create ZIP file.'));
-        return $this->redirect($this->referer());
+        return $this->response;
     }
 }
 }
