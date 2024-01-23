@@ -26,6 +26,8 @@ class StaffWeeklyMessagesController extends AppController
         $query = $this->StaffWeeklyMessages->find('all');
         $param = $this->request->getQuery();
 
+        $query->order(['StaffWeeklyMessages.created' => 'DESC']);
+
         $query->where([
             'StaffWeeklyMessages.is_deleted' => "0",
         ]);
