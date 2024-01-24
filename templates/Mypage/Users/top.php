@@ -116,7 +116,7 @@
                     <h4 class="card-title">今週のワーク</h4>
                 </div>
                 <div class="card-content">
-                    <?= nl2br(h($user->staff_week_message)) ?>
+                    <?= $this->Link->linkify($user->staff_week_message) ?>
                 </div>
             </div>
             <?php endif ?>
