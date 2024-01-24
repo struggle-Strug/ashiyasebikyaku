@@ -127,7 +127,7 @@
                     <h4 class="card-title">講師コメント</h4>
                 </div>
                 <div class="card-content">
-                    <?= nl2br(h($user->staff_message)) ?>
+                    <?= $this->Link->linkify($user->staff_message) ?>
                 </div>
             </div>
             <?php endif ?>
