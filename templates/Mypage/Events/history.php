@@ -58,7 +58,7 @@
                                             </div>
                                             <div class="modal-body">
                                                 <p>
-                                                    <?= nl2br(h($eventEntry->event->content)) ?>
+                                                    <?= $this->Link->linkify(h($eventEntry->event->content)) ?>
                                                 </p>
                                             </div>
                                             <div class="modal-footer justify-content-between">

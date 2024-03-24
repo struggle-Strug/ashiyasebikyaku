@@ -6,8 +6,8 @@
             <h4 class="card-title"><?= h($courseMovie->name) ?></h4>
         </div>
         <div class="card-content">
-            <p class="category"><?= nl2br(h($course->note)) ?></p>
-            <p class="category"><?= nl2br(h($courseMovie->note)) ?></p>
+            <p class="category"><?= $this->Link->linkify(h($course->note)) ?></p>
+            <p class="category"><?= $this->Link->linkify(h($courseMovie->note)) ?></p>
             <div class="row">
                 <?php if ($courseMovie->info_movie_url) : ?>
                     <div class="col-lg-6">

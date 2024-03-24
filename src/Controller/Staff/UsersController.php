@@ -8,6 +8,9 @@ use Cake\I18n\Time;
 use Cake\ORM\Query;
 use Cake\Core\Configure;
 
+use App\Mailer\AppMailer;
+use Cake\Mailer\MailerAwareTrait;
+
 /**
  * Users Controller
  *
@@ -21,6 +24,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
+    use MailerAwareTrait;
     public function index()
     {
         $query = $this->Users->find('all')
@@ -388,14 +392,33 @@ class UsersController extends AppController
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
 
+            $user = $this->Users->find('all')
+                ->where([
+                    'Users.id' => $data['user_id'],
+                    'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                    'Users.is_deleted' => 0
+                ])
+                ->first();
+
             $data['staff_id'] = $this->Authentication->getIdentity()->id;
             $data['sender'] = '2'; // 講師
 
+            $host = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
+            $path = '/mypage/messages';
+            $adminPath = '/admin/users/message/';
+            $port = $this->request->getUri()->getPort();
+            $fullUrl = $host . ($port ? ":$port" : '') . $path;
+            $adminFullUrl = $host . ($port ? ":$port" : '') . $adminPath  . $data['user_id'];
+
             $message = $this->Users->Messages->newEmptyEntity();
             $message = $this->Users->Messages->patchEntity($message, $data);
+
+            $now = Time::now();
+            $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
             if ($this->Users->Messages->save($message)) {
                 $this->Flash->success(__('メッセージを送信しました。'));
-
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $user->email, "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
                 return $this->redirect(['action' => 'message', $data['user_id']]);
             }
             $this->Flash->error(__('データを送信できませんでした。'));

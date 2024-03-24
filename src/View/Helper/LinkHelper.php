@@ -10,8 +10,6 @@ class LinkHelper extends Helper
         $pattern = '/\[(.*?)\]\((https?:\/\/.*?)\)/';
         $replacement = '<a href="$2">$1</a>';
         $text = preg_replace($pattern, $replacement, $text);
-        $text = nl2br($text);
-
         return $text;
     }
 }

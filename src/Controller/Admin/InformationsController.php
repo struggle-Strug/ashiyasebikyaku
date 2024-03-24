@@ -21,6 +21,7 @@ class InformationsController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
+
     public function index()
     {
         $query = $this->Informations->find('all')

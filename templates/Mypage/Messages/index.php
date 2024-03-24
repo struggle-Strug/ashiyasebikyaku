@@ -13,7 +13,7 @@
                         <li class="self">
                             <div class="msg">
                                 <p>
-                                    <?= nl2br(h($message->message)) ?>
+                                    <?= $this->Link->linkify(h($message->message)) ?>
                                 </p>
                                 <div class="card-footer">
                                     <i class="ti-time"></i>
@@ -31,7 +31,7 @@
                             </div>
                             <div class="msg msg-staff">
                                 <p>
-                                    <?= nl2br(h($message->message)) ?>
+                                    <?= $this->Link->linkify(h($message->message)) ?>
                                 </p>
                                 <div class="card-footer">
                                     <i class="ti-time"></i>
@@ -47,7 +47,7 @@
                             <div class="msg msg-admin">
                                 <p>
                                     【運営より】<br>
-                                    <?= nl2br(h($message->message)) ?>
+                                    <?= $this->Link->linkify(h($message->message)) ?>
                                 </p>
                                 <div class="card-footer">
                                     <i class="ti-time"></i>

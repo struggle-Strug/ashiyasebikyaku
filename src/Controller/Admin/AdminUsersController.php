@@ -5,6 +5,9 @@ namespace App\Controller\Admin;
 
 use App\Controller\AppController;
 
+use App\Mailer\AppMailer;
+use Cake\Mailer\MailerAwareTrait;
+
 /**
  * AdminUsers Controller
  *
@@ -103,6 +106,8 @@ class AdminUsersController extends AppController
         $this->set(compact('adminUser'));
     }
 
+    use MailerAwareTrait;
+
     public function add()
     {
         $adminUser = $this->AdminUsers->newEmptyEntity();
@@ -112,7 +117,6 @@ class AdminUsersController extends AppController
                 $this->Flash->success(__('管理者を追加しました。'));
                 return $this->redirect(['controller' => 'AdminUsers', 'action' => 'index']);
             }
-            var_dump($adminUser->getErrors());
             $this->Flash->error(__('管理者を追加できませんでした。'));
         }
         $this->set('adminUser', $adminUser);

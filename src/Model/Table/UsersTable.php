@@ -179,11 +179,17 @@ class UsersTable extends Table
             ->allowEmptyString('sales_history');
 
         $validator
+            ->notEmptyString('light_plan');
+
+        $validator
             ->scalar('note')
             ->allowEmptyString('note');
 
         $validator
             ->notEmptyString('is_deleted');
+        
+        $validator
+            ->notEmptyString('is_light_plan_first_event');
 
         return $validator;
     }

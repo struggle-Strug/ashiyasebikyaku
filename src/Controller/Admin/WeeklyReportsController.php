@@ -125,7 +125,7 @@ public function downloadImages($weeklyReportId)
 
     if ($zip->open($zipFilename, ZipArchive::CREATE) === TRUE) {
         foreach ($weeklyReport->photos as $photo) {
-            if (empty($photo->image_url)) {
+            if (empty($photo->image_url) || $photo->image_url == '' || $photo->image_url == null) {
                 continue;
             }        
             $filePath = WWW_ROOT . $photo->image_url; // 実際のファイルパスに置き換えてください

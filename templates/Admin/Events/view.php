@@ -41,7 +41,7 @@
                 <tr>
                     <th nowrap="">詳細</th>
                     <td>
-                        <?= nl2br(h($event->content)) ?>
+                        <?=$this->Link->linkify(h($event->content)) ?>
                     </td>
                 </tr>
                 <tr>

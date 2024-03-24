@@ -46,7 +46,7 @@
                             <?php endif ?>
                             <?php if ($dailyReport->comment) : ?>
                                 <div>
-                                    <?= nl2br(h($dailyReport->comment)) ?>
+                                    <?= $this->Link->linkify(h($dailyReport->comment)) ?>
                                 </div>
                             <?php endif ?>
                         </td>

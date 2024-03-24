@@ -76,7 +76,7 @@
                         <?php endif ?>
                     </td>
                     <td>
-                        <small><?= nl2br(h($dailyReport->comment)) ?></small>
+                        <small><?= $this->Link->linkify(h($dailyReport->comment)) ?></small>
                     </td>
                     <td>
                         <?php if (!$dailyReport->is_checked) : ?>

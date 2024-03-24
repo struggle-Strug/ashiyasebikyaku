@@ -41,8 +41,8 @@
 
         <?php else : ?>
 
-            <div class="table-responsive-md">
-                <table class="table table-bordered table-striped">
+            <div class="table-responsive-md" style="height: 50vh; ">
+                <table class="table table-bordered table-striped overflow-y: scroll">
                     <thead>
                         <tr>
                         <th nowrap>ダウンロード</th>

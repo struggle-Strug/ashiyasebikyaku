@@ -4,7 +4,7 @@
     <div class="card">
         <div class="card-header">
             <h4 class="card-title"><?= h($lessonMovie->name) ?></h4>
-            <p class="category"><?= nl2br(h($lessonMovie->note)) ?></p>
+            <p class="category"><?= $this->Link->linkify(h($lessonMovie->note)) ?></p>
         </div>
         <div class="card-content">
             <div style="padding:56.25% 0 0 0;position:relative;">

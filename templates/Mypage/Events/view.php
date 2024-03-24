@@ -34,7 +34,7 @@
             <h4 class="card-title"><?= h($event->title) ?></h4>
             <p class="category">募集期間：<br><?= date('Y年n月j日 H:i', strtotime($event->start_datetime)) ?> 〜 <?= ($event->end_datetime) ? date('Y年n月j日 H:i', strtotime($event->end_datetime)) : '' ?></p>
             <br>
-            <?= nl2br(h($event->content)) ?>
+            <?= $this->Link->linkify(h($event->content)) ?>
         </div>
         <div style="margin-top:20px">
             <table class="table">

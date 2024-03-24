@@ -10,6 +10,9 @@ use Cake\Core\Configure;
 use Cake\Filesystem\Folder;
 use Cake\Filesystem\File;
 
+use App\Mailer\AppMailer;
+use Cake\Mailer\MailerAwareTrait;
+
 /**
  * WeeklyReports Controller
  *
@@ -23,6 +26,8 @@ class WeeklyReportsController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
+
+    use MailerAwareTrait;
     public function index()
     {
         // 初めての週次報告かチェック
@@ -270,10 +275,22 @@ class WeeklyReportsController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
+        $host = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
+        $path = '/admin/weekly-reports?start_report_date=&end_report_date=&user_id=';
+        $pathStaff = '/staff/weekly-reports?start_report_date=&end_report_date=&user_id=';
+        $port = $this->request->getUri()->getPort();
+        $fullUrl = $host . ($port ? ":$port" : '') . $path  . $this->Authentication->getIdentity()->id;
+        $fullUrlStaff = $host . ($port ? ":$port" : '') . $pathStaff  . $this->Authentication->getIdentity()->id;
+
+        $now = Time::now();
+        $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
+
         if ($this->request->is(['patch', 'post', 'put'])) {
             $weeklyReport->is_draft = 0;
             $this->WeeklyReports->save($weeklyReport);
-
+            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "weekly_report", ['today' => $formattedDateTime]]);
+            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl , 'today' => $formattedDateTime]]);
+            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrlStaff, 'today' => $formattedDateTime ]]);
             $this->Flash->success(__('情報を送信しました。'));
             return $this->redirect(['action' => 'history']);
         }

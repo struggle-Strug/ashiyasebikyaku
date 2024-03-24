@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-xs-10">
                         <h5 class="card-title" style="margin:0"><?= h($lessonMovie->name) ?></h5>
-                        <p class="description"><small><?= nl2br(h($lessonMovie->note)) ?></small></p>
+                        <p class="description"><small><?= $this->Link->linkify(h($lessonMovie->note)) ?></small></p>
                         <a href="<?= $this->Url->build(['action' => 'view', $lessonMovie->id]); ?>"
                             class="btn btn-wd btn-primary">
                             <span class="btn-label">

@@ -10,6 +10,9 @@ use Cake\Core\Configure;
 use Cake\Filesystem\Folder;
 use Cake\Filesystem\File;
 
+use App\Mailer\AppMailer;
+use Cake\Mailer\MailerAwareTrait;
+
 /**
  * DailyReports Controller
  *
@@ -23,6 +26,7 @@ class DailyReportsController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
+    use MailerAwareTrait;
     public function index()
     {
         $dailyReport = $this->DailyReports->newEmptyEntity();
@@ -43,8 +47,22 @@ class DailyReportsController extends AppController
             if (!$dailyReport) {
                 $dailyReport = $this->DailyReports->newEmptyEntity();
             }
+
+            $host = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
+            $staffPath = '/staff/daily-reports?user_id=';
+            $path = '/admin/daily-reports';
+            $port = $this->request->getUri()->getPort();
+            $fullUrl = $host . ($port ? ":$port" : '') . $path;
+            $fullUrlStaff = $host . ($port ? ":$port" : '') . $staffPath  . $data['user_id'];
+
             $dailyReport = $this->DailyReports->patchEntity($dailyReport, $data);
+            $now = Time::now();
+            $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');  
+
             if ($this->DailyReports->save($dailyReport)) {
+                $this->getMailer('App')->send('sendGridEmail',["【日報】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "daily_report", ['today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail',["【日報】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "daily_report_operation", ['reportUrl' => $fullUrl, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail',["【日報】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "daily_report_operation", ['reportUrl' => $fullUrlStaff, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
                 $this->Flash->success(__('報告を送信しました。'));
 
                 return $this->redirect(['action' => 'history']);

@@ -7,7 +7,7 @@
                 <h4 class="card-title"><?= h($course->name) ?></h4>
             </div>
             <div class="card-content">
-                <!-- <div style="margin-bottom:20px"><?= nl2br(h($course->note)) ?></div> -->
+                <!-- <div style="margin-bottom:20px"><?= $this->Link->linkify(h($course->note)) ?></div> -->
                 <div class="row">
                     <div class="col-lg-12 col-md-12">
 

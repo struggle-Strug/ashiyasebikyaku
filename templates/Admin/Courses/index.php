@@ -26,7 +26,7 @@
                             </td>
                             <td><?= $courseType[$course->type] ?></td>
                             <td><?= h($course->name) ?></td>
-                            <td><small><?= nl2br(h($course->note)) ?></small></td>
+                            <td><small><?= $this->Link->linkify(h($course->note)) ?></small></td>
                             <td nowrap>
                                 <a href="<?= $this->Url->build(['controller' => 'CourseMovies', 'action' => 'index', $course->id]); ?>" class="btn btn-outline-primary btn-xs">動画管理</a>
                             </td>

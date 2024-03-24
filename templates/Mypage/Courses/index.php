@@ -20,17 +20,17 @@
                                 オリエンテーション申込</h5>
                         </div>
                         <div class="timeline-body">
-                            <!-- <p class="description" style="margin-bottom:10px">
+                            <p class="description" style="margin-bottom:10px">
                                 <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
-                            </p> -->
+                            </p>
                             <?php if (!$eventEntry1) : ?>
-                                <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 1]); ?>"
+                                <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 1]); ?>"
                                     class="btn btn-wd btn-primary">
                                     <span class="btn-label">
                                         <i class="fa-solid fa-chevron-right"></i>
                                     </span>
                                     申し込む
-                                </a>
+                                </a> -->
                             <?php endif ?>
                         </div>
                     </div>
@@ -83,6 +83,7 @@
                         </div>
                     </div>
                 </li>
+                <?php if ($this->Identity->get('light_plan') == 0): ?>
                 <li class="timeline-inverted">
                     <?php if (!$eventEntry2) : ?>
                         <div class="timeline-badge primary">
@@ -99,18 +100,22 @@
                                 目標設定コーチング申込</h5>
                         </div>
                         <div class="timeline-body">
+                        <p class="description" style="margin-bottom:10px">
+                                <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
+                            </p>
                             <?php if (!$eventEntry2) : ?>
-                                <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 2]); ?>"
+                                <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 2]); ?>"
                                     class="btn btn-wd btn-primary">
                                     <span class="btn-label">
                                         <i class="fa-solid fa-chevron-right"></i>
                                     </span>
                                     申し込む
-                                </a>
+                                </a> -->
                             <?php endif ?>
                         </div>
                     </div>
                 </li>
+                <?php endif; ?>
                 <li class="timeline-inverted">
                     <div class="timeline-badge primary">
                         <i class="ti-light-bulb"></i>
@@ -131,6 +136,7 @@
                         </div>
                     </div>
                 </li>
+                <?php if ($this->Identity->get('light_plan') == 0): ?>
                 <li class="timeline-inverted">
                     <?php if (!$eventEntry3) : ?>
                         <div class="timeline-badge primary">
@@ -147,18 +153,22 @@
                                 腸活コンサル申込</h5>
                         </div>
                         <div class="timeline-body">
+                        <p class="description" style="margin-bottom:10px">
+                                <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
+                            </p>
                             <?php if (!$eventEntry3) : ?>
-                                <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 3]); ?>"
+                                <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 3]); ?>"
                                     class="btn btn-wd btn-primary">
                                     <span class="btn-label">
                                         <i class="fa-solid fa-chevron-right"></i>
                                     </span>
                                     申し込む
-                                </a>
+                                </a> -->
                             <?php endif ?>
                         </div>
                     </div>
                 </li>
+                <?php endif; ?>
                 <li class="timeline-inverted">
                     <?php if (!$eventEntry4) : ?>
                         <div class="timeline-badge primary">
@@ -175,14 +185,17 @@
                                 最終カウンセリング申込（成果報告会）</h5>
                         </div>
                         <div class="timeline-body">
+                        <p class="description" style="margin-bottom:10px">
+                                <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
+                            </p>
                             <?php if (!$eventEntry4) : ?>
-                                <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 4]); ?>"
+                                <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 4]); ?>"
                                     class="btn btn-wd btn-primary">
                                     <span class="btn-label">
                                         <i class="fa-solid fa-chevron-right"></i>
                                     </span>
                                     申し込む
-                                </a>
+                                </a> -->
                             <?php endif ?>
                         </div>
                     </div>

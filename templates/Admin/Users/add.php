@@ -34,6 +34,11 @@
                 <?= $this->Form->select('staff_id', $staffs, ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('staff_id') ?></span>
             </div>
+            <label for="" class="col-sm-2 col-form-label text-md-right">ライトプラン</label>
+            <div class="col-sm-4">
+            <?= $this->Form->select('light_plan', [0 => 'いいえ', 1 => 'はい'], ['class' => 'form-control']) ?>
+                <span class="text-danger"><?= $this->Form->error('light_plan') ?></span>
+            </div>
         </div>
         <hr>
         <div class="form-group row">

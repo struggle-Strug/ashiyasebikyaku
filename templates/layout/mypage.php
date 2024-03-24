@@ -86,6 +86,7 @@
                         <a data-toggle="collapse" href="#collapseExample" class="collapsed">
                             <span>
                                 <?= $this->Identity->get('last_name') ?> <?= $this->Identity->get('first_name') ?>さん
+                                <?php if ($this->Identity->get('light_plan') == 1): ?>（ライト）<?php endif; ?>
                                 <b class="caret"></b>
                             </span>
                         </a>

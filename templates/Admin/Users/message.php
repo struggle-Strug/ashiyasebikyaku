@@ -12,7 +12,7 @@
                         </div>
                         <img class="direct-chat-img" src="/img/face.png">
                         <div class="direct-chat-text">
-                            <?= nl2br(h($message->message)) ?>
+                            <?= $this->Link->linkify(h($message->message)) ?>
                         </div>
                     </div>
                 <?php elseif ($message->sender == '2') : // 講師 ?>
@@ -23,7 +23,7 @@
                         </div>
                         <img class="direct-chat-img" src="/img/face2.png">
                         <div class="direct-chat-text msg-staff">
-                            <?= nl2br(h($message->message)) ?>
+                            <?= $this->Link->linkify(h($message->message)) ?>
                         </div>
                     </div>
                 <?php elseif ($message->sender == '3') : // 管理者 ?>
@@ -35,7 +35,7 @@
                         <img class="direct-chat-img" src="/img/logo.png">
                         <div class="direct-chat-text msg-admin">
                             【運営より】<br>
-                            <?= nl2br(h($message->message)) ?>
+                            <?= $this->Link->linkify(h($message->message)) ?>
                         </div>
                     </div>
                 <?php endif ?>

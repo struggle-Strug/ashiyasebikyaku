@@ -49,7 +49,7 @@
                                         allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
                                 </div>
                             </td>
-                            <td><small><?= nl2br(h($courseMovie->note)) ?></small></td>
+                            <td><small><?= $this->Link->linkify(h($courseMovie->note)) ?></small></td>
                             <td nowrap>
                                 <a href="<?= $this->Url->build(['action' => 'edit', $course->id, $courseMovie->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
                                 <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $course->id, $courseMovie->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('退会は編集から「利用終了日時」を設定してください。本当に削除してよろしいですか？', $courseMovie->id)]) ?>
