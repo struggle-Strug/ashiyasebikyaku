@@ -7,6 +7,9 @@ use App\Controller\AppController;
 use Cake\ORM\Query;
 use Cake\Core\Configure;
 use Cake\Routing\Router;
+use Cake\Filesystem\Filesystem;
+use Cake\Filesystem\File;
+
 
 /**
  * ComparedImages Controller
@@ -184,7 +187,8 @@ class ComparedImagesController extends AppController
         $this->set(compact('weeklyReports', 'comparedImage', 'users', 'param', 'photoName'));
     }
 
-    private function base64Encode($imagePath) {
+    private function base64Encode($imagePath)
+    {
         debug($imagePath);
         $imageUrl = Router::url('', true) . $imagePath;
         $imageData = file_get_contents($imageUrl);
@@ -209,7 +213,7 @@ class ComparedImagesController extends AppController
             $targetImage = $targetImage->where([
                 "id" => $param["target_id"]
             ])
-            ->first();
+                ->first();
         } else {
             $targetImage = null;
         }
@@ -218,7 +222,7 @@ class ComparedImagesController extends AppController
             $subjectImage = $subjectImage->where([
                 "id" => $param["subject_id"]
             ])
-            ->first();
+                ->first();
         } else {
             $subjectImage = null;
         }
@@ -303,12 +307,18 @@ class ComparedImagesController extends AppController
     {
         $this->request->allowMethod(['post', 'delete']);
         $comparedImage = $this->ComparedImages->get($id);
+        $filePath = $comparedImage->image;
+        $path = parse_url($filePath, PHP_URL_PATH);
+        $filename = basename($path);
         if ($this->ComparedImages->delete($comparedImage)) {
-            $this->Flash->success(__('The compared image has been deleted.'));
+            if ($filePath) {
+                unlink(WWW_ROOT . "/uploads/" . $filename);
+                $this->Flash->success(__('画像が削除されました。'));
+            }
+            $this->Flash->success(__('比較画像が画像が削除されました。'));
         } else {
-            $this->Flash->error(__('The compared image could not be deleted. Please, try again.'));
+            $this->Flash->error(__('比較画像が削除されませんでした。'));
         }
-
         return $this->redirect(['action' => 'index']);
     }
 }

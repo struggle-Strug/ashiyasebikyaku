@@ -41,11 +41,11 @@
     <div class="card-body">
         <div style="display: flex">
             <div id="target_image_display" style="width: 100px; height: 180px; margin-top: 24px; margin-bottom: 24px; margin-right: 24px;">
-                <div style="font-weight: bold; ">対象画像</div>
+                <div style="font-weight: bold; ">アフター画像</div>
                 <img src="" id="target_image_url" alt="target_image" style="max-width:100px; display: none; " />
             </div>
             <div id="subject_image_display" style="width: 100px; height: 180px;  margin-top: 24px; margin-bottom: 24px; margin-right: 24px;">
-                <div style="font-weight: bold; ">被対象画像</div>
+                <div style="font-weight: bold; ">ビフォー画像</div>
                 <img src="" id="subject_image_url" alt="subject_image" style="max-width:100px; display: none; " />
             </div>
         </div>
@@ -107,8 +107,7 @@
         <input type="text" name="subject_id" id="subject_id" style="display: none;"
             value="<?= $param['subject_image_id'] ?>" />
         <input type="text" name="user" id="user" style="display: none;" value="<?= $param['user_id'] ?>" />
-        <button type="submit" class="btn btn-primary" style=""><i
-                class="fa-solid fa-magnifying-glass"></i>画像作成ページへ</button>
+        <button type="submit" class="btn btn-primary" style="">画像作成ページへ</button>
         <?= $this->Form->end() ?>
     </div>
 </div>
@@ -155,7 +154,7 @@
                     mask.style.width = document.getElementById(element.dataset.id).width + "px"
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
                     mask.style.display = "flex"
-                    mask.textContent = "対象"
+                    mask.textContent = "アフター"
                 }
 
                 if (element.dataset.image === subject_image_url) {
@@ -163,7 +162,7 @@
                     mask.style.width = document.getElementById(element.dataset.id).width + "px";
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
                     mask.style.display = "flex"
-                    mask.textContent = "被対象"
+                    mask.textContent = "ビフォー"
                 }
             })
         }
@@ -239,7 +238,7 @@
                         mask.style.width = document.getElementById(selectedImageInfo.subject.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.subject.id).height + "px";
                         mask.style.display = "flex"
-                        mask.textContent = "被対象";
+                        mask.textContent = "ビフォー";
                     } else {
                         document.getElementById("subject_image_url").style.display = "none"
                     }
@@ -250,7 +249,7 @@
                         mask.style.width = document.getElementById(selectedImageInfo.target.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.target.id).height + "px";
                         mask.style.display = "flex"
-                        mask.textContent = "対象"
+                        mask.textContent = "アフター"
                     } else {
                         document.getElementById("target_image_url").style.display = "none"
                     }

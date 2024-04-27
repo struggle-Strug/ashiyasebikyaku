@@ -48,6 +48,7 @@
                     <th nowrap>作成日</th>
                     <th nowrap>画像</th>
                     <th nowrap>コメント</th>
+                    <th nowrap></th>
                 </tr>
             </thead>
             <tbody>
@@ -58,7 +59,7 @@
                     </td>
                     <td><img src="<?= h($comparedImage->image) ?>" width="300px" /></td>
                     <td><?= h($comparedImage->comment) ?></td>
-                    </td>
+                    <td><?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?></td>
                 </tr>
             <?php endforeach ?>
             </tbody>

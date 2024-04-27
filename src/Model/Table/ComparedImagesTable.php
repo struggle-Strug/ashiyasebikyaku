@@ -50,14 +50,6 @@ class ComparedImagesTable extends Table
         $this->belongsTo('Users', [
             'foreignKey' => 'user_id',
         ]);
-
-        $this->belongsTo('Photos', [
-            'foreignKey' => 'target_image',
-        ]);
-
-        $this->belongsTo('Photos', [
-            'foreignKey' => 'subject_image',
-        ]);
     }
 
     /**
