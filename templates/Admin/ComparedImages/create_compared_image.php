@@ -4,8 +4,8 @@
 
 <div class="card">
     <div class="card-body">
-        <div class="p-4"><button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button></div>
-        <figure id="board" class="px-4" style="position: relative">
+        <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button></div>
+        <figure id="board" class="p-sm-2 p-md-4" style="position: relative">
             <svg id="drawingCanvas"
                 style="border: solid 1px rgba(0,0,0,0.1); background-color: white; width: 100%; height: 800px">
                 <defs>
@@ -111,6 +111,18 @@
         }
         window.onresize = resizeWindow;
 
+        function resizeSvgElm() {
+            var svgElm_js_height = svgElm_js.style.height
+            var heightValue = parseFloat(svgElm_js_height.match(/\d+/)[0]);
+            var svgElm_js_width = svgElm_js.style.width
+            var widthValue = parseFloat(svgElm_js_width.match(/\d+/)[0]);
+            var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
+                .map(s => parseFloat(s));
+            var init_viewBox = String(minX) + " " + String(minY) + " " + String(widthValue) + " " + String(heightValue)
+
+            svgElm_js.setAttribute("viewBox", init_viewBox)
+        }
+
         const svgWidth = svgElm_js.width.baseVal.value
         const svgWidthHalf = svgWidth / 2;
         const margin = 20;
@@ -120,9 +132,6 @@
         function init() {
             clipRightRect.width.baseVal.value = svgWidthHalf - margin * 1.5;
             clipLeftRect.width.baseVal.value = svgWidthHalf - margin * 1.5;
-            // clipRightRect.height.baseVal.value = (svgWidthHalf - margin * 1.5) * 4 / 3
-            // clipLeftRect.height.baseVal.value = (svgWidthHalf - margin * 1.5) * 4 / 3
-            // console.log(clipLeftRect.height.baseVal.value)
             clipLeftRect.x.baseVal.value = margin;
             clipRightRect.x.baseVal.value = (margin / 2) + svgWidthHalf;
             clipLeftRect.y.baseVal.value = margin;
@@ -290,8 +299,10 @@
             const imageWidthHalf = imageWidth / 2;
             const x = centerPosX - imageWidthHalf;
             clipRightRect.height.baseVal.value = imageHeight
+            const textAspect = 30 / 1069;
+            const textSize = svgElm_js_width * textAspect;
             const y = 20;
-            createTextBox(x, y + imageHeight + 30, 0, 0, "jgnjakfonk", "<?= $subjectImage["created"] ?>", 30, "black")
+            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk", "<?= $subjectImage["created"] ?>", textSize, "black")
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "left-image", "url(#clipleft)")
         }
 
@@ -302,9 +313,18 @@
             const centerPosX = (leftWidth / 2) + leftWidth;
             const imageWidthHalf = imageWidth / 2;
             const x = leftWidth + (margin / 2);
+            console.log(svgElm_js_width)
+            const textAspect = 30 / 1069;
+            const textSize = svgElm_js_width * textAspect;
             clipLeftRect.height.baseVal.value = imageHeight
+            svgElm_js.style.height = imageHeight+100
+            var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
+                .map(s => parseFloat(s));
+            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(imageHeight+100)
+            svgElm_js.setAttribute("viewBox", init_viewBox)
+            
             const y = 20;
-            createTextBox(x, y + imageHeight + 30, 0, 0, "jgnjakfonk", "<?= $targetImage["created"] ?>", 30, "black")
+            createTextBox(x, y + imageHeight + textSize, 0, 0, "jgnjakfonk", "<?= $targetImage["created"] ?>", textSize, "black")
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "right-image", "url(#clipright)")
         }
 

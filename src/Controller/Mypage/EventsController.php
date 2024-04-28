@@ -32,7 +32,7 @@ class EventsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
-        $this->loadModel('Users'); // ユーザーテーブルを読み込む
+        $this->loadModel('Users');
     }
 
 
