@@ -45,26 +45,24 @@ class EventsController extends AppController
             ])
             ->where([
                 'Events.start_datetime <=' => date('Y-m-d H:i:s'),
-                'AND' => [
-                    'OR' => [
-                        ['Events.end_datetime Is' => null],
-                        ['Events.end_datetime >=' => date('Y-m-d H:i:s')]
-                    ]
-                ],
-                'AND' => [
-                    'OR' => [
-                        ['Events.staff_id Is' => null],
-                        ['Events.staff_id' => $this->Authentication->getIdentity()->staff_id]
-                    ]
+                'OR' => [
+                    ['Events.end_datetime Is' => null],
+                    ['Events.end_datetime >=' => date('Y-m-d H:i:s')]
                 ],
                 'Events.is_deleted' => 0
+            ])
+            ->where([
+                'OR' => [
+                    ['Events.staff_id Is' => null],
+                    ['Events.staff_id' => $this->Authentication->getIdentity()->staff_id]
+                ],
             ]);
         $user = $this->Users->find('all')
-        ->where([
-            'id' => $this->Authentication->getIdentity()->id,
-            'is_deleted' => 0
-        ])
-        ->first();
+            ->where([
+                'id' => $this->Authentication->getIdentity()->id,
+                'is_deleted' => 0
+            ])
+            ->first();
 
         if ($this->Authentication->getIdentity()->light_plan) {
             $currentDate = Time::now();
@@ -82,7 +80,7 @@ class EventsController extends AppController
                             ['Events.type !=' => 2],
                             [
                                 'Events.type' => 2,
-                                'Events.staff_id' =>  $this->Authentication->getIdentity()->staff_id
+                                'Events.staff_id' => $this->Authentication->getIdentity()->staff_id
                             ]
                         ]
                     ]);

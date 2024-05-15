@@ -259,10 +259,7 @@ class ComparedImagesController extends AppController
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
             if ($this->ComparedImages->save($comparedImage)) {
                 $this->Flash->success(__('The compared image has been saved.'));
-                return $this->redirect(['action' => 'index']);
             }
-
-            $this->Flash->error(__('The compared image could not be saved. Please, try again.'));
             return $this->redirect(['action' => 'index']);
         }
     }
@@ -320,5 +317,34 @@ class ComparedImagesController extends AppController
             $this->Flash->error(__('比較画像が削除されませんでした。'));
         }
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function setActive($id = null) {
+        $comparedImage = $this->ComparedImages->get($id, [
+            'contain' => [],
+        ]);
+        $this->request->allowMethod(['post', 'delete']);
+        $data = [];
+        $data["active"] = 1;
+        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
+        if ($this->ComparedImages->save($comparedImage)) {
+            $this->Flash->success(__('送信完了いたしました。'));
+            return $this->redirect(['action' => 'index']);
+        }
+    }
+
+    public function setNotActive($id = null) {
+        $comparedImage = $this->ComparedImages->get($id, [
+            'contain' => [],
+        ]);
+        $this->request->allowMethod(['post', 'delete']);
+        $data = [];
+        $data["active"] = 0;
+        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
+        if ($this->ComparedImages->save($comparedImage)) {
+            $this->Flash->success(__('送信取り消し完了いたしました。'));
+            return $this->redirect(['action' => 'index']);
+        }
+        
     }
 }

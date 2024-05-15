@@ -21,7 +21,7 @@
                         </div>
                         <div class="timeline-body">
                             <p class="description" style="margin-bottom:10px">
-                                <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
+                                <small>当サイトの使い方や進める順番について、<a href="https://leeward-utensil-225.notion.site/1b170ba5029a4358b7518450c62184c3?pvs=4" target="blank">こちら</a>から確認して進めてください</small>
                             </p>
                             <?php if (!$eventEntry1) : ?>
                                 <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 1]); ?>"
@@ -56,7 +56,7 @@
                     </div>
                 </li>
                 <li class="timeline-inverted">
-                    <?php if (!$firstWeeklyReport) : ?>
+                    <!-- <?php if (!$firstWeeklyReport) : ?>
                         <div class="timeline-badge primary">
                             <i class="ti-light-bulb"></i>
                         </div>
@@ -64,7 +64,10 @@
                         <div class="timeline-badge success">
                             <i class="ti-check-box"></i>
                         </div>
-                    <?php endif ?>
+                    <?php endif ?> -->
+                    <div class="timeline-badge primary">
+                            <i class="ti-light-bulb"></i>
+                    </div>
                     <div class="timeline-panel">
                         <div class="timeline-heading">
                             <h5 class="card-title" style="margin-bottom:5px"><span class="label label-primary">３</span>
@@ -101,7 +104,7 @@
                         </div>
                         <div class="timeline-body">
                         <p class="description" style="margin-bottom:10px">
-                                <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
+                                <small>「イベント情報」から担当講師の個別コンサルティングを予約してください<br/>コーチング受講にあたって、事前課題があるので、１オリエンテーションで詳細確認してください</small>
                             </p>
                             <?php if (!$eventEntry2) : ?>
                                 <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 2]); ?>"
@@ -154,7 +157,7 @@
                         </div>
                         <div class="timeline-body">
                         <p class="description" style="margin-bottom:10px">
-                                <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
+                                <small>腸内解析が届きましたら、腸活コンサル行います。【オプションで腸活お申込みの方のみ】<br/>別途届き次第ご案内します</small>
                             </p>
                             <?php if (!$eventEntry3) : ?>
                                 <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 3]); ?>"
@@ -186,7 +189,7 @@
                         </div>
                         <div class="timeline-body">
                         <p class="description" style="margin-bottom:10px">
-                                <small>プログラムの概要が表示されます。プログラムの概要が表示されます。プログラムの概要が表示されます。</small>
+                                <small>終了時期近辺で別途ご案内します</small>
                             </p>
                             <?php if (!$eventEntry4) : ?>
                                 <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 4]); ?>"

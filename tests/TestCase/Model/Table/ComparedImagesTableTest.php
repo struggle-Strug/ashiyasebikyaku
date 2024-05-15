@@ -26,7 +26,6 @@ class ComparedImagesTableTest extends TestCase
     protected $fixtures = [
         'app.ComparedImages',
         'app.Users',
-        'app.Photos',
     ];
 
     /**

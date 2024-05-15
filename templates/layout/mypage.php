@@ -21,6 +21,7 @@
     <link href='https://fonts.googleapis.com/css?family=Muli:400,300' rel='stylesheet' type='text/css'>
     <link href="<?= $this->Url->build('paper-dashboard/') ?>css/themify-icons.css" rel="stylesheet">
     <link href="<?= $this->Url->build('/') ?>css/mypage.css?20230731" rel="stylesheet">
+    <link href="<?= $this->Url->build('/') ?>lightbox/css/lightbox.min.css" rel="stylesheet">
 
     <!--   Core JS Files. Extra: TouchPunch for touch library inside jquery-ui.min.js   -->
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/jquery.min.js" type="text/javascript"></script>
@@ -59,6 +60,8 @@
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/fullcalendar.min.js"></script>
     <!-- Paper Dashboard PRO Core javascript and methods for Demo purpose -->
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/paper-dashboard.js"></script>
+
+    <script src="<?= $this->Url->build('/') ?>lightbox/js/lightbox.min.js"></script>
 
     <!-- Swiper -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"/>

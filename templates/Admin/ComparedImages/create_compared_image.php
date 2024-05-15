@@ -1,10 +1,25 @@
 <?php $this->assign('title', '比較画像作成ページ'); ?>
 <?= $this->Form->create(null, ['type' => 'get', 'url' => ['action' => 'uploadComparedImage']]) ?>
 <?= $this->Form->end() ?>
+<style>
+    #touch-type {
+        display: none;
+    }
 
+    @media only screen and (max-width: 767px) {
+        #touch-type {
+            display: block;
+        }
+    }
+</style>
 <div class="card">
     <div class="card-body">
-        <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button></div>
+        <div style="display: flex;">
+            <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button>
+            </div>
+            <div class="p-sm-2 p-md-4 py-2 mx-2"><button class="btn btn-outline-primary" id="touch-type">ムーブモード</button>
+            </div>
+        </div>
         <figure id="board" class="p-sm-2 p-md-4" style="position: relative">
             <svg id="drawingCanvas"
                 style="border: solid 1px rgba(0,0,0,0.1); background-color: white; width: 100%; height: 800px">
@@ -20,6 +35,9 @@
                 </defs>
             </svg>
         </figure>
+        <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="preview-btn">画像プレビューON</button>
+        </div>
+        <div class="p-sm-2 p-md-4 py-2"><img src="" id="preview" /></div>
         <div class="form-group row">
             <label for="" class="col-form-label">コメント</label>
             <div class="col-sm-10">
@@ -34,15 +52,24 @@
         <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index']); ?>"><i
                 class="fas fa-arrow-circle-left"></i> 戻る</a>
         <span class="float-right">
-            <button type="submit" class="btn btn-primary" id="submit">登録</button>
+            <button type="submit" class="btn btn-primary" id="submit">保存</button>
         </span>
     </div>
 </div>
 <img src="<?= $targetImage["image_url"] ?>" style="display: none" id="target_image_url" crossorigin="anonymous" />
 <img src="<?= $subjectImage["image_url"] ?>" style="display: none" id="subject_image_url" crossorigin="anonymous" />
 <div id="error"></div>
-<img src="" id="preview" />
-
+<input type="hidden" value="">
+<?php if ($targetImage["created"] === null): ?>
+    <input type="hidden" value="" id="target-image-date">
+<?php else: ?>
+    <input type="hidden" value="<?= $targetImage["created"]->format('Y年m月d日') ?>" id="target-image-date">
+<?php endif ?>
+<?php if ($subjectImage["created"] === null): ?>
+    <input type="hidden" value="" id="subject-image-date">
+<?php else: ?>
+    <input type="hidden" value="<?= $subjectImage["created"]->format('Y年m月d日') ?>" id="subject-image-date">
+<?php endif ?>
 
 <script>
     $(function () {
@@ -54,6 +81,7 @@
         var out_event = "mouseleave";
         var svgElm = $("#drawingCanvas");
         var type = "imageMoveAndZoom";
+        var touchType = "move";
 
 
         function main() {
@@ -89,6 +117,20 @@
                 this.classList.remove("btn-primary");
                 this.classList.add("btn-outline-primary")
                 this.textContent = "書き込みモードOFF";
+            }
+        })
+
+        document.getElementById("touch-type").addEventListener("click", function (e) {
+            if (touchType === "move") {
+                touchType = "zoom"
+                this.classList.add("btn-primary");
+                this.classList.remove("btn-outline-primary")
+                this.textContent = "ズームモード";
+            } else {
+                touchType = "move"
+                this.classList.remove("btn-primary");
+                this.classList.add("btn-outline-primary")
+                this.textContent = "ムーブモード";
             }
         })
 
@@ -130,18 +172,15 @@
         const clipLeftRect = document.getElementById("clip-left-rect")
 
         function init() {
-            clipRightRect.width.baseVal.value = svgWidthHalf - margin * 1.5;
-            clipLeftRect.width.baseVal.value = svgWidthHalf - margin * 1.5;
+            clipRightRect.width.baseVal.value = svgWidthHalf - margin;
+            clipLeftRect.width.baseVal.value = svgWidthHalf - margin;
             clipLeftRect.x.baseVal.value = margin;
-            clipRightRect.x.baseVal.value = (margin / 2) + svgWidthHalf;
+            clipRightRect.x.baseVal.value = svgWidthHalf;
             clipLeftRect.y.baseVal.value = margin;
             clipRightRect.y.baseVal.value = margin;
         }
 
         init();
-
-
-
 
         function pencilByMousedown() {
             movetoX = parseInt(getPositionXOnSvg(event));
@@ -154,8 +193,8 @@
                 'type': "draw",
                 "d": "",
                 "fill": "none",
-                "stroke": "black",
-                "strokeSize": "5",
+                "stroke": "red",
+                "strokeSize": "3",
                 "stroke-linecap": "round",
                 "x": 0,
                 "y": 0
@@ -174,10 +213,10 @@
             }
 
             $("#drawingCanvas").append(pathElm);
-            var linetoX = [], //描画点の横座標の初期化
-                linetoY = [], //描画点の縦座標の初期化
-                cntMoveto = 0; //描画点のカウンターを初期化
-            linetoStr = 'M ' + movetoX + ' ' + movetoY + ' '; //d要素でpathの開始点を設定
+            var linetoX = [],
+                linetoY = [],
+                cntMoveto = 0;
+            linetoStr = 'M ' + movetoX + ' ' + movetoY + ' ';
 
             /* ドラッグ中 */
             $("#drawingCanvas").on(move_event, function (event) {
@@ -277,8 +316,6 @@
             document.getElementById('drawingCanvas').appendChild(image_elm);
         }
 
-        // createImage(0, 0, 0, 0, 100, 100, "/uploads/weekly_report/86/3f9df617d4fbda5d28f1515bc03826263de67c251704417977.jpg", "gsdvfsg")
-
         function SVGMatrixCreate(a, b, c, d, e, f) {
             var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             var mtx = svg.createSVGMatrix();
@@ -293,38 +330,38 @@
 
         function rightDisplay(aspectRatio, image) {
             const rightWidth = svgElm_js_width / 2;
-            const imageWidth = rightWidth * 0.9;
+            const imageWidth = rightWidth;
             const imageHeight = imageWidth / aspectRatio;
             const centerPosX = rightWidth / 2;
             const imageWidthHalf = imageWidth / 2;
             const x = centerPosX - imageWidthHalf;
             clipRightRect.height.baseVal.value = imageHeight
-            const textAspect = 30 / 1069;
+            const textAspect = 45 / 1069;
             const textSize = svgElm_js_width * textAspect;
             const y = 20;
-            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk", "<?= $subjectImage["created"] ?>", textSize, "black")
+            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk",  document.getElementById("subject-image-date").value, textSize, "black")
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "left-image", "url(#clipleft)")
         }
 
         function leftDisplay(aspectRatio, image) {
             const leftWidth = svgElm_js_width / 2;
-            const imageWidth = leftWidth * 0.9;
+            const imageWidth = leftWidth;
             const imageHeight = imageWidth / aspectRatio;
             const centerPosX = (leftWidth / 2) + leftWidth;
             const imageWidthHalf = imageWidth / 2;
-            const x = leftWidth + (margin / 2);
+            const x = leftWidth;
             console.log(svgElm_js_width)
-            const textAspect = 30 / 1069;
+            const textAspect = 45 / 1069;
             const textSize = svgElm_js_width * textAspect;
             clipLeftRect.height.baseVal.value = imageHeight
-            svgElm_js.style.height = imageHeight+100
+            svgElm_js.style.height = imageHeight + 100
             var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
                 .map(s => parseFloat(s));
-            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(imageHeight+100)
+            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(imageHeight + 100)
             svgElm_js.setAttribute("viewBox", init_viewBox)
-            
+
             const y = 20;
-            createTextBox(x, y + imageHeight + textSize, 0, 0, "jgnjakfonk", "<?= $targetImage["created"] ?>", textSize, "black")
+            createTextBox(x, y + imageHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("target-image-date").value, textSize, "black")
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "right-image", "url(#clipright)")
         }
 
@@ -410,6 +447,43 @@
             image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
         }
 
+        function previewImage() {
+            var svg = document.querySelector("svg");
+            var svgData = new XMLSerializer().serializeToString(svg);
+            var canvas = document.createElement("canvas");
+            canvas.width = svg.width.baseVal.value;
+            canvas.height = svg.height.baseVal.value;
+
+            var ctx = canvas.getContext("2d");
+            var image = new Image;
+            image.onload = function () {
+                ctx.drawImage(image, 0, 0);
+                const pngDataUrl = canvas.toDataURL('image/png');
+                document.getElementById("preview").src = pngDataUrl;
+                document.getElementById("preview").style.display = "block";
+            }
+            image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        }
+
+        var previewFlag = false;
+
+        document.getElementById("preview-btn").addEventListener("click", function () {
+            if (!previewFlag) {
+                previewImage()
+                this.classList.add("btn-primary");
+                this.classList.remove("btn-outline-primary")
+                this.textContent = "画像プレビューOFF";
+            } else {
+                document.getElementById("preview").style.display = "none";
+                this.classList.remove("btn-primary");
+                this.classList.add("btn-outline-primary")
+                this.textContent = "画像プレビューON";
+
+            }
+            previewFlag = !previewFlag;
+
+        })
+
         document.getElementById("submit").addEventListener("click", function () {
             downloadBoard()
         })
@@ -426,6 +500,7 @@
             formData.append('target_image', target_image);
             formData.append('subject_image', subject_image);
             formData.append('user_id', user);
+            const nextURL = "/admin/compared-images?start_report_date=&end_report_date=&user_id=" + user;
             $.ajax({
                 type: 'POST',
                 url: "<?= $this->Url->build(['action' => 'uploadComparedImage']); ?>",
@@ -438,16 +513,14 @@
                 processData: false,
                 success: function (data, dataType) {
                     document.getElementById("error").innerHTML = data
-                    location.href = "/admin/compared-images"
+                    location.href = nextURL
                 },
                 error: function (e) {
                     document.getElementById("error").innerHTML = e.responseText
-                    // location.href = "/admin/compared-images"
                 }
             });
         }
 
-        // var target;
         var id;
         var x;
         var y;
@@ -467,14 +540,11 @@
                     target = document.getElementById("right-image");
                 }
             }
-
-            console.log(target)
             var mouse_move_x = 0;
             var mouse_move_y = 0;
             var mouse_move_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
             var mouse_move_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
 
-            console.log(mouse_move_y)
             var dx = 0;
             var dy = 0;
             var transform = target.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
@@ -487,16 +557,41 @@
             y = parseInt(targetContent.getAttribute("y"));
             var Matrix = target.transform.baseVal[0].matrix;
             $("#drawingCanvas").on(move_event, function (event) {
-                var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
-                var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
-                var x_length = mouse_moving_x - mouse_move_x;
-                var y_length = mouse_moving_y - mouse_move_y;
-                mouse_move_x = mouse_moving_x;
-                mouse_move_y = mouse_moving_y;
-                x += x_length;
-                y += y_length;
-                targetContent.setAttribute('x', x + "");
-                targetContent.setAttribute('y', y + "");
+                if (move_event !== "touchmove") {
+                    var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                    var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                    var x_length = mouse_moving_x - mouse_move_x;
+                    var y_length = mouse_moving_y - mouse_move_y;
+                    mouse_move_x = mouse_moving_x;
+                    mouse_move_y = mouse_moving_y;
+                    x += x_length;
+                    y += y_length;
+                    targetContent.setAttribute('x', x + "");
+                    targetContent.setAttribute('y', y + "");
+                } else {
+                    if (touchType === "move") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                        x += x_length;
+                        y += y_length;
+                        targetContent.setAttribute('x', x + "");
+                        targetContent.setAttribute('y', y + "");
+                    } else if (touchType === "zoom") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                        var scale = y_length < 0 ? 0.99 : 1.01
+                        target.width.baseVal.value *= scale;
+                        target.height.baseVal.value *= scale;
+                    }
+                }
             });
         }
 
@@ -526,7 +621,6 @@
                         target = document.getElementById("right-image");
                     }
                 }
-                // if (pointerType == "zoom_in" || pointerType == "zoom_out") {
                 var scale = 1
                 e.preventDefault()
                 var pointer_x = 0
@@ -570,8 +664,6 @@
                 }
                 target.width.baseVal.value *= scale;
                 target.height.baseVal.value *= scale;
-
-                // }
             }, { passive: false })
         }
         zoomAction()

@@ -80,6 +80,10 @@ class ComparedImagesTable extends Table
             ->maxLength('comment', 100)
             ->allowEmptyString('comment');
 
+        $validator
+            ->boolean('active')
+            ->allowEmptyString('active');
+
         return $validator;
     }
 

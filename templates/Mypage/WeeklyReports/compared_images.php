@@ -8,34 +8,34 @@
                     <ul id="tabs" class="nav nav-tabs">
                         <li><a href="<?= $this->Url->build(['action' => 'index']); ?>">登録</a></li>
                         <li><a href="<?= $this->Url->build(['action' => 'history']); ?>">過去の記録</a></li>
-                        <li class="active"><a href="<?= $this->Url->build(['action' => 'history']); ?>">過去の記録</a></li>
+                        <li class="active"><a
+                                href="<?= $this->Url->build(['action' => 'comparedImages']); ?>">比較画像の記録</a></li>
                     </ul>
                 </div>
             </div>
 
-            <table class="table">
-                <tbody>
-                    <?php foreach ($comparedImages as $comparedImage): ?>
-                        <tr>
-                            <td style="width: 200px">
-                                <?= $comparedImage->created->format('Y年m月d日'); ?>
-                            </td>
-                            <td style="width: 300px">
-                                <img src="<?= $comparedImage->image ?>" width="300px" />
-                            </td>
-                            <td>
-                                <?= $comparedImage->comment ?>
-                            </td>
-                        </tr>
-                    <?php endforeach ?>
-                </tbody>
-            </table>
+            <?php foreach ($comparedImages as $comparedImage): ?>
+                <?php if ($comparedImage->active): ?>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><?= $comparedImage->created->format('Y年m月d日'); ?>
+                            </h5>
+                        </div>
+                        <div class="card-content">
+                            <?= $comparedImage->comment ?>
+                            <a href="<?= $comparedImage->image ?>"
+                                title="<?= h($comparedImage->comment) ?> - <?= date('Y年n月j日', strtotime($comparedImage->created)) ?>"
+                                data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>"
+                                    width="100%" /></a>
+                        </div>
+                    <?php endif ?>
+                <?php endforeach ?>
 
+            </div>
         </div>
     </div>
-</div>
 
 
-<div class="col-md-12 text-center">
-    <?= $this->element('pagination'); ?>
-</div>
+    <div class="col-md-12 text-center">
+        <?= $this->element('pagination'); ?>
+    </div>

@@ -24,9 +24,10 @@ class ComparedImagesFixture extends TestFixture
                 'image' => 'Lorem ipsum dolor sit amet',
                 'target_image' => 1,
                 'subject_image' => 1,
-                'created' => 1714111676,
-                'updated' => 1714111676,
+                'created' => 1714381179,
+                'updated' => 1714381179,
                 'comment' => 'Lorem ipsum dolor sit amet',
+                'active' => 1,
             ],
         ];
         parent::init();

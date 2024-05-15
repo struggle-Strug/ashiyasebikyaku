@@ -16,9 +16,9 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $updated
  * @property string|null $comment
+ * @property bool|null $active
  *
  * @property \App\Model\Entity\User $user
- * @property \App\Model\Entity\Photo $photo
  */
 class ComparedImage extends Entity
 {
@@ -39,7 +39,7 @@ class ComparedImage extends Entity
         'created' => true,
         'updated' => true,
         'comment' => true,
+        'active' => true,
         'user' => true,
-        'photo' => true,
     ];
 }

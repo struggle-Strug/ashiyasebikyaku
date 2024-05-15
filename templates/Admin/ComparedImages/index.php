@@ -33,37 +33,50 @@
         <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
     </div>
     <div class="card-body">
-    <?php if (!$comparedImages || count($comparedImages) == 0) : ?>
+        <?php if (!$comparedImages || count($comparedImages) == 0): ?>
 
-<?php if (empty($param['user_id'])) : ?>
-     会員を選択してください。
- <?php else : ?>
-     該当のデータはありません。
- <?php endif ?>
+            <?php if (empty($param['user_id'])): ?>
+                会員を選択してください。
+            <?php else: ?>
+                該当のデータはありません。
+            <?php endif ?>
 
-<?php else : ?>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th nowrap>作成日</th>
-                    <th nowrap>画像</th>
-                    <th nowrap>コメント</th>
-                    <th nowrap></th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($comparedImages as $comparedImage): ?>
-                <tr>
-                    <td>
-                    <?= h($comparedImage->created) ?>
-                    </td>
-                    <td><img src="<?= h($comparedImage->image) ?>" width="300px" /></td>
-                    <td><?= h($comparedImage->comment) ?></td>
-                    <td><?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?></td>
-                </tr>
-            <?php endforeach ?>
-            </tbody>
-        </table>
+        <?php else: ?>
+            <div class="table-responsive-md" style="height: 50vh; ">
+                <table class="table table-bordered table-striped overflow-y: scroll">
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;" nowrap>作成日</th>
+                            <th style="width: 300px;" nowrap>画像</th>
+                            <th nowrap>コメント</th>
+                            <th style="width: 150px;" nowrap></th>
+                            <th style="width: 75px;" nowrap></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($comparedImages as $comparedImage): ?>
+                            <tr>
+                                <td>
+                                    <?= h($comparedImage->created) ?>
+                                </td>
+                                <td>
+                                <a href="<?= $comparedImage->image ?>" title="<?= h($comparedImage->comment) ?> - <?= date('Y年n月j日', strtotime($comparedImage->created)) ?>" data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>" width="300px" /></a>
+                        </td>
+                                <td><?= h($comparedImage->comment) ?></td>
+                                <td>
+                                <?php if ($comparedImage->active): ?>
+                                    <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                <?php else: ?>
+                                    <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                <?php endif ?>
+                                </td>
+                                <td><?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif ?>
     </div>
     <!-- /.card-body -->
@@ -75,4 +88,22 @@
 <?= $this->Form->create(null, ['id' => 'ajax-form']) ?>
 <?= $this->Form->end() ?>
 <script>
+    var swiper = new Swiper('.swiper', {
+        loop: true,
+        spaceBetween: 10,
+        centeredSlides: true,
+        pagination: '.swiper-pagination',
+        navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+        },
+        // スライドの表示枚数：600px未満の場合
+        slidesPerView: 1,
+        breakpoints: {
+            // スライドの表示枚数：600px以上の場合
+            600: {
+                slidesPerView: 2,
+            },
+        },
+    });
 </script>
