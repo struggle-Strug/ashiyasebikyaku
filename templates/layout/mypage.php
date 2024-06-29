@@ -114,10 +114,22 @@
                             <p>マイページトップ</p>
                         </a>
                     </li>
+                    <li class="<?php if ($this->request->getParam('controller') == 'Videos') echo 'active'; ?>">
+                        <a href="<?= $this->Url->build(['controller' => 'Videos', 'action' => 'index']); ?>">
+                            <i class="fa-solid fa-user-lock"></i>
+                            <p>動画</p>
+                        </a>
+                    </li>
+                    <li class="<?php if ($this->request->getParam('controller') == 'Archives') echo 'active'; ?>">
+                        <a href="<?= $this->Url->build(['controller' => 'Archives', 'action' => 'index']); ?>">
+                            <i class="fa-solid fa-user-lock"></i>
+                            <p>アーカイブ</p>
+                        </a>
+                    </li>
                     <li class="<?php if ($this->request->getParam('controller') == 'Courses') echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Courses', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-user-lock"></i>
-                            <p>パーソナルプログラム</p>
+                            <p>初めての方は</p>
                         </a>
                     </li>
                     <li class="<?php if ($this->request->getParam('controller') == 'LessonMovies') echo 'active'; ?>">

@@ -35,8 +35,9 @@
                 </defs>
             </svg>
         </figure>
-        <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="preview-btn">画像プレビューON</button></div>
-        <div class="p-sm-2 p-md-4 py-2"><img src="" id="preview" /></div>
+        <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="preview-btn">画像プレビューON</button>
+        </div>
+        <div class="p-sm-2 p-md-4 py-2"><img src="" id="preview"/></div>
         <div class="form-group row">
             <label for="" class="col-form-label">コメント</label>
             <div class="col-sm-10">
@@ -58,6 +59,7 @@
 <img src="<?= $targetImage["image_url"] ?>" style="display: none" id="target_image_url" crossorigin="anonymous" />
 <img src="<?= $subjectImage["image_url"] ?>" style="display: none" id="subject_image_url" crossorigin="anonymous" />
 <div id="error"></div>
+<input type="hidden" value="">
 <?php if ($targetImage["created"] === null): ?>
     <input type="hidden" value="" id="target-image-date">
 <?php else: ?>
@@ -69,7 +71,7 @@
     <input type="hidden" value="<?= $subjectImage["created"]->format('Y年m月d日') ?>" id="subject-image-date">
 <?php endif ?>
 
-<script>
+<script defer>
     $(function () {
         let csrf = $('#ajax-form').find('input[name=_csrfToken]').val();
 
@@ -312,6 +314,7 @@
             Matrix.e += x;
             Matrix.f += y;
             document.getElementById('drawingCanvas').appendChild(image_elm);
+            initImageLoad()
         }
 
         function SVGMatrixCreate(a, b, c, d, e, f) {
@@ -337,7 +340,7 @@
             const textAspect = 45 / 1069;
             const textSize = svgElm_js_width * textAspect;
             const y = 20;
-            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk",  document.getElementById("subject-image-date").value, textSize, "black")
+            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("subject-image-date").value, textSize, "black")
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "left-image", "url(#clipleft)")
         }
 
@@ -363,11 +366,13 @@
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "right-image", "url(#clipright)")
         }
 
+        var aspectRatio;
+
         function createImageAspectTarget(image) {
             const imageUrl = image;
             const img = new Image();
             img.onload = function (result) {
-                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                aspectRatio = img.naturalWidth / img.naturalHeight;
                 console.log(`Aspect Ratio: ${aspectRatio} (${img.naturalWidth} / ${img.naturalHeight})`);
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
@@ -383,6 +388,7 @@
             img.crossOrigin = 'Anonymous';
             img.src = imageUrl;
         }
+
 
         function createImageAspectSubject(image) {
             const imageUrl = image;
@@ -427,47 +433,106 @@
             svgElm.append(text_box);
         }
 
-        function downloadBoard() {
-            var svg = document.querySelector("svg");
-            var svgData = new XMLSerializer().serializeToString(svg);
-            var canvas = document.createElement("canvas");
-            canvas.width = svg.width.baseVal.value;
-            canvas.height = svg.height.baseVal.value;
-
-            var ctx = canvas.getContext("2d");
-            var image = new Image;
-            image.onload = function () {
-                ctx.drawImage(image, 0, 0);
-                const pngDataUrl = canvas.toDataURL('image/png');
-                document.getElementById("preview").src = pngDataUrl;
-                uploadImageToServer(pngDataUrl);
-            }
-            image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.crossOrigin = "anonymous"; // CORS 問題を回避するために追加
+                image.onload = () => resolve(image);
+                image.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+                image.src = url;
+            });
         }
 
-        function previewImage() {
-            var svg = document.querySelector("svg");
-            var svgData = new XMLSerializer().serializeToString(svg);
-            var canvas = document.createElement("canvas");
-            canvas.width = svg.width.baseVal.value;
-            canvas.height = svg.height.baseVal.value;
+        async function previewImage() {
+            try {
+                const svg = document.querySelector("svg");
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const canvas = document.createElement("canvas");
 
-            var ctx = canvas.getContext("2d");
-            var image = new Image;
-            image.onload = function () {
-                ctx.drawImage(image, 0, 0);
+                const width = svg.width.baseVal.value;
+                const height = svg.height.baseVal.value;
+
+                const ctx = canvas.getContext("2d");
+                const pixelRatio = window.devicePixelRatio || 1;
+                canvas.width = svg.width.baseVal.value * pixelRatio;
+                canvas.height = svg.height.baseVal.value * pixelRatio;
+                canvas.style.width = svg.width.baseVal.value + "px";
+                canvas.style.height = svg.height.baseVal.value + "px";
+
+                ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+
+                const image = await loadImage(url);
+                ctx.drawImage(image, 0, 0, 150, 150*0.75 / aspectRatio);
+                URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+
                 const pngDataUrl = canvas.toDataURL('image/png');
                 document.getElementById("preview").src = pngDataUrl;
                 document.getElementById("preview").style.display = "block";
+            } catch (error) {
+                console.error('Error during SVG to canvas conversion:', error);
             }
-            image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
         }
 
-        var previewFlag = false;
+        async function initImageLoad() {
+            var svg = document.querySelector("svg");
+            var svgData = new XMLSerializer().serializeToString(svg);
+            var canvas = document.createElement("canvas");
+            canvas.width = svg.width.baseVal.value;
+            canvas.height = svg.height.baseVal.value;
 
-        document.getElementById("preview-btn").addEventListener("click", function() {
+            const ctx = canvas.getContext("2d");
+            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+
+            const image = await loadImage(url);
+            ctx.drawImage(image, 0, 0);
+            URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+
+            const pngDataUrl = canvas.toDataURL('image/png');
+        }
+
+        async function downloadBoard() {
+            try {
+                const svg = document.querySelector("svg");
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const canvas = document.createElement("canvas");
+                canvas.width = svg.width.baseVal.value;
+                canvas.height = svg.height.baseVal.value;
+
+                const ctx = canvas.getContext("2d");
+                const pixelRatio = window.devicePixelRatio || 1;
+                canvas.width = svg.width.baseVal.value * pixelRatio;
+                canvas.height = svg.height.baseVal.value * pixelRatio;
+                canvas.style.width = svg.width.baseVal.value + "px";
+                canvas.style.height = svg.height.baseVal.value + "px";
+
+                ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+
+                const image = await loadImage(url);
+                ctx.drawImage(image, 0, 0);
+                URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+
+                const pngDataUrl = canvas.toDataURL('image/png');
+                document.getElementById("preview").src = pngDataUrl;
+                uploadImageToServer(pngDataUrl);
+            } catch (error) {
+                console.error('Error during SVG to canvas conversion:', error);
+            }
+        }
+
+
+        var previewFlag = false;
+        // document.addEventListener('DOMContentLoaded', async (event) => {
+        // window.onload = async function () {
+
+        initImageLoad();
+        document.getElementById("preview-btn").addEventListener("click", async function () {
             if (!previewFlag) {
-                previewImage()
+                await previewImage()
                 this.classList.add("btn-primary");
                 this.classList.remove("btn-outline-primary")
                 this.textContent = "画像プレビューOFF";
@@ -479,11 +544,13 @@
 
             }
             previewFlag = !previewFlag;
-            
-        })
 
-        document.getElementById("submit").addEventListener("click", function () {
-            downloadBoard()
+        })
+        // }
+        // });
+
+        document.getElementById("submit").addEventListener("click", async function () {
+            await downloadBoard()
         })
 
 
@@ -593,78 +660,79 @@
             });
         }
 
-    function moveContentByMouseup() {
-        svgElm.css('cursor', 'default');
-        $("#drawingCanvas").off(move_event);
-        $("#drawingCanvas").off(out_event);
-    }
+        function moveContentByMouseup() {
+            svgElm.css('cursor', 'default');
+            $("#drawingCanvas").off(move_event);
+            $("#drawingCanvas").off(out_event);
+        }
 
-    var wheel_event = 'ontouchstart' in window ? "touchmove" : "wheel";
-    var baseDistance = 0;
-    var pointX = 0;
-    var pointY = 0;
+        var wheel_event = 'ontouchstart' in window ? "touchmove" : "wheel";
+        var baseDistance = 0;
+        var pointX = 0;
+        var pointY = 0;
 
-    function zoomAction() {
+        function zoomAction() {
 
-        document.getElementById("drawingCanvas").addEventListener(wheel_event, function (e) {
-            var target;
-            pointX = parseInt(getPositionXOnSvg(event));
-            pointY = parseInt(getPositionYOnSvg(event));
-            if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin) {
-                if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
-                    target = document.getElementById("left-image");
-                }
-            } else if (pointX > clipRightRect.width.baseVal.value + margin && pointX < clipRightRect.width.baseVal.value * 2 + margin * 3) {
-                if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
-                    target = document.getElementById("right-image");
-                }
-            }
-            var scale = 1
-            e.preventDefault()
-            var pointer_x = 0
-            var pointer_y = 0
-            if (wheel_event == "touchmove") {
-                var touches = e.changedTouches;
-                if (touches.length > 1) {
-                    try {
-                        var page_x1 = touches[0].pageX;
-                        var page_y1 = touches[0].pageY;
-
-                        // 座標2 (2本目の指)
-                        var page_x2 = touches[1].pageX
-                        var page_y2 = touches[1].pageY
-
-                        var x1 = getPositionXOnSvgByX(touches[0].pageX);
-                        var y1 = getPositionYOnSvgByY(touches[0].pageY);
-
-                        // 座標2 (2本目の指)
-                        var x2 = getPositionXOnSvgByX(touches[1].pageX);
-                        var y2 = getPositionYOnSvgByY(touches[1].pageY);
-
-                        // 2点間の距離
-                        var distance = Math.sqrt(Math.pow(page_x2 - page_x1, 2) + Math.pow(page_y2 - page_y1, 2));
-                        if (baseDistance != 0) {
-                            scale = baseDistance / distance;
-                        }
-                        pointer_x = (x1 + x2) / 2;
-                        pointer_y = (y1 + y2) / 2;
-                        baseDistance = distance
-                    } catch (error) {
-                        console.error(error);
+            document.getElementById("drawingCanvas").addEventListener(wheel_event, function (e) {
+                if (type === "pencil" && type !== "move") return;
+                var target;
+                pointX = parseInt(getPositionXOnSvg(event));
+                pointY = parseInt(getPositionYOnSvg(event));
+                if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin) {
+                    if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                        target = document.getElementById("left-image");
                     }
-
+                } else if (pointX > clipRightRect.width.baseVal.value + margin && pointX < clipRightRect.width.baseVal.value * 2 + margin * 3) {
+                    if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                        target = document.getElementById("right-image");
+                    }
                 }
-            } else {
-                var dy = e.deltaY
-                scale = dy < 0 ? 0.99 : 1.01
-                pointer_x = getPositionXOnSvg(e)
-                pointer_y = getPositionYOnSvg(e)
-            }
-            target.width.baseVal.value *= scale;
-            target.height.baseVal.value *= scale;
-        }, { passive: false })
-    }
-    zoomAction()
+                var scale = 1
+                e.preventDefault()
+                var pointer_x = 0
+                var pointer_y = 0
+                if (wheel_event == "touchmove") {
+                    var touches = e.changedTouches;
+                    if (touches.length > 1) {
+                        try {
+                            var page_x1 = touches[0].pageX;
+                            var page_y1 = touches[0].pageY;
+
+                            // 座標2 (2本目の指)
+                            var page_x2 = touches[1].pageX
+                            var page_y2 = touches[1].pageY
+
+                            var x1 = getPositionXOnSvgByX(touches[0].pageX);
+                            var y1 = getPositionYOnSvgByY(touches[0].pageY);
+
+                            // 座標2 (2本目の指)
+                            var x2 = getPositionXOnSvgByX(touches[1].pageX);
+                            var y2 = getPositionYOnSvgByY(touches[1].pageY);
+
+                            // 2点間の距離
+                            var distance = Math.sqrt(Math.pow(page_x2 - page_x1, 2) + Math.pow(page_y2 - page_y1, 2));
+                            if (baseDistance != 0) {
+                                scale = baseDistance / distance;
+                            }
+                            pointer_x = (x1 + x2) / 2;
+                            pointer_y = (y1 + y2) / 2;
+                            baseDistance = distance
+                        } catch (error) {
+                            console.error(error);
+                        }
+
+                    }
+                } else {
+                    var dy = e.deltaY
+                    scale = dy < 0 ? 0.99 : 1.01
+                    pointer_x = getPositionXOnSvg(e)
+                    pointer_y = getPositionYOnSvg(e)
+                }
+                target.width.baseVal.value *= scale;
+                target.height.baseVal.value *= scale;
+            }, { passive: false })
+        }
+        zoomAction()
 
     });
 </script>

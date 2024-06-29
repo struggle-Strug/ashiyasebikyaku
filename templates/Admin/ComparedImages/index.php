@@ -43,39 +43,34 @@
 
         <?php else: ?>
             <div class="table-responsive-md" style="height: 50vh; ">
-                <table class="table table-bordered table-striped overflow-y: scroll">
-                    <thead>
-                        <tr>
-                            <th style="width: 150px;" nowrap>作成日</th>
-                            <th style="width: 300px;" nowrap>画像</th>
-                            <th nowrap>コメント</th>
-                            <th style="width: 150px;" nowrap></th>
-                            <th style="width: 75px;" nowrap></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($comparedImages as $comparedImage): ?>
-                            <tr>
-                                <td>
-                                    <?= h($comparedImage->created) ?>
-                                </td>
-                                <td>
-                                <a href="<?= $comparedImage->image ?>" title="<?= h($comparedImage->comment) ?> - <?= date('Y年n月j日', strtotime($comparedImage->created)) ?>" data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>" width="300px" /></a>
-                        </td>
-                                <td><?= h($comparedImage->comment) ?></td>
-                                <td>
-                                <?php if ($comparedImage->active): ?>
-                                    <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
-                                <?php else: ?>
-                                    <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
-                                <?php endif ?>
-                                </td>
-                                <td><?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?>
-                                </td>
-                            </tr>
-                        <?php endforeach ?>
-                    </tbody>
-                </table>
+                <?php foreach ($comparedImages as $comparedImage): ?>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 style="display: flex; justify-content: space-between; align-items:center">
+                                <div><?= $comparedImage->created->format('Y年m月d日'); ?></div>
+                                <div style="flex-grow: 0; display: flex;">
+                                    <div style="margin: 4px">
+                                        <?php if ($comparedImage->active): ?>
+                                            <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                        <?php else: ?>
+                                            <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                        <?php endif ?>
+                                    </div>
+                                    <div style="margin: 4px">
+                                        <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                    </div>
+                                </div>
+                            </h5>
+                        </div>
+                        <div class="card-content">
+                            <?= $comparedImage->comment ?>
+                            <a href="<?= $comparedImage->image ?>"
+                                title="<?= h($comparedImage->comment) ?> - <?= date('Y年n月j日', strtotime($comparedImage->created)) ?>"
+                                data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>"
+                                    width="100%" /></a>
+                        </div>
+                    </div>
+                <?php endforeach ?>
             </div>
         <?php endif ?>
     </div>

@@ -28,14 +28,15 @@
                                 data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>"
                                     width="100%" /></a>
                         </div>
-                    <?php endif ?>
-                <?php endforeach ?>
+                    </div>
+                <?php endif ?>
+            <?php endforeach ?>
 
-            </div>
         </div>
     </div>
+</div>
 
 
-    <div class="col-md-12 text-center">
-        <?= $this->element('pagination'); ?>
-    </div>
+<div class="col-md-12 text-center">
+    <?= $this->element('pagination'); ?>
+</div>

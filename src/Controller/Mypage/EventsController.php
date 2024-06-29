@@ -207,7 +207,6 @@ class EventsController extends AppController
                 'Events.is_deleted' => 0
             ])
             ->first();
-
         $types = [
             3 => 'グループレッスン',
             2 => '個別コンサル',

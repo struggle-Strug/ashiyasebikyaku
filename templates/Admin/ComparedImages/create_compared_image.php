@@ -71,7 +71,7 @@
     <input type="hidden" value="<?= $subjectImage["created"]->format('Y年m月d日') ?>" id="subject-image-date">
 <?php endif ?>
 
-<script>
+<script defer>
     $(function () {
         let csrf = $('#ajax-form').find('input[name=_csrfToken]').val();
 
@@ -314,6 +314,7 @@
             Matrix.e += x;
             Matrix.f += y;
             document.getElementById('drawingCanvas').appendChild(image_elm);
+            initImageLoad()
         }
 
         function SVGMatrixCreate(a, b, c, d, e, f) {
@@ -339,7 +340,7 @@
             const textAspect = 45 / 1069;
             const textSize = svgElm_js_width * textAspect;
             const y = 20;
-            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk",  document.getElementById("subject-image-date").value, textSize, "black")
+            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("subject-image-date").value, textSize, "black")
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "left-image", "url(#clipleft)")
         }
 
@@ -365,11 +366,13 @@
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "right-image", "url(#clipright)")
         }
 
+        var aspectRatio;
+
         function createImageAspectTarget(image) {
             const imageUrl = image;
             const img = new Image();
             img.onload = function (result) {
-                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                aspectRatio = img.naturalWidth / img.naturalHeight;
                 console.log(`Aspect Ratio: ${aspectRatio} (${img.naturalWidth} / ${img.naturalHeight})`);
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
@@ -385,6 +388,7 @@
             img.crossOrigin = 'Anonymous';
             img.src = imageUrl;
         }
+
 
         function createImageAspectSubject(image) {
             const imageUrl = image;
@@ -429,47 +433,158 @@
             svgElm.append(text_box);
         }
 
-        function downloadBoard() {
-            var svg = document.querySelector("svg");
-            var svgData = new XMLSerializer().serializeToString(svg);
-            var canvas = document.createElement("canvas");
-            canvas.width = svg.width.baseVal.value;
-            canvas.height = svg.height.baseVal.value;
+        // function downloadBoard() {
+        //     var svg = document.querySelector("svg");
+        //     var svgData = new XMLSerializer().serializeToString(svg);
+        //     var canvas = document.createElement("canvas");
+        //     canvas.width = svg.width.baseVal.value;
+        //     canvas.height = svg.height.baseVal.value;
 
-            var ctx = canvas.getContext("2d");
-            var image = new Image;
-            image.onload = function () {
-                ctx.drawImage(image, 0, 0);
-                const pngDataUrl = canvas.toDataURL('image/png');
-                document.getElementById("preview").src = pngDataUrl;
-                uploadImageToServer(pngDataUrl);
-            }
-            image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        //     var ctx = canvas.getContext("2d");
+        //     var image = new Image;
+        //     image.onload = function () {
+        //         ctx.drawImage(image, 0, 0);
+        //         const pngDataUrl = canvas.toDataURL('image/png');
+        //         document.getElementById("preview").src = pngDataUrl;
+        //         uploadImageToServer(pngDataUrl);
+        //     }
+        //     image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        // }
+
+        // function previewImage() {
+        //     var svg = document.querySelector("svg");
+        //     var svgData = new XMLSerializer().serializeToString(svg);
+        //     var canvas = document.createElement("canvas");
+        //     canvas.width = svg.width.baseVal.value;
+        //     canvas.height = svg.height.baseVal.value;
+
+        //     var ctx = canvas.getContext("2d");
+        //     var image = new Image;
+        //     image.onload = function () {
+        //         ctx.drawImage(image, 0, 0);
+        //         const pngDataUrl = canvas.toDataURL('image/png');
+        //         document.getElementById("preview").src = pngDataUrl;
+        //         document.getElementById("preview").style.display = "block";
+        //     }
+        //     image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        // }
+
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.crossOrigin = "anonymous"; // CORS 問題を回避するために追加
+                image.onload = () => resolve(image);
+                image.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+                image.src = url;
+            });
         }
 
-        function previewImage() {
-            var svg = document.querySelector("svg");
-            var svgData = new XMLSerializer().serializeToString(svg);
-            var canvas = document.createElement("canvas");
-            canvas.width = svg.width.baseVal.value;
-            canvas.height = svg.height.baseVal.value;
+        async function previewImage() {
+            try {
+                const svg = document.querySelector("svg");
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const canvas = document.createElement("canvas");
+                // canvas.width = svg.width.baseVal.value;
+                // canvas.height = svg.height.baseVal.value;
 
-            var ctx = canvas.getContext("2d");
-            var image = new Image;
-            image.onload = function () {
-                ctx.drawImage(image, 0, 0);
+                const width = svg.width.baseVal.value;
+                const height = svg.height.baseVal.value;
+
+                console.log(width)
+                console.log(height)
+
+
+
+                const ctx = canvas.getContext("2d");
+                const pixelRatio = window.devicePixelRatio || 1;
+                canvas.width = svg.width.baseVal.value * pixelRatio;
+                canvas.height = svg.height.baseVal.value * pixelRatio;
+                canvas.style.width = svg.width.baseVal.value + "px";
+                canvas.style.height = svg.height.baseVal.value + "px";
+
+                ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+
+                const image = await loadImage(url);
+                ctx.drawImage(image, 0, 0, 150, 150 * 0.75 / aspectRatio);
+                URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+
                 const pngDataUrl = canvas.toDataURL('image/png');
                 document.getElementById("preview").src = pngDataUrl;
                 document.getElementById("preview").style.display = "block";
+                // document.getElementById("preview").style.width = "200px";
+
+                // document.getElementById("preview").style.objectFit = "contain"
+            } catch (error) {
+                console.error('Error during SVG to canvas conversion:', error);
             }
-            image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
         }
 
-        var previewFlag = false;
+        async function initImageLoad() {
+            var svg = document.querySelector("svg");
+            var svgData = new XMLSerializer().serializeToString(svg);
+            var canvas = document.createElement("canvas");
+            canvas.width = svg.width.baseVal.value;
+            canvas.height = svg.height.baseVal.value;
 
-        document.getElementById("preview-btn").addEventListener("click", function () {
+            const ctx = canvas.getContext("2d");
+            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+
+            const image = await loadImage(url);
+            ctx.drawImage(image, 0, 0);
+            URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+
+            const pngDataUrl = canvas.toDataURL('image/png');
+        }
+
+        async function downloadBoard() {
+            try {
+                const svg = document.querySelector("svg");
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const canvas = document.createElement("canvas");
+                // canvas.width = svg.width.baseVal.value;
+                // canvas.height = svg.height.baseVal.value;
+
+                const ctx = canvas.getContext("2d");
+                const pixelRatio = window.devicePixelRatio || 1;
+                const viewBox = svg.viewBox.baseVal;
+                canvas.width = viewBox.width * pixelRatio;
+                canvas.height = viewBox.height * pixelRatio;
+
+                // スタイルの幅と高さを設定
+                canvas.style.width = viewBox.width + "px";
+                canvas.style.height = viewBox.height + "px";
+
+                console.log(pixelRatio)
+
+                ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+
+                const image = await loadImage(url);
+                ctx.drawImage(image, 0, 0);
+                URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+
+                const pngDataUrl = canvas.toDataURL('image/png');
+                document.getElementById("preview").src = pngDataUrl;
+
+                // uploadImageToServer(pngDataUrl);
+            } catch (error) {
+                console.error('Error during SVG to canvas conversion:', error);
+            }
+        }
+
+
+        var previewFlag = false;
+        // document.addEventListener('DOMContentLoaded', async (event) => {
+        // window.onload = async function () {
+
+        initImageLoad();
+        document.getElementById("preview-btn").addEventListener("click", async function () {
             if (!previewFlag) {
-                previewImage()
+                await previewImage()
                 this.classList.add("btn-primary");
                 this.classList.remove("btn-outline-primary")
                 this.textContent = "画像プレビューOFF";
@@ -483,9 +598,11 @@
             previewFlag = !previewFlag;
 
         })
+        // }
+        // });
 
-        document.getElementById("submit").addEventListener("click", function () {
-            downloadBoard()
+        document.getElementById("submit").addEventListener("click", async function () {
+            await downloadBoard()
         })
 
 
@@ -609,6 +726,7 @@
         function zoomAction() {
 
             document.getElementById("drawingCanvas").addEventListener(wheel_event, function (e) {
+                if (type === "pencil" && type !== "move") return;
                 var target;
                 pointX = parseInt(getPositionXOnSvg(event));
                 pointY = parseInt(getPositionYOnSvg(event));
