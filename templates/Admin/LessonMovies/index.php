@@ -10,41 +10,50 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <tr>
-                            <th nowrap>登録日時</th>
-                            <th nowrap>動画名</th>
-                            <th nowrap>サムネイル画像</th>
-                            <th style="width:250px">動画</th>
-                            <th nowrap>概要説明</th>
-                            <th style="width:100px"></th>
-                        </tr>
+                    <tr>
+                        <th nowrap>登録日時</th>
+                        <th nowrap>動画名</th>
+                        <th nowrap>サムネイル画像</th>
+                        <th style="width:250px">動画</th>
+                        <th nowrap>概要説明</th>
+                        <th nowrap>新旧</th>
+                        <th style="width:100px"></th>
+                    </tr>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($lessonMovies as $lessonMovie): ?>
-                    <tr style="height:160px">
-                        <td><?= h($lessonMovie->created) ?></td>
-                        <td><?= h($lessonMovie->name) ?></td>
-                        <td>
-                            <?php if ($lessonMovie->image_url) : ?>
-                                <img src="<?= h($lessonMovie->image_url) ?>" style="width:100px">
-                            <?php else : ?>
-                                <img src="/img/noimage.png" style="width:100px">
-                            <?php endif ?>
-                        </td>
-                        <td>
-                            <div style="padding:0;position:relative;">
-                                <iframe src="<?= h($lessonMovie->movie_url) ?>"
-                                    style="position:absolute;top:0;left:0;width:160px;height:80px" frameborder="0"
-                                    allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-                            </div>
-                        </td>
-                        <td><small><?= $this->Link->linkify(h($lessonMovie->note)) ?></small></td>
-                        <td nowrap>
-                            <a href="<?= $this->Url->build(['action' => 'edit', $lessonMovie->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
-                            <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $lessonMovie->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('退会は編集から「利用終了日時」を設定してください。本当に削除してよろしいですか？', $lessonMovie->id)]) ?>
-                        </td>
-                    </tr>
+                        <tr style="height:160px">
+                            <td><?= h($lessonMovie->created) ?></td>
+                            <td><?= h($lessonMovie->name) ?></td>
+                            <td>
+                                <?php if ($lessonMovie->image_url): ?>
+                                    <img src="<?= h($lessonMovie->image_url) ?>" style="width:100px">
+                                <?php else: ?>
+                                    <img src="/img/noimage.png" style="width:100px">
+                                <?php endif ?>
+                            </td>
+                            <td>
+                                <div style="padding:0;position:relative;">
+                                    <iframe src="<?= h($lessonMovie->movie_url) ?>"
+                                        style="position:absolute;top:0;left:0;width:160px;height:80px" frameborder="0"
+                                        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            </td>
+                            <td><small><?= $this->Link->linkify(h($lessonMovie->note)) ?></small></td>
+                            <td>
+                                <?php if ($lessonMovie->type == "0"): ?>
+                                    <span class="right badge badge-primary">旧動画</span>
+                                <?php else: ?>
+                                    <span class="right badge badge-success">新動画</span>
+                                <?php endif ?>
+                            </td>
+                            <td nowrap>
+                                <a href="<?= $this->Url->build(['action' => 'edit', $lessonMovie->id]); ?>"
+                                    class="btn btn-outline-primary btn-sm">編集</a>
+                                <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $lessonMovie->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('退会は編集から「利用終了日時」を設定してください。本当に削除してよろしいですか？', $lessonMovie->id)]) ?>
+                            </td>
+                        </tr>
                     <?php endforeach ?>
                 </tbody>
             </table>

@@ -77,6 +77,16 @@
                                     <span class="right badge badge-warning">新規</span>
                                 <?php endif ?>
                             </div>
+                            <div>
+                                <?php if ($user->light_plan == "1") : ?>
+                                    <span class="right badge badge-success">ライトプラン</span>
+                                <?php endif ?>
+                            </div>
+                            <div>
+                                <?php if ($user->staff_plan == "1") : ?>
+                                    <span class="right badge badge-success">講師育成</span>
+                                <?php endif ?>
+                            </div>
                         </td>
                         <td nowrap><small><?= h($user->last_name_kana) ?> <?= h($user->first_name_kana) ?></small><br><?= h($user->last_name) ?> <?= h($user->first_name) ?></td>
                         <td>

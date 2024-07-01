@@ -180,6 +180,9 @@ class UsersTable extends Table
 
         $validator
             ->notEmptyString('light_plan');
+        
+        $validator
+            ->notEmptyString('staff_plan');
 
         $validator
             ->scalar('note')

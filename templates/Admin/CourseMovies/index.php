@@ -16,6 +16,7 @@
                             <th nowrap>サムネイル画像</th>
                             <th style="width:250px">動画</th>
                             <th style="width:250px">解説動画</th>
+                            <th style="width:100px">動画タイプ</th>
                             <th nowrap>概要説明</th>
                             <th style="width:100px"></th>
                         </tr>
@@ -48,6 +49,13 @@
                                         style="position:absolute;top:0;left:0;width:160px;height:80px" frameborder="0"
                                         allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
                                 </div>
+                            </td>
+                            <td>
+                                <?php if ($courseMovie->type == "0"): ?>
+                                    <span class="right badge badge-primary">旧動画</span>
+                                <?php else: ?>
+                                    <span class="right badge badge-success">新動画</span>
+                                <?php endif ?>
                             </td>
                             <td><small><?= $this->Link->linkify(h($courseMovie->note)) ?></small></td>
                             <td nowrap>

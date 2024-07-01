@@ -35,6 +35,7 @@ class LessonMovie extends Entity
         'note' => true,
         'created' => true,
         'modified' => true,
+        'type' => true,
         'is_deleted' => true,
     ];
 }

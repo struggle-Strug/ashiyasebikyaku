@@ -94,6 +94,9 @@ class CourseMoviesTable extends Table
         $validator
             ->scalar('note')
             ->allowEmptyString('note');
+            
+        $validator
+            ->notEmptyString('type');
 
         $validator
             ->notEmptyString('is_deleted');

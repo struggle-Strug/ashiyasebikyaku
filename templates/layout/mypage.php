@@ -64,17 +64,13 @@
     <script src="<?= $this->Url->build('/') ?>lightbox/js/lightbox.min.js"></script>
 
     <!-- Swiper -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 </head>
 
 <body>
     <div class="wrapper">
         <div class="sidebar" data-background-color="white" data-active-color="primary">
-            <!--
-			Tip 1: you can change the color of the sidebar's background using: data-background-color="white | brown"
-			Tip 2: you can change the color of the active button using the data-active-color="primary | info | success | warning | danger"
-		    -->
             <div class="logo" style="padding-top:15px;padding-left:10px">
                 <a class="simple-text logo-normal">
                     <img src="/img/logo2.png" style="width:94%;">
@@ -88,8 +84,9 @@
                     <div class="info">
                         <a data-toggle="collapse" href="#collapseExample" class="collapsed">
                             <span>
-                                <?= $this->Identity->get('last_name') ?> <?= $this->Identity->get('first_name') ?>さん
+                                <?= $this->Identity->get('last_name') ?> <?= $this->Identity->get('first_name') ?>さん<br/>
                                 <?php if ($this->Identity->get('light_plan') == 1): ?>（ライト）<?php endif; ?>
+                                <?php if ($this->Identity->get('staff_plan') == 1): ?>（講師育成）<?php endif; ?>
                                 <b class="caret"></b>
                             </span>
                         </a>
@@ -98,7 +95,8 @@
                         <div class="collapse" id="collapseExample">
                             <ul class="nav">
                                 <li>
-                                    <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'logout']); ?>">
+                                    <a
+                                        href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'logout']); ?>">
                                         <span class="sidebar-mini"><i class="fa-solid fa-right-from-bracket"></i></span>
                                         <span class="sidebar-normal">ログアウト</span>
                                     </a>
@@ -108,55 +106,59 @@
                     </div>
                 </div>
                 <ul class="nav">
-                    <li class="<?php if ($this->request->getParam('controller') == 'Users') echo 'active'; ?>">
+                    <li class="<?php if ($this->request->getParam('controller') == 'Users')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'top']); ?>">
                             <i class="fa-solid fa-home"></i>
                             <p>マイページトップ</p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'Videos') echo 'active'; ?>">
+                    <li class="<?php if ($this->request->getParam('controller') == 'Videos')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Videos', 'action' => 'index']); ?>">
-                            <i class="fa-solid fa-user-lock"></i>
+                            <i class="fa-solid fa-film"></i>
                             <p>動画</p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'Archives') echo 'active'; ?>">
+                    <li class="<?php if ($this->request->getParam('controller') == 'Archives')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Archives', 'action' => 'index']); ?>">
-                            <i class="fa-solid fa-user-lock"></i>
+                            <i class="fa-solid fa-file-video"></i>
                             <p>アーカイブ</p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'Courses') echo 'active'; ?>">
+                    <li class="<?php if ($this->request->getParam('controller') == 'Courses')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Courses', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-user-lock"></i>
                             <p>初めての方は</p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'LessonMovies') echo 'active'; ?>">
-                        <a href="<?= $this->Url->build(['controller' => 'LessonMovies', 'action' => 'index']); ?>">
-                            <i class="fa-solid fa-folder-open"></i>
-                            <p>グループレッスン</p>
-                        </a>
-                    </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'DailyReports') echo 'active'; ?>">
+                    <?php if ($this->request->getSession()->read('Auth.User.staff_plan') == 0) : ?>
+                    <li class="<?php if ($this->request->getParam('controller') == 'DailyReports')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'DailyReports', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-file-signature"></i>
                             <p>毎日の報告</p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'WeeklyReports') echo 'active'; ?>">
+                    <?php endif ?>
+                    <li class="<?php if ($this->request->getParam('controller') == 'WeeklyReports')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'WeeklyReports', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-photo-film"></i>
-                            <p>毎週の報告</p>
+                            <p><?php echo ($this->request->getSession()->read('Auth.User.staff_plan') == 1) ? '成果履歴' : '毎週の報告'; ?></p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'Events') echo 'active'; ?>">
+                    <li class="<?php if ($this->request->getParam('controller') == 'Events')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'index']); ?>">
                             <i class="fa-regular fa-calendar-days"></i>
-                            <p>イベント情報</p>
+                            <p>予約</p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'Messages') echo 'active'; ?>">
+                    <li class="<?php if ($this->request->getParam('controller') == 'Messages')
+                        echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Messages', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-comment-dots"></i>
                             <p>コミュニケーションツール</p>
@@ -203,7 +205,7 @@
                     <div class="copyright text-center">
                         &copy; someone like you, LLC.
                         <script>
-                        document.write(new Date().getFullYear() + '.')
+                            document.write(new Date().getFullYear() + '.')
                         </script>
                         All rights reserved.
                     </div>
