@@ -30,7 +30,8 @@
                                     allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
                             </div>
                         <td nowrap>
-                            <a href="<?= $this->Url->build(['action' => 'edit', $uploadMovie->id]); ?>" class="btn btn-outline-primary btn-sm">URLをコピー</a>
+                            <!-- <a href="<?= $this->Url->build(['action' => 'edit', $uploadMovie->id]); ?>" class="btn btn-outline-primary btn-sm">URLをコピー</a> -->
+                            <button id="copyButton" class="btn btn-outline-primary btn-sm">URLをコピー</button>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $uploadMovie->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('本当に削除してよろしいですか？', $uploadMovie->id)]) ?>
                         </td>
                     </tr>
@@ -47,3 +48,13 @@
 <!-- /.card -->
 
 <script src="https://player.vimeo.com/api/player.js"></script>
+<script>
+    document.getElementById('copyButton').addEventListener('click', function() {
+        var videoUrl = document.getElementById('videoUrl').textContent;
+        navigator.clipboard.writeText(videoUrl).then(function() {
+            alert('URLがクリップボードにコピーされました。');
+        }, function(err) {
+            alert('URLのコピーに失敗しました: ' + err);
+        });
+    });
+</script>
