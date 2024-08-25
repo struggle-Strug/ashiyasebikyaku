@@ -39,7 +39,7 @@ class UploadMoviesTable extends Table
     {
         parent::initialize($config);
 
-        $this->setTable('lesson_movies');
+        $this->setTable('upload_movies');
         $this->setDisplayField('name');
         $this->setPrimaryKey('id');
 
@@ -61,9 +61,19 @@ class UploadMoviesTable extends Table
             ->notEmptyString('name');
 
         $validator
+            ->scalar('image_url')
+            ->maxLength('image_url', 100)
+            ->allowEmptyFile('image_url');
+
+        $validator
             ->scalar('movie_url')
             ->maxLength('movie_url', 100)
-            ->allowEmptyFile('movie_url');
+            ->requirePresence('movie_url', 'create')
+            ->notEmptyString('movie_url');
+
+        $validator
+            ->scalar('note')
+            ->allowEmptyString('note');
 
         $validator
             ->notEmptyString('is_deleted');
