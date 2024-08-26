@@ -38,61 +38,6 @@ class UploadMoviesController extends AppController
         $this->set(compact('uploadMovies'));
     }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
-    // public function add()
-    // {
-    //     $uploadMovie = $this->UploadMovies->newEmptyEntity();
-    //     if ($this->request->is('post')) {
-    //         $data = $this->request->getData();
-    //         $videoFile = $this->request->getData('video_file');
-    //         debug($videoFile->getClientMediaType());
-    //         if ($videoFile->getError() === 0) {
-    //             $tmpVideo = sha1_file($videoFile->getStream()->getMetadata('uri')) . strtotime(date('Y-m-d H:i:s')) . $typeProfile;
-    //         }
-
-    //         $uploadMovie = $this->UploadMovies->patchEntity($uploadMovie, $data);
-    //         if ($this->UploadMovies->save($uploadMovie)) {
-    //             // 画像の保存
-    //             $toMoveFile = null;
-    //             $fromMoveFile = null;
-    //             if ($videoFile->getError() === 0) {
-    //                 $fromMoveFile = $videoFile->getStream()->getMetadata('uri');
-    //                 $toMoveFile = 'uploads/upload_movie/' . $uploadMovie->id . '/' . $tmpVideo;
-    //             }
-    //             // ファイルアップロード処理
-    //             if ($toMoveFile && $fromMoveFile) {
-    //                 // 古いファイルを削除
-    //                 if ($uploadMovie->video_url) {
-    //                     unlink(WWW_ROOT . $uploadMovie->video_url);
-    //                 }
-
-    //                 // アップロード先ディレクトリの確認と生成
-    //                 $dir = new Folder(WWW_ROOT . 'uploads/upload_movie/' . $uploadMovie->id, true, 0777);
-
-    //                 // ファイルの移動
-    //                 if (!@move_uploaded_file($fromMoveFile, WWW_ROOT . $toMoveFile)){
-    //                     $this->Flash->set('動画の保存に失敗しました。');
-    //                 } else {
-    //                     // データベースを更新
-    //                     $uploadMovie->video_url = '/' . $toMoveFile;
-    //                     $this->UploadMovies->save($uploadMovie);
-    //                 }
-    //             }
-
-    //             $this->Flash->success(__('登録しました。'));
-
-    //             return $this->redirect(['action' => 'index']);
-    //         }
-    //         $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
-    //     }
-
-    //     $this->set(compact('uploadMovie'));
-    // }
-
     public function add()
     {
         $uploadMovie = $this->UploadMovies->newEmptyEntity();
@@ -105,9 +50,9 @@ class UploadMoviesController extends AppController
                 $uploadPath = WWW_ROOT . 'uploads/upload_movie/';
                 $uploadFile = $uploadPath . $filename;
                 $file->moveTo($uploadFile);
-                $uploadMovie->movie_url = 'uploads/upload_movie/' . $filename;
+                $fullUrl = Router::url('/', true) . 'uploads/upload_movie/' . $filename;
+                $uploadMovie->movie_url = $fullUrl;
             }
-
             $uploadMovie->name = $this->request->getData('name');
             $uploadMovie->created = date('Y-m-d H:i:s');
             $uploadMovie->is_deleted = false;

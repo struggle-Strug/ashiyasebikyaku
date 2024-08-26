@@ -23,16 +23,14 @@
                             <td><?= h($uploadMovie->created) ?></td>
                             <td><?= h($uploadMovie->name) ?></td>
                             <td>
-                                <video src="http://localhost:8765/uploads/upload_movie/1724572444_7D48E2B4-DFCB-42B0-B4F9-4B3180041452.mov" style="width:160px;height:80px" controls>
+                                <video src="<?= h($uploadMovie->movie_url) ?>" style="width:160px;height:80px" controls id="videoUrl">
                                     お使いのブラウザは動画の再生をサポートしていません。
                                 </video>
                             <td nowrap>
-                                <a href="<?= $this->Url->build(['action' => 'edit', $uploadMovie->id]); ?>"
-                                    class="btn btn-outline-primary btn-sm">URLをコピー</a>
+                                <a class="btn btn-outline-primary btn-sm" id="copyButton">URLをコピー</a>
                                 <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $uploadMovie->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('本当に削除してよろしいですか？', $uploadMovie->id)]) ?>
                             </td>
                         </tr>
->>>>>>> ryota
                     <?php endforeach ?>
                 </tbody>
             </table>
@@ -46,7 +44,7 @@
 <!-- /.card -->
 <script>
     document.getElementById('copyButton').addEventListener('click', function() {
-        var videoUrl = document.getElementById('videoUrl').textContent;
+        var videoUrl = document.getElementById('videoUrl').src;
         navigator.clipboard.writeText(videoUrl).then(function() {
             alert('URLがクリップボードにコピーされました。');
         }, function(err) {
