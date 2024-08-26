@@ -10,8 +10,11 @@ use Cake\ORM\Entity;
  *
  * @property int $id
  * @property string $name
+ * @property string|null $image_url
  * @property string $movie_url
+ * @property string|null $note
  * @property \Cake\I18n\FrozenTime|null $created
+ * @property \Cake\I18n\FrozenTime|null $modified
  * @property int $is_deleted
  */
 class UploadMovie extends Entity
@@ -27,8 +30,11 @@ class UploadMovie extends Entity
      */
     protected $_accessible = [
         'name' => true,
+        'image_url' => true,
         'movie_url' => true,
+        'note' => true,
         'created' => true,
+        'modified' => true,
         'is_deleted' => true,
     ];
 }
