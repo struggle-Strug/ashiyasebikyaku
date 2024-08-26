@@ -63,7 +63,8 @@
                             </h5>
                         </div>
                         <div class="card-content">
-                            <?= $comparedImage->comment ?>
+                            <div style="padding: 12px 20px 0px;font-size: 20px; margin-left: -10px">【変化ポイント解説】</div>
+                            <div style="padding: 0px 20px;font-size: 20px;"><?= $comparedImage->comment ?></div>
                             <a href="<?= $comparedImage->image ?>"
                                 title="<?= h($comparedImage->comment) ?> - <?= date('Y年n月j日', strtotime($comparedImage->created)) ?>"
                                 data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>"

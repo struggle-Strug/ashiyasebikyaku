@@ -37,7 +37,7 @@
         </figure>
         <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="preview-btn">画像プレビューON</button>
         </div>
-        <div class="p-sm-2 p-md-4 py-2"><img src="" id="preview"/></div>
+        <div class="p-sm-2 p-md-4 py-2"><img src="" id="preview" /></div>
         <div class="form-group row">
             <label for="" class="col-form-label">コメント</label>
             <div class="col-sm-10">
@@ -433,6 +433,42 @@
             svgElm.append(text_box);
         }
 
+        // function downloadBoard() {
+        //     var svg = document.querySelector("svg");
+        //     var svgData = new XMLSerializer().serializeToString(svg);
+        //     var canvas = document.createElement("canvas");
+        //     canvas.width = svg.width.baseVal.value;
+        //     canvas.height = svg.height.baseVal.value;
+
+        //     var ctx = canvas.getContext("2d");
+        //     var image = new Image;
+        //     image.onload = function () {
+        //         ctx.drawImage(image, 0, 0);
+        //         const pngDataUrl = canvas.toDataURL('image/png');
+        //         document.getElementById("preview").src = pngDataUrl;
+        //         uploadImageToServer(pngDataUrl);
+        //     }
+        //     image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        // }
+
+        // function previewImage() {
+        //     var svg = document.querySelector("svg");
+        //     var svgData = new XMLSerializer().serializeToString(svg);
+        //     var canvas = document.createElement("canvas");
+        //     canvas.width = svg.width.baseVal.value;
+        //     canvas.height = svg.height.baseVal.value;
+
+        //     var ctx = canvas.getContext("2d");
+        //     var image = new Image;
+        //     image.onload = function () {
+        //         ctx.drawImage(image, 0, 0);
+        //         const pngDataUrl = canvas.toDataURL('image/png');
+        //         document.getElementById("preview").src = pngDataUrl;
+        //         document.getElementById("preview").style.display = "block";
+        //     }
+        //     image.src = "data:image/svg+xml;charset=utf-8;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        // }
+
         function loadImage(url) {
             return new Promise((resolve, reject) => {
                 const image = new Image();
@@ -454,6 +490,7 @@
 
                 const ctx = canvas.getContext("2d");
                 const pixelRatio = window.devicePixelRatio || 1;
+                console.log(pixelRatio)
                 canvas.width = svg.width.baseVal.value * pixelRatio;
                 canvas.height = svg.height.baseVal.value * pixelRatio;
                 canvas.style.width = svg.width.baseVal.value + "px";
@@ -464,8 +501,13 @@
                 const url = URL.createObjectURL(svgBlob);
 
                 const image = await loadImage(url);
-                ctx.drawImage(image, 0, 0, 150, 150*0.75 / aspectRatio);
-                URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+
+                console.log(parseInt(canvas.width))
+                console.log(parseInt(canvas.style.width))
+                console.log(aspectRatio)
+
+                ctx.drawImage(image, 0, 0, parseInt(canvas.style.width) / pixelRatio, parseInt(canvas.style.height)/ pixelRatio);
+                URL.revokeObjectURL(url);
 
                 const pngDataUrl = canvas.toDataURL('image/png');
                 document.getElementById("preview").src = pngDataUrl;
@@ -488,7 +530,7 @@
 
             const image = await loadImage(url);
             ctx.drawImage(image, 0, 0);
-            URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+            URL.revokeObjectURL(url);
 
             const pngDataUrl = canvas.toDataURL('image/png');
         }
@@ -498,26 +540,27 @@
                 const svg = document.querySelector("svg");
                 const svgData = new XMLSerializer().serializeToString(svg);
                 const canvas = document.createElement("canvas");
-                canvas.width = svg.width.baseVal.value;
-                canvas.height = svg.height.baseVal.value;
 
                 const ctx = canvas.getContext("2d");
                 const pixelRatio = window.devicePixelRatio || 1;
-                canvas.width = svg.width.baseVal.value * pixelRatio;
-                canvas.height = svg.height.baseVal.value * pixelRatio;
-                canvas.style.width = svg.width.baseVal.value + "px";
-                canvas.style.height = svg.height.baseVal.value + "px";
+                const viewBox = svg.viewBox.baseVal;
+                canvas.width = viewBox.width * pixelRatio;
+                canvas.height = viewBox.height * pixelRatio;
+
+                // スタイルの幅と高さを設定
+                canvas.style.width = viewBox.width + "px";
+                canvas.style.height = viewBox.height + "px";
 
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
                 const url = URL.createObjectURL(svgBlob);
 
                 const image = await loadImage(url);
-                ctx.drawImage(image, 0, 0);
-                URL.revokeObjectURL(url); // メモリリークを防ぐために URL を解放
+                ctx.drawImage(image, 0, 0, parseInt(canvas.style.width), parseInt(canvas.style.height));
+                URL.revokeObjectURL(url);
 
                 const pngDataUrl = canvas.toDataURL('image/png');
-                document.getElementById("preview").src = pngDataUrl;
+
                 uploadImageToServer(pngDataUrl);
             } catch (error) {
                 console.error('Error during SVG to canvas conversion:', error);
@@ -526,8 +569,6 @@
 
 
         var previewFlag = false;
-        // document.addEventListener('DOMContentLoaded', async (event) => {
-        // window.onload = async function () {
 
         initImageLoad();
         document.getElementById("preview-btn").addEventListener("click", async function () {

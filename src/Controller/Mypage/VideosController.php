@@ -33,20 +33,39 @@ class VideosController extends AppController
      }
     public function index()
     {
-        $courses = $this->Courses->find('all')
+        $query = $this->Courses->find('all')
             ->contain([
                 'CourseMovies' => function (Query $q) {
                     return $q->where(['CourseMovies.is_deleted' => 0])->order(['CourseMovies.sort' => 'asc']);
                 }
-            ])
-            ->where([
+            ]);
+        $staff_plan = $this->Authentication->getIdentity()->staff_plan;
+        $courses = null;
+        if ($staff_plan == 1) {
+            $courses = $query->where([
                 'Courses.is_deleted' => 0,
-                'Courses.type' => 5,
+                'OR' => [
+                    ['Courses.type' => 5],
+                    ['Courses.type' => 6],
+                ]
             ])
             ->order([
                 'Courses.sort' => 'asc'
             ])
             ->all();
+        } else {
+            $courses = $query->where([
+                'Courses.is_deleted' => 0,
+                'OR' => [
+                    ['Courses.type' => 7],
+                    ['Courses.type' => 6],
+                ]
+            ])
+            ->order([
+                'Courses.sort' => 'asc'
+            ])
+            ->all();
+        }
         $this->set(compact('courses'));
     }
 

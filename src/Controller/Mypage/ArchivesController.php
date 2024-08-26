@@ -81,7 +81,13 @@ class ArchivesController extends AppController
                 }
             ])
             ->where([
-                'Courses.is_deleted' => 0
+                'Courses.is_deleted' => 0,
+                'OR' => [
+                    ['Courses.type' => 1],
+                    ['Courses.type' => 2],
+                    ['Courses.type' => 3],
+                    ['Courses.type' => 4],
+                ]
             ])
             ->order([
                 'Courses.sort' => 'asc'

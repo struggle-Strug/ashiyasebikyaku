@@ -66,7 +66,7 @@ class ComparedImagesTable extends Table
 
         $validator
             ->scalar('image')
-            ->maxLength('image', 100)
+            ->maxLength('image', 300)
             ->allowEmptyFile('image');
 
         $validator
@@ -77,7 +77,7 @@ class ComparedImagesTable extends Table
 
         $validator
             ->scalar('comment')
-            ->maxLength('comment', 100)
+            ->maxLength('comment', 300)
             ->allowEmptyString('comment');
 
         $validator

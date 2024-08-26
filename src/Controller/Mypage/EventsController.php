@@ -65,31 +65,9 @@ class EventsController extends AppController
             ->first();
 
         if ($this->Authentication->getIdentity()->light_plan) {
-            $currentDate = Time::now();
-            $interval = '45 days';
-            $pastDate = Time::parse('-' . $interval);
-
-            if ($this->Authentication->getIdentity()->created < $pastDate) {
-                if ($user->is_light_plan_first_event) {
-                    $query->where([
-                        'Events.type !=' => 2,
-                    ]);
-                } else {
-                    $query->where([
-                        'OR' => [
-                            ['Events.type !=' => 2],
-                            [
-                                'Events.type' => 2,
-                                'Events.staff_id' => $this->Authentication->getIdentity()->staff_id
-                            ]
-                        ]
-                    ]);
-                }
-            } else {
-                $query->where([
-                    'Events.type !=' => 2,
-                ]);
-            }
+            $query->where([
+                'Events.type !=' => 2,
+            ]);
         }
 
 
@@ -272,8 +250,8 @@ class EventsController extends AppController
 
         if ($this->Events->EventEntries->save($eventEntry)) {
             $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "events", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", 'today' => $formattedDateTime]]);
+            $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", "esaki1217@gmail.com", "events_operation", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
             $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "events_operation", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
-            $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "events_operation", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
             $this->Flash->success(__('応募しました。'));
         } else {
             $this->Flash->error(__('データを送信できませんでした。再度応募しなおしてください。'));
@@ -341,7 +319,7 @@ class EventsController extends AppController
         if ($this->Events->EventEntries->delete($eventEntry)) {
             $this->getMailer('App')->send('sendGridEmail', ["【{$types[$eventEntry->event->type]}キャンセル】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "events_cancel", ["type" => $types[$eventEntry->event->type], "datetime" => "{$eventEntry->event_schedule->event_date} {$eventEntry->event_schedule->start_time}", 'today' => $formattedDateTime]]);
             $this->getMailer('App')->send('sendGridEmail', ["【{$types[$eventEntry->event->type]}キャンセル】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "events_cancel_operation", ["type" => $types[$eventEntry->event->type], "datetime" => "{$eventEntry->event_schedule->event_date} {$eventEntry->event_schedule->start_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->fist_name, 'today' => $formattedDateTime]]);
-            $this->getMailer('App')->send('sendGridEmail', ["【{$types[$eventEntry->event->type]}キャンセル】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "events_cancel_operation", ["type" => $types[$eventEntry->event->type], "datetime" => "{$eventEntry->event_schedule->event_date} {$eventEntry->event_schedule->start_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->fist_name, 'today' => $formattedDateTime]]);
+            $this->getMailer('App')->send('sendGridEmail', ["【{$types[$eventEntry->event->type]}キャンセル】脚やせ美脚リバースエイジングプログラム", "esaki1217@gmail.com", "events_cancel_operation", ["type" => $types[$eventEntry->event->type], "datetime" => "{$eventEntry->event_schedule->event_date} {$eventEntry->event_schedule->start_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->fist_name, 'today' => $formattedDateTime]]);
             $this->Flash->success(__('キャンセルしました。'));
         } else {
             $this->Flash->error(__('エラーが発生しました。'));
