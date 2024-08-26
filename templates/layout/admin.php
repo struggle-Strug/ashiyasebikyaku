@@ -174,6 +174,15 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="<?= $this->Url->build(['controller' => 'UploadMovies', 'action' => 'index']); ?>"
+                                class="nav-link <?php if ($this->request->getParam('controller') == 'UploadMovies') echo 'active'; ?>">
+                                <i class="nav-icon fa-solid fa-video"></i>
+                                <p>
+                                    動画アップロード
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'ComparedImages') echo 'active'; ?>">
                                 <i class="nav-icon fa-solid fa-people-arrows"></i>
