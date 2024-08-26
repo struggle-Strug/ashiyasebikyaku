@@ -76,6 +76,7 @@ class User extends Entity
         'payment' => true,
         'sales_history' => true,
         'light_plan' => true,
+        'staff_plan' => true,
         'note' => true,
         'created' => true,
         'modified' => true,

@@ -56,24 +56,27 @@ class LessonMoviesTable extends Table
     {
         $validator
             ->scalar('name')
-            ->maxLength('name', 100)
+            ->maxLength('name', 300)
             ->requirePresence('name', 'create')
             ->notEmptyString('name');
 
         $validator
             ->scalar('image_url')
-            ->maxLength('image_url', 100)
+            ->maxLength('image_url', 300)
             ->allowEmptyFile('image_url');
 
         $validator
             ->scalar('movie_url')
-            ->maxLength('movie_url', 100)
+            ->maxLength('movie_url', 300)
             ->requirePresence('movie_url', 'create')
             ->notEmptyString('movie_url');
 
         $validator
             ->scalar('note')
             ->allowEmptyString('note');
+
+        $validator
+            ->notEmptyString('type');
 
         $validator
             ->notEmptyString('is_deleted');

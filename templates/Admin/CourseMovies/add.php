@@ -35,6 +35,13 @@
             </div>
         </div>
         <div class="form-group row">
+            <label for="" class="col-sm-2 col-form-label text-md-right">動画タイプ *</label>
+            <div class="col-sm-10">
+                <?= $this->Form->select('type', [0 => '旧動画', 1 => '新動画'], ['class' => 'form-control']) ?>
+                <span class="text-danger"><?= $this->Form->error('type') ?></span>
+            </div>
+        </div>
+        <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">概要説明</label>
             <div class="col-sm-10">
                 <?= $this->Form->textarea('note', ['class' => 'form-control']) ?>

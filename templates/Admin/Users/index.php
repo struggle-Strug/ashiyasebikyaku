@@ -24,14 +24,30 @@
 </div>
 <?= $this->Form->end() ?>
 
+<style>
+.scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+/* スクロールバーの形を設定する */
+.scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
+  border-radius: 0.25rem;
+}
+/* スクロールバーの色を設定する */
+.scrollbar-thumb-black::-webkit-scrollbar-thumb {
+  --bg-opacity: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+</style>
+
 <!-- Default box -->
 <div class="card">
     <div class="card-header">
         <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規会員登録</a>
     </div>
     <div class="card-body">
-        <div class="table-responsive-md">
-            <table class="table table-bordered table-striped">
+        <div class="table-responsive-md scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh; ">
+            <table class="table table-bordered table-striped" style="overflow-y: scroll;">
                 <thead>
                     <tr>
                         <tr>
@@ -59,6 +75,16 @@
                                     <span class="right badge badge-info">継続</span>
                                 <?php else : ?>
                                     <span class="right badge badge-warning">新規</span>
+                                <?php endif ?>
+                            </div>
+                            <div>
+                                <?php if ($user->light_plan == "1") : ?>
+                                    <span class="right badge badge-success">ライトプラン</span>
+                                <?php endif ?>
+                            </div>
+                            <div>
+                                <?php if ($user->staff_plan == "1") : ?>
+                                    <span class="right badge badge-success">講師育成</span>
                                 <?php endif ?>
                             </div>
                         </td>

@@ -19,6 +19,7 @@
                     <ul id="tabs" class="nav nav-tabs">
                         <li><a href="<?= $this->Url->build(['action' => 'index']); ?>">登録</a></li>
                         <li class="active"><a href="<?= $this->Url->build(['action' => 'history']); ?>">過去の記録</a></li>
+                        <li><a href="<?= $this->Url->build(['action' => 'comparedImages']); ?>">比較画像の記録</a></li>
                     </ul>
                 </div>
             </div>

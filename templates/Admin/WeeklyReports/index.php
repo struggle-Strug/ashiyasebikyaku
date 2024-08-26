@@ -28,6 +28,21 @@
 </div>
 <?= $this->Form->end() ?>
 
+<style>
+.scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+/* スクロールバーの形を設定する */
+.scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
+  border-radius: 0.25rem;
+}
+/* スクロールバーの色を設定する */
+.scrollbar-thumb-black::-webkit-scrollbar-thumb {
+  --bg-opacity: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+</style>
 
 <div class="card">
     <div class="card-body">
@@ -41,7 +56,7 @@
 
         <?php else : ?>
 
-            <div class="table-responsive-md" style="height: 50vh; ">
+            <div class="table-responsive-md   scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh; ">
                 <table class="table table-bordered table-striped overflow-y: scroll">
                     <thead>
                         <tr>

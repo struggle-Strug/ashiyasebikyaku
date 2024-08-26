@@ -27,6 +27,12 @@ class WeeklyReportsController extends AppController
      * @return \Cake\Http\Response|null|void Renders view
      */
 
+    public function initialize(): void
+     {
+         parent::initialize();
+         $this->loadModel('ComparedImages');
+     }
+
     use MailerAwareTrait;
     public function index()
     {
@@ -328,5 +334,18 @@ class WeeklyReportsController extends AppController
         $weeklyReports = $this->paginate($query);
 
         $this->set(compact('weeklyReports', 'photoName'));
+    }
+
+    public function comparedImages($id = null) {
+        $query = $this->ComparedImages->find('all')
+        ->where([
+            'user_id' => $this->Authentication->getIdentity()->id,
+        ])
+        ->order([
+            'created' => 'desc'
+        ]);
+        $comparedImages = $this->paginate($query);
+
+        $this->set(compact('comparedImages'));
     }
 }
