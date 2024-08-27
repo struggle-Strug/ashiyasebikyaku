@@ -7,12 +7,21 @@
             <p class="category"><?= $this->Link->linkify(h($lessonMovie->note)) ?></p>
         </div>
         <div class="card-content">
-            <div style="padding:56.25% 0 0 0;position:relative;">
-                <iframe src="<?= h($lessonMovie->movie_url) ?>"
+            <?php
+            $videoUrl = h($lessonMovie->movie_url);
+
+            if(strpos($videoUrl, 'vimeo') !== false): ?>
+                <div style="padding:56.25% 0 0 0;position:relative;">
+                    <iframe src="<?= $videoUrl ?>?dnt=1"
                     style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0"
                     allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-            </div>
-            <script src="https://player.vimeo.com/api/player.js"></script>
+                </div>
+                <script src="https://player.vimeo.com/api/player.js"></script>
+            <?php else: ?>
+                <video controls controlsList="nodownload" style="width:100%; height:auto;">
+                    <source src="<?= $videoUrl ?>" type="video/mp4">
+                </video>
+            <?php endif; ?>
         </div>
     </div>
 </div>
