@@ -34,11 +34,21 @@
                                 <?php endif ?>
                             </td>
                             <td>
-                                <div style="padding:0;position:relative;">
-                                    <iframe src="<?= h($lessonMovie->movie_url) ?>"
-                                        style="position:absolute;top:0;left:0;width:160px;height:80px" frameborder="0"
-                                        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-                                </div>
+                                <?php
+                                $videoUrl = h($lessonMovie->movie_url);
+
+                                if (strpos($videoUrl, 'vimeo') !== false): ?>
+                                    <div style="padding:56.25% 0 0 0;position:relative;">
+                                        <iframe src="<?= $videoUrl ?>?dnt=1"
+                                            style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0"
+                                            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                                    </div>
+                                    <script src="https://player.vimeo.com/api/player.js"></script>
+                                <?php else: ?>
+                                    <video controls controlsList="nodownload" style="width:100%; height:auto;">
+                                        <source src="<?= $videoUrl ?>" type="video/mp4">
+                                    </video>
+                                <?php endif; ?>
                             </td>
                             <td><small><?= $this->Link->linkify(h($lessonMovie->note)) ?></small></td>
                             <td>

@@ -12,20 +12,40 @@
                 <?php if ($courseMovie->info_movie_url) : ?>
                     <div class="col-lg-6">
                         <h3><span class="label label-info" style="margin-bottom:10px">解説動画</span></h3>
-                        <div style="padding:56.25% 0 0 0;position:relative;margin-bottom:20px">
-                            <iframe src="<?= h($courseMovie->info_movie_url) ?>"
-                                style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0"
-                                allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-                        </div>
+                        <?php
+                        $videoUrl = h($courseMovie->info_movie_url);
+
+                        if (strpos($videoUrl, 'vimeo') !== false): ?>
+                            <div style="padding:56.25% 0 0 0;position:relative;">
+                                <iframe src="<?= $videoUrl ?>?dnt=1"
+                                    style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0"
+                                    allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                            <script src="https://player.vimeo.com/api/player.js"></script>
+                        <?php else: ?>
+                            <video controls controlsList="nodownload" style="width:100%; height:auto;">
+                                <source src="<?= $videoUrl ?>" type="video/mp4">
+                            </video>
+                        <?php endif; ?>
                     </div>
                 <?php endif ?>
                 <div class="col-lg-6">
                     <h3><span class="label label-primary" style="margin-bottom:10px">ワーク動画</span></h3>
-                    <div style="padding:56.25% 0 0 0;position:relative;">
-                        <iframe src="<?= h($courseMovie->movie_url) ?>"
-                            style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0"
-                            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-                    </div>
+                    <?php
+                        $videoUrl = h($courseMovie->movie_url);
+
+                        if (strpos($videoUrl, 'vimeo') !== false): ?>
+                            <div style="padding:56.25% 0 0 0;position:relative;">
+                                <iframe src="<?= $videoUrl ?>?dnt=1"
+                                    style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0"
+                                    allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                            <script src="https://player.vimeo.com/api/player.js"></script>
+                        <?php else: ?>
+                            <video controls controlsList="nodownload" style="width:100%; height:auto;">
+                                <source src="<?= $videoUrl ?>" type="video/mp4">
+                            </video>
+                        <?php endif; ?>
                 </div>
             </div>
             <script src="https://player.vimeo.com/api/player.js"></script>
