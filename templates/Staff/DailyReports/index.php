@@ -31,7 +31,7 @@
                     <th nowrap>年齢</th>
                     <th nowrap>性別</th>
                     <th nowrap>状態</th>
-                    <th nowrap>美腸</th>
+                    <th nowrap>セルフイメージ</th>
                     <th nowrap>コメント</th>
                     <th width="150px">&nbsp;</th>
                 </tr>

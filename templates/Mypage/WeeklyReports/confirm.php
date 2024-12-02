@@ -92,7 +92,7 @@
                 </div>
                 <div class="card-content">
                     <?php if ($photo->image_url) : ?>
-                        <?php if (strstr($photo->image_url, '.mp4') !== false || strstr($photo->image_url, '.m4v') !== false || strstr($photo->image_url, '.3gp') !== false || strstr($photo->image_url, '.mov') !== false) : ?>
+                        <?php if (strstr($photo->image_url, '.mp4') !== false || strstr($photo->image_url, '.m4v') !== false || strstr($photo->image_url, '.3gp') !== false || strstr($photo->image_url, '.mov') !== false || strstr($photo->image_url, '.webm') !== false) : ?>
                             <video src="<?= $photo->image_url ?>" style="max-width:100%;" controls></video>
                         <?php else : ?>
                             <img src="<?= $photo->image_url ?>" style="max-width:100%;">

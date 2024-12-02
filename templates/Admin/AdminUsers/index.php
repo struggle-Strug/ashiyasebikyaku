@@ -1,5 +1,5 @@
 <?php $this->assign('title', '管理者管理'); ?>
-
+<?php phpinfo(); ?>
 <?= $this->Form->create(null, ['type' => 'get']) ?>
 <div class="card">
     <div class="card-body">

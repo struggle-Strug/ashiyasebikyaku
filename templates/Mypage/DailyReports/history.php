@@ -38,11 +38,11 @@
                                 <h5 class="text-info" style="margin-top:5px;margin-bottom:5px">状態：<i class="fa-regular fa-face-frown"></i></h5>
                             <?php endif ?>
                             <?php if ($dailyReport->intestine_status == '1') : ?>
-                                <h5 class="text-danger" style="margin-top:0px;margin-bottom:5px">美腸チェック：<i class="fa-regular fa-face-smile"></i></h5>
+                                <h5 class="text-danger" style="margin-top:0px;margin-bottom:5px">セルフイメージを唱えましたか？：<i class="fa-regular fa-face-smile"></i></h5>
                             <?php elseif ($dailyReport->intestine_status == '2') : ?>
-                                <h5 style="margin-top:0px;margin-bottom:5px">美腸チェック：<i class="fa-regular fa-face-meh"></i></h5>
+                                <h5 style="margin-top:0px;margin-bottom:5px">セルフイメージを唱えましたか？：<i class="fa-regular fa-face-meh"></i></h5>
                             <?php elseif ($dailyReport->intestine_status == '3') : ?>
-                                <h5 class="text-info" style="margin-top:0px;margin-bottom:5px">美腸チェック：<i class="fa-regular fa-face-frown"></i></h5>
+                                <h5 class="text-info" style="margin-top:0px;margin-bottom:5px">セルフイメージを唱えましたか？：<i class="fa-regular fa-face-frown"></i></h5>
                             <?php endif ?>
                             <?php if ($dailyReport->comment) : ?>
                                 <div>

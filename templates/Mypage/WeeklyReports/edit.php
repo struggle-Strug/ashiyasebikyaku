@@ -44,48 +44,12 @@
                         <?php if ($requestPhotoNumber == 15 || $requestPhotoNumber == 17): ?>
                             <a href="javascript:void(0)" class="btn btn-default" id="select-image">動画を選択</a>
                             <input type="file" id="image_file" name="image_file"
-                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime" style="display:none">
-                        <?php elseif ($requestPhotoNumber >= 18): ?>
-                            <a href="javascript:void(0)" class="btn btn-default" id="select-image">写真または動画を選択</a>
-                            <input type="file" id="image_file" name="image_file"
-                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime,image/jpeg,image/x-png"
-                                style="display:none">
-                        <?php else: ?>
-                            <!-- <a href="javascript:void(0)" class="btn btn-default" id="select-image">写真を撮影</a> -->
-                            <input type="file" id="image_file" name="image_file" accept="image/jpeg,image/x-png"
-                                style="display:none">
-                            <!-- <a href="javascript:void(0)" class="btn btn-default" id="select-image" data-toggle="modal"
-                                data-target="#modal-1">写真を撮影</a> -->
+                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime,video/webm" style="display:none">
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"
-                                id="select-image">
-                                写真を撮影
+                                id="capture-image">
+                                動画を撮影（β版）
                             </button>
-
-                            <!-- モーダル本体 -->
-                            <!-- <div class="modal fade" id="modal-1">
-                                <div class="modal-dialog modal-md">
-                                    <div class="modal-content">
-                                        <div id="cameraModal" class="modal"
-                                            style="width: 600px; margin: auto; padding: 32px;">
-                                            <div class="modal-content">
-                                                <span class="close">&times;</span>
-                                                <div
-                                                    style="display: flex; justify-content: center; margin: 16px 0px; font-size: 24px; font-weight: bold;">
-                                                    カメラで撮影</div>
-                                                <video style="" id="video" width="480" height="500" autoplay></video><br>
-                                                <div style="display: flex; justify-content: center; margin: 16px 0px">
-                                                    <div style="display: flex; justify-content: center;">
-                                                        <button id="capture" class="btn btn-primary"
-                                                            style="margin-right: 12px;">撮影</button>
-                                                        <button id="cancel" class="btn btn-primary"
-                                                            style="margin-left: 12px;">キャンセル</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
+                            <div id="notification"></div>
                             <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
                                 aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
@@ -93,17 +57,71 @@
                                         <div class="modal-header">
                                             <h5 class="modal-title" id="exampleModalLabel"
                                                 style="display: flex; justify-content: center; margin: 16px 0px; font-size: 24px; font-weight: bold;">
-                                                カメラで撮影
+                                                カメラで動画撮影
                                             </h5>
+                                            <div style="display: flex; justify-content: center; margin: 16px 0px; font-size: 20px; font-weight: bold;"><span id="countdown"
+                                            style="font-size: 20px; color: red;">5</span><span>秒後に撮影開始</span></div>
                                         </div>
-                                        <div class="modal-body">
+                                        <div class="modal-body" style="position: relative;">
                                             <video style="width: 100%; height: auto;" id="video" autoplay></video>
+                                            <!-- <video  controls
+                                                style="width: 100%; height: auto; display: none;"></video> -->
+                                            <img id="photo"
+                                                style="position: absolute; top: 0; left: 0; object-fit: fill; width: 100%; height: 100%"
+                                                src="/img/weekly-reports-img/weekly-report-<?= $requestPhotoNumber ?>.png">
+                                            <div><?= $captureComment[$requestPhotoNumber] ?></div>
                                         </div>
                                         <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary"
+                                                id="switchCamera">カメラ切り替え</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">キャンセル</button>
+                                            <button type="button" class="btn btn-primary" id="capture-video"
+                                                onclick="CaptureVideo()">撮影</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php elseif ($requestPhotoNumber >= 18): ?>
+                            <a href="javascript:void(0)" class="btn btn-default" id="select-image">写真または動画を選択</a>
+
+                            <input type="file" id="image_file" name="image_file"
+                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime,image/jpeg,image/x-png"
+                                style="display:none">
+
+                        <?php else: ?>
+                            <a href="javascript:void(0)" class="btn btn-default" id="select-image">写真を選択</a>
+                            <input type="file" id="image_file" name="image_file" accept="image/jpeg,image/x-png"
+                                style="display:none">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"
+                                id="capture-image">
+                                写真を撮影（β版）
+                            </button>
+                            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+                                aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel"
+                                                style="display: flex; justify-content: center; margin: 16px 0px; font-size: 24px; font-weight: bold;">
+                                                カメラで撮影（<span id="countdown"
+                                                    style="font-size: 24px; color: red;">5</span><span>秒後に撮影</span>）
+                                            </h5>
+                                        </div>
+                                        <div class="modal-body" style="position: relative;">
+                                            <video style="width: 100%; height: auto;" id="video" autoplay></video>
+                                            <img id="photo"
+                                                style="position: absolute; top: 0; left: 0; object-fit: fill; width: 100%; height: 100%"
+                                                src="/img/weekly-reports-img/weekly-report-<?= $requestPhotoNumber ?>.png">
+                                            <div><?= $captureComment[$requestPhotoNumber] ?></div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary"
+                                                id="switchCamera">カメラ切り替え</button>
                                             <button type="button" class="btn btn-secondary"
                                                 data-dismiss="modal">キャンセル</button>
                                             <button type="button" class="btn btn-primary" id="capture"
-                                                data-dismiss="modal">撮影</button>
+                                                onclick="CaptureImage()">撮影</button>
                                         </div>
                                     </div>
                                 </div>
@@ -112,11 +130,11 @@
                         <?php endif ?>
                         <div style="margin-top:10px;max-width:100%">
                             <span id="selected-movie" style="display:none">ファイルが選択されました</span>
-                            <?php if ($photo && (strstr($photo->image_url, '.mp4') === false && strstr($photo->image_url, '.m4v') === false && strstr($photo->image_url, '.3gp') === false && strstr($photo->image_url, '.mov') === false)): ?>
+                            <?php if ($photo && (strstr($photo->image_url, '.mp4') === false && strstr($photo->image_url, '.m4v') === false && strstr($photo->image_url, '.3gp') === false && strstr($photo->image_url, '.mov') === false && strstr($photo->image_url, '.webm') === false)): ?>
                                 <img src="<?= ($photo) ? h($photo->image_url) : ''; ?>" id="selected-image"
                                     style="max-width:90%;<?php if (!$photo || !$photo->image_url): ?>display:none<?php endif; ?>">
                             <?php else: ?>
-                                <video src="<?= $photo->image_url ?>" style="max-width:100%;" controls></video>
+                                <video src="<?= $photo->image_url ?>" style="max-width:100%;" id="recordedVideo" controls></video>
                             <?php endif ?>
                         </div>
                         <span class="text-danger"><?= $this->Form->error('image_file') ?></span>
@@ -152,9 +170,16 @@
             $('#form').submit();
         });
 
-        // $('#select-image').click(function () {
-        //     $('#image_file').click();
-        // });
+        $('#select-image').click(function () {
+            $('#image_file').click();
+        });
+
+        const video = document.getElementById('video');
+        const photo = document.getElementById('photo');
+
+        video.addEventListener('loadedmetadata', () => {
+            photo.style.height = `${video.clientHeight}px`;
+        });
 
         $("#image_file").on('change', function (e) {
             var fileList = document.getElementById("image_file").files;
@@ -173,7 +198,7 @@
             reader.readAsDataURL(e.target.files[0]);
         });
 
-        document.getElementById('select-image').addEventListener('click', function () {
+        document.getElementById('capture-image').addEventListener('click', function () {
             const video = document.getElementById('video');
 
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -190,45 +215,178 @@
         //     modal.style.display = 'none';
         //     stopVideoStream();
         // });
+    });
+    function CaptureVideo() {
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
+        const video = document.getElementById('video');
+        const recordedVideo = document.getElementById('recordedVideo');
+        const videoFileInput = document.getElementById('image_file');
+        let mediaRecorder;
+        let recordedChunks = [];
 
-        document.getElementById('capture').addEventListener('click', function () {
-            const canvas = document.createElement('canvas');
-            const video = document.getElementById('video');
-            const photo = document.getElementById('photo');
-            const imageFileInput = document.getElementById('image_file'); // input要素を指定
+        // カウントダウン開始
+        const countdownInterval = setInterval(() => {
+            countdownElement.textContent = countdown;
+            countdown--;
 
-            console.log("capture");
+            if (countdown < 0) {
+                clearInterval(countdownInterval); // カウントダウン終了
+                countdownElement.textContent = ''; // カウントダウン表示をクリア
 
-            // キャプチャした画像をcanvasに描画
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // 動画の録画を開始
+                startRecording();
+            }
+        }, 1000); // 1秒ごとにカウントダウンを更新
 
-            // データURLを取得
-            const dataURL = canvas.toDataURL('image/png');
+        // 録画を開始する関数
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.play();
 
-            // データURLをFileオブジェクトに変換
-            fetch(dataURL)
-                .then(res => res.blob())
-                .then(blob => {
-                    const file = new File([blob], "captured-image.png", { type: "image/png" });
+                    // MediaRecorderを初期化
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
 
-                    // Fileオブジェクトをinput要素に設定
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    imageFileInput.files = dataTransfer.files;
+                    mediaRecorder.onstop = () => {
+                        // 録画データをBlobに変換
+                        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                        const url = URL.createObjectURL(blob);
 
-                    // 画像プレビューに表示
-                    photo.setAttribute('src', dataURL);
-                    photo.style.display = 'block';
-                });
+                        // プレビュー用のvideo要素に設定
+                        recordedVideo.src = url;
+                        recordedVideo.style.display = 'block';
 
-            // ビデオストリームを停止
-            stopVideoStream();
-        });
+                        // ダウンロードリンクの作成（任意）
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = url;
+                        downloadLink.download = 'recorded-video.webm';
+                        downloadLink.textContent = 'ダウンロード';
+                        document.body.appendChild(downloadLink);
+                        // Fileオブジェクトを作成
+                        const file = new File([blob], "recorded-video.webm", { type: "video/webm" });
 
-        // ビデオストリームの停止関数
+                        // Fileオブジェクトをinput要素に設定
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        videoFileInput.files = dataTransfer.files;
+                        recordedVideo.src = url;
+                        recordedVideo.style.display = 'block';
+
+                        console.log(videoFileInput.files)
+
+                        if (videoFileInput.files.length > 0) {
+                            document.getElementById("notification").innerHTML = "動画が登録されました。";
+                        } else {
+                            document.getElementById("notification").innerHTML = "動画が登録されていませんでした。";
+                        }
+
+                        // ビデオストリームを停止
+                        stopVideoStream(stream);
+                    };
+
+                    // 録画を開始し、5秒後に停止
+                    mediaRecorder.start();
+                    setTimeout(() => {
+                        mediaRecorder.stop();
+                    }, 4000); // 5秒間録画
+                })
+                .catch(err => console.error('カメラにアクセスできません:', err));
+        }
+
+        // ストリームを停止する関数
+        function stopVideoStream(stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+    }
+
+    let currentStream = null; // 現在のビデオストリーム
+    let isFrontCamera = true;
+
+    function startVideo(facingMode = 'user') {
+        if (currentStream) {
+            // 既存のストリームを停止
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingMode },
+            audio: false // 必要に応じて音声を有効化
+        })
+            .then(stream => {
+                currentStream = stream;
+                const videoElement = document.getElementById('video');
+                videoElement.srcObject = stream;
+                videoElement.play();
+            })
+            .catch(error => {
+                console.error('カメラにアクセスできません:', error);
+            });
+    }
+
+    startVideo();
+
+    document.getElementById('switchCamera').addEventListener('click', () => {
+        isFrontCamera = !isFrontCamera; // フロント/バックを切り替え
+        startVideo(isFrontCamera ? 'user' : 'environment'); // facingModeを切り替え
+    });
+
+
+    function CaptureImage() {
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
+
+        // カウントダウンを開始
+        const countdownInterval = setInterval(() => {
+            countdownElement.textContent = countdown;
+            countdown--;
+
+            if (countdown < 0) {
+                clearInterval(countdownInterval); // カウントダウンを停止
+                countdownElement.textContent = ''; // カウントダウン表示をクリア
+
+                // 5秒後にキャプチャ処理を実行
+                const canvas = document.createElement('canvas');
+                const video = document.getElementById('video');
+                const photo = document.getElementById('photo');
+                const imageFileInput = document.getElementById('image_file');
+
+                // キャプチャした画像をcanvasに描画
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // データURLを取得
+                const dataURL = canvas.toDataURL('image/png');
+
+                // データURLをFileオブジェクトに変換
+                fetch(dataURL)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const file = new File([blob], "captured-image.png", { type: "image/png" });
+
+                        // Fileオブジェクトをinput要素に設定
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        imageFileInput.files = dataTransfer.files;
+
+                        // 画像プレビューに表示
+                        photo.setAttribute('src', dataURL);
+                        photo.style.display = 'block';
+                    });
+
+                // ビデオストリームを停止
+                stopVideoStream();
+            }
+        }, 1000); // 1秒ごとにカウントダウンを更新
         function stopVideoStream() {
             const video = document.getElementById('video');
             const stream = video.srcObject;
@@ -237,8 +395,5 @@
                 tracks.forEach(track => track.stop());
             }
         }
-
-
-
-    });
+    }
 </script>
