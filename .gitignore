@@ -57,3 +57,5 @@ nbproject/*
 # yarn
 yarn-debug.log
 yarn-error.log
+
+.env

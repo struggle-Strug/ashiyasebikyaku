@@ -336,11 +336,19 @@
             const centerPosX = rightWidth / 2;
             const imageWidthHalf = imageWidth / 2;
             const x = centerPosX - imageWidthHalf;
-            clipRightRect.height.baseVal.value = imageHeight
+            if (maxHeight < imageHeight) {
+                maxHeight = imageHeight
+            }
+            clipRightRect.height.baseVal.value = maxHeight
+            clipLeftRect.height.baseVal.value = maxHeight
             const textAspect = 45 / 1069;
             const textSize = svgElm_js_width * textAspect;
+            svgElm_js.style.height = maxHeight + 100
+            var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
+                .map(s => parseFloat(s));
+            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(maxHeight + 100)
+            svgElm_js.setAttribute("viewBox", init_viewBox)
             const y = 20;
-            createTextBox(20, y + imageHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("subject-image-date").value, textSize, "black")
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "left-image", "url(#clipleft)")
         }
 
@@ -351,22 +359,29 @@
             const centerPosX = (leftWidth / 2) + leftWidth;
             const imageWidthHalf = imageWidth / 2;
             const x = leftWidth;
-            console.log(svgElm_js_width)
             const textAspect = 45 / 1069;
             const textSize = svgElm_js_width * textAspect;
-            clipLeftRect.height.baseVal.value = imageHeight
-            svgElm_js.style.height = imageHeight + 100
+            if (maxHeight < imageHeight) {
+                maxHeight = imageHeight
+            }
+            clipRightRect.height.baseVal.value = maxHeight
+            clipLeftRect.height.baseVal.value = maxHeight
+            svgElm_js.style.height = maxHeight + 100
             var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
                 .map(s => parseFloat(s));
-            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(imageHeight + 100)
+            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(maxHeight + 100)
             svgElm_js.setAttribute("viewBox", init_viewBox)
 
             const y = 20;
-            createTextBox(x, y + imageHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("target-image-date").value, textSize, "black")
+
             createImage(x, y, 0, 0, imageWidth, imageHeight, image, "right-image", "url(#clipright)")
+            createTextBox(x, y + maxHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("target-image-date").value, textSize, "black")
+            createTextBox(20, y + maxHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("subject-image-date").value, textSize, "black")
         }
 
         var aspectRatio;
+
+        var maxHeight = 0;
 
         function createImageAspectTarget(image) {
             const imageUrl = image;
@@ -403,6 +418,7 @@
                 ctx.drawImage(img, 0, 0);
                 const base64ImageData = canvas.toDataURL('image/png');
                 rightDisplay(aspectRatio, base64ImageData);
+                createImageAspectTarget(document.getElementById("target_image_url").src);
             };
             img.onerror = function () {
                 console.error('画像を読み込めませんでした。');
@@ -411,7 +427,6 @@
             img.src = imageUrl;
         }
 
-        createImageAspectTarget(document.getElementById("target_image_url").src);
         createImageAspectSubject(document.getElementById("subject_image_url").src);
 
         function createTextBox(cx, cy, x, y, id, text, size, color) {
