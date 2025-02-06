@@ -8,49 +8,37 @@ A skeleton for creating applications with [CakePHP](https://cakephp.org) 4.x.
 
 The framework source code can be found here: [cakephp/cakephp](https://github.com/cakephp/cakephp).
 
-## Installation
+## 開発環境の立ち上げ
+0. 前提
+https://www.dropbox.com/scl/fo/m4qax8qs01cxt7hf5odvy/ABdpTA2gytwO3dYX853x8iA?rlkey=jwftf8uoqun7xbfy6fk6f72wp&st=p5xx8uo9&dl=0
+上のファイルから、app_loal.php, app.phpをダウンロードして、configフォルダに配置する
+.envファイルをプロジェクトルートに作成し、環境変数を設定する
 
-1. Download [Composer](https://getcomposer.org/doc/00-intro.md) or update `composer self-update`.
-2. Run `php composer.phar create-project --prefer-dist cakephp/app [app_name]`.
+1. 以下のサイトでComposerをインストールする
+https://getcomposer.org/download/
 
-If Composer is installed globally, run
-
-```bash
-composer create-project --prefer-dist cakephp/app
-```
-
-In case you want to use a custom app dir name (e.g. `/myapp/`):
-
-```bash
-composer create-project --prefer-dist cakephp/app myapp
-```
-
-You can now either use your machine's webserver to view the default home page, or start
-up the built-in webserver with:
-
+2. 以下のコマンドでサーバーを立ち上げる
 ```bash
 bin/cake server -p 8765
 ```
 
-Then visit `http://localhost:8765` to see the welcome page.
+3. 以下のコマンドでMySQLを立ち上げる
+```bash
+docker-compose up 
+```
 
-## Update
+4. seed.sqlを(http://localhost:8085/phpmyadmin/)でインポートする
 
-Since this skeleton is a starting point for your application and various files
-would have been modified as per your needs, there isn't a way to provide
-automated upgrades, so you have to do any updates manually.
+5. http://localhost:8765/admin/login にログインする
 
-## Configuration
 
-Read and edit the environment specific `config/app_local.php` and setup the
-`'Datasources'` and any other configuration relevant for your application.
-Other environment agnostic settings can be changed in `config/app.php`.
+## 管理ユーザー
+loginId: esakiryota
+password: esaki1217
 
-## Layout
+## 一般ユーザー
+http://localhost:8765/admin/usersでユーザーを作成する
 
-The app skeleton uses [Milligram](https://milligram.io/) (v1.3) minimalist CSS
-framework by default. You can, however, replace it with any other library or
-custom styles.
 
 ## memo
 ・cacheをクリアにする。databaseを変更した場合は。

@@ -40,7 +40,7 @@
                     </div>
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label>美腸チェック</label>
+                            <label>セルフイメージを唱えましたか？</label>
                             <div class="text-center" style="margin-top:10px">
                                 <button type="button" class="btn btn-lg btn-icon btn-danger btn-intestine_status" style="font-size:24px" data-status="1">
                                     <i class="fa-regular fa-face-smile"></i>
@@ -87,7 +87,7 @@
 
         $('.btn-enter').click(function() {
             if (!$('#status').val() && !$('#intestine_status').val()) {
-                alert('動画ワークチェックと美腸チェックはどちらか必ず選択してください。');
+                alert('動画ワークチェックとセルフイメージを唱えましたか？はどちらか必ず選択してください。');
                 return false;
             }
             if(!confirm('送信してよろしいですか？')) {
