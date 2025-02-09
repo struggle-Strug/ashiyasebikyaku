@@ -66,6 +66,12 @@ class InformationsTable extends Table
             ->notEmptyString('target');
 
         $validator
+            ->scalar('category')
+            ->maxLength('category', 2)
+            ->requirePresence('category', 'create')
+            ->notEmptyString('category');
+
+        $validator
             ->dateTime('start_datetime')
             ->requirePresence('start_datetime', 'create')
             ->notEmptyDateTime('start_datetime');

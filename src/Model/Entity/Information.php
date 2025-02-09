@@ -11,6 +11,7 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $content
  * @property string $target
+ * @property string $category
  * @property \Cake\I18n\FrozenTime $start_datetime
  * @property \Cake\I18n\FrozenTime|null $end_datetime
  * @property \Cake\I18n\FrozenTime|null $created
@@ -33,6 +34,7 @@ class Information extends Entity
         'target' => true,
         'start_datetime' => true,
         'end_datetime' => true,
+        'category' => true,
         'created' => true,
         'modified' => true,
         'is_deleted' => true,
