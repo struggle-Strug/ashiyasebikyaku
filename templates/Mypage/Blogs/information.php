@@ -13,7 +13,7 @@ $this->assign('title', 'ブログ詳細');
     margin-top: 1%; 
     margin-left: 4%;
 }
-.btn-secondary {
+.btn-primary {
     margin-right: 4%;
 }
 .content-wrapper {
@@ -43,7 +43,7 @@ $this->assign('title', 'ブログ詳細');
             <?= $this->Html->link(
                 '<i class="fa fa-arrow-left"></i> 戻る',
                 ['action' => 'index'],
-                ['class' => 'btn btn-secondary', 'escape' => false]
+                ['class' => 'btn btn-primary', 'escape' => false]
             ) ?>
         </div>
     </div>
