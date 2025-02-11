@@ -25,12 +25,8 @@ class BlogsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
-        $this->loadModel('Informations');
-        
-        // ビューヘルパーの追加
+        $this->loadModel('Informations');        
         $this->viewBuilder()->addHelper('Link');
-        
-        // ページネーション設定を追加
         $this->paginate = [
             'limit' => 10,
             'order' => ['start_datetime' => 'DESC']
@@ -47,11 +43,6 @@ class BlogsController extends AppController
         // 検索条件を取得
         $keyword = $this->request->getQuery('keyword');
         $category = $this->request->getQuery('category');
-        
-        // まず全件取得してみる
-        $query = $this->Informations->find();
-        
-        // 基本条件を設定
         $query = $this->Informations->find()
             ->where([
                 'OR' => [
@@ -68,28 +59,24 @@ class BlogsController extends AppController
             $query->where(['content LIKE' => '%' . $keyword . '%']);
         }
 
-        // カテゴリが選択されている場合、カテゴリでの絞り込みを追加
+        // カテゴリーが選択されている場合、カテゴリーでの絞り込みを追加
         if (!empty($category)) {
             $query->where(['category' => $category]);
         }
 
+        // カテゴリー一覧を取得
+        $categories = ['' => 'すべて'] + Configure::read('INFORMATION_CATEGORY');
+
         try {
             $informations = $this->paginate($query);
-            
-            // カテゴリ一覧を取得（const.phpから）
-            $categories = ['' => 'すべて'] + Configure::read('INFORMATION_CATEGORY');
-            
             $this->set(compact('informations', 'keyword', 'category', 'categories'));
         } catch (\Exception $e) {
-            Log::write('error', $e->getMessage());
             $this->Flash->error('データの取得中にエラーが発生しました。');
         }
     }
 
     public function information($id = null)
     {
-        Log::write('debug', 'Information action called with ID: ' . $id);
-
         $information = $this->Informations->find()
             ->where([
                 'Informations.id' => $id,
@@ -103,7 +90,6 @@ class BlogsController extends AppController
             ->first();
 
         if (!$information) {
-            Log::write('debug', 'Information not found for ID: ' . $id);
             $this->Flash->error('お知らせが見つかりません。');
             return $this->redirect(['action' => 'index']);
         }

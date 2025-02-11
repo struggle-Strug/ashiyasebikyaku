@@ -1,12 +1,11 @@
-<?php
-use Cake\Core\Configure;
-$this->assign('title', 'ブログ');
-?>
+<?php $this->assign('title', '美脚虎の巻ブログ');?>
 
 <style>
 .table-container {
     padding: 20px 20px 0;
+    margin-right: 1%;  /* 右側に1%の余白を追加 */
 }
+
 .pagination-wrapper {
     display: flex;
     justify-content: center;
@@ -19,193 +18,231 @@ $this->assign('title', 'ブログ');
     display: flex;
     flex-wrap: wrap;  /* 折り返しを許可 */
     gap: 10px;
-    padding: 0px 0px 20px;
+    padding: 10px 0px 20px;  /* 上部に10pxの余白を追加 */
 }
 .search-input-group {
     display: flex;
     gap: 10px;
-    flex: 1 1 100%;  /* 小さい画面では100%幅を取る */
-    min-width: 0;  /* flexboxの子要素がはみ出すのを防ぐ */
+    flex: 1 1 100%;
+    min-width: 0;
 }
 .search-input {
-    flex: 1;  /* 利用可能な幅いっぱいに広がる */
-    min-width: 300px;  /* 最小幅を設定 */
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
 }
 .filter-group {
     display: flex;
-    align-items: center;
-    width: 100%;  /* 小さい画面では100%幅を取る */
-    margin-top: 10px;  /* 上部との間隔 */
-}
-/* 大きい画面用のスタイル */
-@media (min-width: 768px) {
-    .search-input-group {
-        flex: 0 1 auto;  /* 自然な幅に戻す */
-        width: 100%;  /* 幅を確保 */
-        max-width: 600px;  /* 最大幅を制限 */
-    }
-    .filter-group {
-        width: auto;
-        margin-top: 0;
-        margin-left: 30px;
-    }
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
 }
 .category-label {
     margin-bottom: 0;
     margin-right: 10px;
     white-space: nowrap;
     flex-shrink: 0;
+    font-size: 1.2rem;
 }
 .category-buttons {
     display: flex;
-    gap: 8px;
-    overflow-x: auto;  /* 横スクロール可能に */
-    flex-wrap: nowrap;  /* 折り返しを防止 */
-    -webkit-overflow-scrolling: touch;  /* スマートフォンでのスムーズスクロール */
-    scrollbar-width: none;  /* Firefoxのスクロールバーを非表示 */
-    -ms-overflow-style: none;  /* IEのスクロールバーを非表示 */
-    padding-bottom: 5px;  /* スクロールバーのための余白 */
-}
-/* Chromeのスクロールバーを非表示 */
-.category-buttons::-webkit-scrollbar {
-    display: none;
+    flex-wrap: wrap;
+    gap: 6px;  /* 10px から 6px に縮小 */
+    width: 100%;
 }
 .category-btn {
-    padding: 6px 12px;
+    padding: 8px 16px;
     border: 1px solid #dee2e6;
     border-radius: 4px;
     background-color: #fff;
     color: #6c757d;
     cursor: pointer;
     transition: all 0.2s;
-    flex-shrink: 0;  /* ボタンは縮まないように */
+    font-size: 1.1rem;
 }
 .category-btn:hover {
-    background-color: #f8f9fa;  /* ホバー時は少し灰色がかった背景に */
+    background-color: #f8f9fa;
 }
 .category-btn.active {
     background-color: #998A8A;
     border-color: #998A8A;
-    color: #fff;  /* アクティブ時は白抜き文字 */
+    color: #fff;
 }
 .category-btn.active:hover {
-    background-color: #8a7b7b;  /* アクティブ状態でホバー時は少し暗く */
+    background-color: #8a7b7b;
     border-color: #8a7b7b;
 }
-/* 内容のテキストスタイル */
+
+@media (max-width: 768px) {
+    .category-btn {
+        font-size: 0.95rem;
+    }
+}
+
 .content-text {
     color: #66615b;  /* テキストカラー */
     font-size: 14px;  /* フォントサイズ */
     line-height: 1.4;  /* 行の高さ */
     margin-bottom: 0;  /* 下マージンを削除 */
 }
+
+@media screen and (max-width: 390px) {
+    /* 検索入力部分の調整を追加 */
+    .search-input {
+        min-width: 175px;
+        max-width: 350px;
+    }
+    
+    .search-input .form-control {
+        padding: 0.4rem 0.75rem;
+        height: calc(1.6em + 0.8rem + 2px);
+    }
+
+    .search-input-group .btn {
+        padding: 0.4rem 0.75rem;
+        margin-right: 1%;
+    }
+
+    .table td:first-child a {
+        font-size: 0.9rem;
+    }
+
+    .content-text {
+        font-size: 0.95rem;
+        line-height: 1.3;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .category-btn {
+        padding: 7px 14px;
+        font-size: 1rem;
+    }
+
+    .category-buttons {
+        gap: 5px;  /* モバイルではさらに小さく */
+    }
+
+    .mobile-header {  /* 新しいクラスを追加 */
+        font-size: 1.3rem !important;  /* !importantを使用して確実に適用 */
+        padding: 4px !important;
+        font-weight: normal;
+    }
+}
 </style>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-container">
-            <?= $this->Form->create(null, [
-                'type' => 'get',
-                'class' => 'mb-4 search-form'
-            ]) ?>
-            <div class="search-input-group">
-                <div class="search-input">
-                    <?= $this->Form->control('keyword', [
-                        'label' => false,
-                        'class' => 'form-control',
-                        'placeholder' => '内容を検索...',
-                        'value' => $keyword ?? ''
-                    ]) ?>
-                </div>
-                <?= $this->Form->button('検索', [
-                    'class' => 'btn btn-primary',
-                    'type' => 'submit'
-                ]) ?>
-            </div>
-            <div class="filter-group">
-                <label class="category-label">カテゴリー選択</label>
-                <div class="category-buttons">
-                    <button type="button" 
-                        class="category-btn <?= empty($category) ? 'active' : '' ?>"
-                        onclick="updateCategory('')">
-                        すべて
-                    </button>
-                    <?php foreach (Configure::read('INFORMATION_CATEGORY') as $key => $value): ?>
-                        <button type="button" 
-                            class="category-btn <?= $category == $key ? 'active' : '' ?>"
-                            onclick="updateCategory('<?= $key ?>')">
-                            <?= h($value) ?>
-                        </button>
-                    <?php endforeach; ?>
-                </div>
-                <?= $this->Form->hidden('category', ['value' => $category]) ?>
-            </div>
-            <?= $this->Form->end() ?>
+<div class="col-lg-12">  
+    <div class="card">
+        <div class="card-body">
+            <div class="container-fluid">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-12">  <!-- 幅を拡大（10→11） -->
+                        <?= $this->Form->create(null, [
+                            'type' => 'get',
+                            'class' => 'mb-4 search-form'
+                        ]) ?>
+                        <div class="search-input-group">
+                            <div class="search-input">
+                                <?= $this->Form->control('keyword', [
+                                    'label' => false,
+                                    'class' => 'form-control',
+                                    'placeholder' => '内容を検索...',
+                                    'value' => $keyword ?? ''
+                                ]) ?>
+                            </div>
+                            <?= $this->Form->button('検索', [
+                                'class' => 'btn btn-primary',
+                                'type' => 'submit'
+                            ]) ?>
+                        </div>
+                        <div class="filter-group">
+                            <label class="category-label">カテゴリー選択</label>
+                            <div class="category-buttons">
+                                <button type="button" 
+                                    class="category-btn <?= empty($category) ? 'active' : '' ?>"
+                                    onclick="updateCategory('')">
+                                    すべて
+                                </button>
+                                <?php foreach ($categories as $key => $value): ?>
+                                    <?php if ($key !== ''): ?>
+                                        <button type="button" 
+                                            class="category-btn <?= $category == $key ? 'active' : '' ?>"
+                                            onclick="updateCategory('<?= $key ?>')">
+                                            <?= h($value) ?>
+                                        </button>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                            <?= $this->Form->hidden('category', ['value' => $category]) ?>
+                        </div>
+                        <?= $this->Form->end() ?>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th width="150" class="text-center" nowrap>投稿日</th>
-                            <th class="text-center" nowrap>内容</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($informations->count() > 0): ?>
-                            <?php foreach ($informations as $information): ?>
-                            <tr>
-                                <td class="text-center align-middle">
-                                    <?php
-                                    $url = $this->Url->build(['action' => 'information', $information->id]);
-                                    ?>
-                                    <a href="<?= $url ?>" class="text-dark">
-                                        <?= $information->start_datetime->format('Y年n月j日') ?>
-                                    </a>
-                                </td>
-                                <td class="text-start align-middle">
-                                    <?php
-                                    // 改行を空白に置換
-                                    $content = str_replace(["\r\n", "\r", "\n"], ' ', $information->content);
-                                    // 連続する空白を1つにまとめる
-                                    $content = preg_replace('/\s+/', ' ', $content);
-                                    // 70文字で切り取り
-                                    if (mb_strlen($content) > 70) {
-                                        $content = mb_substr($content, 0, 70) . ' ・・・';
-                                    }
-                                    ?>
-                                    <p class="content-text"><?= $this->Link->linkify(h($content)) ?></p>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="2" class="text-center">データがありません</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th width="150" class="text-center mobile-header" nowrap>投稿日</th>
+                                        <th class="text-center mobile-header" nowrap>内容</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if ($informations->count() > 0): ?>
+                                        <?php foreach ($informations as $information): ?>
+                                        <tr>
+                                            <td class="text-center align-middle">
+                                                <?php
+                                                $url = $this->Url->build(['action' => 'information', $information->id]);
+                                                ?>
+                                                <a href="<?= $url ?>" class="text-dark">
+                                                    <?= $information->start_datetime->format('Y年n月j日') ?>
+                                                </a>
+                                            </td>
+                                            <td class="text-start align-middle">
+                                                <?php
+                                                $content = str_replace(["\r\n", "\r", "\n"], ' ', $information->content);
+                                                $content = preg_replace('/\s+/', ' ', $content);
+                                                $maxLength = (isset($_SERVER['HTTP_USER_AGENT']) && 
+                                                             preg_match('/(iPhone|Android.*Mobile)/i', $_SERVER['HTTP_USER_AGENT'])) 
+                                                             ? 23  // モバイルの場合は23文字
+                                                             : 70; // PCの場合は70文字
+                                                
+                                                if (mb_strlen($content) > $maxLength) {
+                                                    $content = mb_substr($content, 0, $maxLength) . ' ・・・';
+                                                }
+                                                ?>
+                                                <p class="content-text"><?= $this->Link->linkify(h($content)) ?></p>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="2" class="text-center">データがありません</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="card-footer">
-        <div class="pagination-wrapper">
-            <?= $this->element('pagination') ?>
+        <div class="card-footer">
+            <div class="pagination-wrapper">
+                <?= $this->element('pagination') ?>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
 function updateCategory(value) {
-    // hidden inputの値を更新
     document.querySelector('input[name="category"]').value = value;
-    
-    // ボタンのアクティブ状態を更新
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
-    
-    // フォームを送信
     document.querySelector('form').submit();
 }
 </script>

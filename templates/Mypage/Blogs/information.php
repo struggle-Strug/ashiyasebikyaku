@@ -1,7 +1,4 @@
-<?php
-use Cake\Core\Configure;
-$this->assign('title', 'ブログ詳細');
-?>
+<?php $this->assign('title', 'ブログ詳細');?>
 
 <style>
 .header-container {
@@ -34,22 +31,24 @@ $this->assign('title', 'ブログ詳細');
 }
 </style>
 
-<div class="card">
-    <div class="card-header">
-        <div class="header-container">
-            <h5 class="mb-0 date-text">
-                <?= $information->start_datetime->format('Y年n月j日') ?>
-            </h5>
-            <?= $this->Html->link(
-                '<i class="fa fa-arrow-left"></i> 戻る',
-                ['action' => 'index'],
-                ['class' => 'btn btn-primary', 'escape' => false]
-            ) ?>
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-container">
+                <h5 class="mb-0 date-text">
+                    <?= $information->start_datetime->format('Y年n月j日') ?>
+                </h5>
+                <?= $this->Html->link(
+                    '<i class="fa fa-arrow-left"></i> 戻る',
+                    ['action' => 'index'],
+                    ['class' => 'btn btn-primary', 'escape' => false]
+                ) ?>
+            </div>
         </div>
-    </div>
-    <div class="card-body">
-        <div class="content-area">
-            <?= $this->Link->linkify(nl2br(h($information->content))) ?>
+        <div class="card-body">
+            <div class="content-area">
+                <?= $this->Link->linkify(nl2br(h($information->content))) ?>
+            </div>
         </div>
     </div>
 </div> 
