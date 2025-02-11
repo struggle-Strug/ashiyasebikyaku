@@ -49,7 +49,7 @@ class BlogsController extends AppController
                     ['target' => '1'], // 全員
                     ['target' => '3']  // 利用者
                 ],
-                'start_datetime <=' => date('Y-m-d H:i:s'),
+                'start_datetime <=' => date('Y-m-d H:i:s'), //未来日付の場合は表示しない
                 'is_deleted' => 0
             ])
             ->order(['start_datetime' => 'desc']);
