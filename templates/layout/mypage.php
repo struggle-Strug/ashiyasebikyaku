@@ -21,7 +21,7 @@
     <link href='https://fonts.googleapis.com/css?family=Muli:400,300' rel='stylesheet' type='text/css'>
     <link href="<?= $this->Url->build('paper-dashboard/') ?>css/themify-icons.css" rel="stylesheet">
     <link href="<?= $this->Url->build('/') ?>css/mypage.css?20230731" rel="stylesheet">
-    <link href="<?= $this->Url->build('/') ?>lightbox/css/lightbox.min.css" rel="stylesheet">
+    <?= $this->Html->css('/lightbox/css/lightbox.min.css') ?>
 
     <!--   Core JS Files. Extra: TouchPunch for touch library inside jquery-ui.min.js   -->
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/jquery.min.js" type="text/javascript"></script>
@@ -60,8 +60,6 @@
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/fullcalendar.min.js"></script>
     <!-- Paper Dashboard PRO Core javascript and methods for Demo purpose -->
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/paper-dashboard.js"></script>
-
-    <script src="<?= $this->Url->build('/') ?>lightbox/js/lightbox.min.js"></script>
 
     <!-- Swiper -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
@@ -164,6 +162,13 @@
                             <p>コミュニケーションツール</p>
                         </a>
                     </li>
+                    <li class="<?php if ($this->request->getParam('controller') == 'Blogs')
+                        echo 'active'; ?>">
+                        <a href="<?= $this->Url->build(['controller' => 'Blogs', 'action' => 'index']); ?>">
+                            <i class="fa-solid fa-blog"></i>
+                            <p>美脚虎の巻ブログ</p>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -213,6 +218,7 @@
             </footer>
         </div>
     </div>
+    <?= $this->Html->script('/lightbox/js/lightbox.min.js') ?>
 </body>
 
 </html>

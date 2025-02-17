@@ -1,4 +1,6 @@
-<?php $this->assign('title', '事務局からのお知らせ管理'); ?>
+<?php
+$this->assign('title', '事務局からのお知らせ管理');
+?>
 
 <!-- Default box -->
 <div class="card">
@@ -10,13 +12,12 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <tr>
-                            <th nowrap>お知らせ内容</th>
-                            <th nowrap>表示対象</th>
-                            <th nowrap>表示開始日時</th>
-                            <th nowrap>表示終了日時</th>
-                            <th style="width:100px"></th>
-                        </tr>
+                        <th nowrap>お知らせ内容</th>
+                        <th nowrap>表示対象</th>
+                        <th nowrap>カテゴリー</th>
+                        <th nowrap>表示開始日時</th>
+                        <th nowrap>表示終了日時</th>
+                        <th style="width:100px"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +34,11 @@
                             <?php else : ?>
                                 利用者のみ
                             <?php endif ?>
+                        </td>
+                        <td>
+                            <?php if (!empty($information->category) && isset($categories[$information->category])): ?>
+                                <?= h($categories[$information->category]) ?>
+                            <?php endif; ?>
                         </td>
                         <td><?= h($information->start_datetime) ?></td>
                         <td><?= h($information->end_datetime) ?></td>
