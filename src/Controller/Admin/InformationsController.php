@@ -33,7 +33,9 @@ class InformationsController extends AppController
         ]);
         $informations = $this->paginate($query);
 
-        $this->set(compact('informations'));
+        // カテゴリー情報を取得してテンプレートに渡す
+        $categories = Configure::read('INFORMATION_CATEGORY');
+        $this->set(compact('informations', 'categories'));
     }
 
     /**
@@ -55,7 +57,9 @@ class InformationsController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('information'));
+        // カテゴリー情報を取得してテンプレートに渡す
+        $categories = Configure::read('INFORMATION_CATEGORY');
+        $this->set(compact('information', 'categories'));
     }
 
     /**
@@ -90,7 +94,9 @@ class InformationsController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('information'));
+        // カテゴリー情報を取得してテンプレートに渡す
+        $categories = Configure::read('INFORMATION_CATEGORY');
+        $this->set(compact('information', 'categories'));
 
         $this->render('add');
     }

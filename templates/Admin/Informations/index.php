@@ -1,5 +1,4 @@
 <?php
-use Cake\Core\Configure;
 $this->assign('title', '事務局からのお知らせ管理');
 ?>
 
@@ -13,14 +12,12 @@ $this->assign('title', '事務局からのお知らせ管理');
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <tr>
-                            <th nowrap>お知らせ内容</th>
-                            <th nowrap>表示対象</th>
-                            <th nowrap>カテゴリー</th>
-                            <th nowrap>表示開始日時</th>
-                            <th nowrap>表示終了日時</th>
-                            <th style="width:100px"></th>
-                        </tr>
+                        <th nowrap>お知らせ内容</th>
+                        <th nowrap>表示対象</th>
+                        <th nowrap>カテゴリー</th>
+                        <th nowrap>表示開始日時</th>
+                        <th nowrap>表示終了日時</th>
+                        <th style="width:100px"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +36,9 @@ $this->assign('title', '事務局からのお知らせ管理');
                             <?php endif ?>
                         </td>
                         <td>
-                            <?= h(Configure::read('INFORMATION_CATEGORY.' . $information->category)) ?>
+                            <?php if (!empty($information->category) && isset($categories[$information->category])): ?>
+                                <?= h($categories[$information->category]) ?>
+                            <?php endif; ?>
                         </td>
                         <td><?= h($information->start_datetime) ?></td>
                         <td><?= h($information->end_datetime) ?></td>

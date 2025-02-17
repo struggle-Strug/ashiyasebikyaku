@@ -1,6 +1,4 @@
 <?php
-use Cake\Core\Configure;
-
 $this->assign('title', '事務局からのお知らせ登録'); ?>
 
 <!-- Default box -->
@@ -29,7 +27,7 @@ $this->assign('title', '事務局からのお知らせ登録'); ?>
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">カテゴリー</label>
             <div class="col-sm-4">
-                <?= $this->Form->select('category', Configure::read('INFORMATION_CATEGORY'), ['class' => 'form-control', 'default' => '1']) ?>
+                <?= $this->Form->select('category', $categories, ['class' => 'form-control', 'default' => '1']) ?>
                 <span class="text-danger"><?= $this->Form->error('category') ?></span>
             </div>
         </div>
