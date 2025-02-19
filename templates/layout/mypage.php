@@ -165,7 +165,7 @@
                     <li class="<?php if ($this->request->getParam('controller') == 'Blogs')
                         echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Blogs', 'action' => 'index']); ?>">
-                            <i class="fa-solid fa-blog"></i>
+                            <i class="fa-solid fa-scroll"></i>
                             <p>美脚虎の巻ブログ</p>
                         </a>
                     </li>
