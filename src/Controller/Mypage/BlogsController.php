@@ -50,7 +50,7 @@ class BlogsController extends AppController
                     ['target' => '3']  // 利用者
                 ],
                 'start_datetime <=' => date('Y-m-d H:i:s'), //未来日付の場合は表示しない
-                'is_deleted' => 0
+                'is_deleted' => 0,
             ])
             ->order(['start_datetime' => 'desc']);
 
@@ -58,6 +58,11 @@ class BlogsController extends AppController
         if (!empty($keyword)) {
             $query->where(['content LIKE' => '%' . $keyword . '%']);
         }
+
+        $query->where(['OR' => [
+            ['category !=' => 10],
+            ['category IS' => null]
+        ]]);
 
         // カテゴリーが選択されている場合、カテゴリーでの絞り込みを追加
         if (!empty($category)) {
