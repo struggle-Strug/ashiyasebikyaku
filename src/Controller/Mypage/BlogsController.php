@@ -50,7 +50,9 @@ class BlogsController extends AppController
                     ['target' => '3']  // 利用者
                 ],
                 'start_datetime <=' => date('Y-m-d H:i:s'), //未来日付の場合は表示しない
-                'is_deleted' => 0
+                'end_datetime >=' => date('Y-m-d H:i:s'), // 表示終了日時が現在より後のものだけ表示
+                'is_deleted' => 0,
+                'category !=' => '10'  // 事務局からのお知らせを除外
             ])
             ->order(['start_datetime' => 'desc']);
 
@@ -64,8 +66,10 @@ class BlogsController extends AppController
             $query->where(['category' => $category]);
         }
 
-        // カテゴリー一覧を取得
-        $categories = ['' => 'すべて'] + Configure::read('INFORMATION_CATEGORY');
+        // カテゴリー一覧を取得し、テンプレートに渡す
+        $categories = Configure::read('INFORMATION_CATEGORY');
+        unset($categories['10']); // 事務局からのお知らせを除外
+        $categories = ['' => 'すべて'] + $categories;
 
         try {
             $informations = $this->paginate($query);
