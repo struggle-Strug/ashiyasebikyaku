@@ -50,9 +50,12 @@ class BlogsController extends AppController
                     ['target' => '3']  // 利用者
                 ],
                 'start_datetime <=' => date('Y-m-d H:i:s'), //未来日付の場合は表示しない
-                'end_datetime >=' => date('Y-m-d H:i:s'), // 表示終了日時が現在より後のものだけ表示
+                'OR' => [  // 終了日時が未設定または現在時刻より後のものを表示
+                    ['end_datetime IS NULL'],
+                    ['end_datetime >=' => date('Y-m-d H:i:s')]
+                ],
                 'is_deleted' => 0,
-                'category !=' => '10'  // 事務局からのお知らせを除外
+                'category !=' => 10  // 事務局からのお知らせを除外
             ])
             ->order(['start_datetime' => 'desc']);
 

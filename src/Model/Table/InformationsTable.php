@@ -67,7 +67,7 @@ class InformationsTable extends Table
 
         $validator
             ->scalar('category')
-            ->maxLength('category', 2)
+            ->maxLength('category', 11)
             ->requirePresence('category', 'create')
             ->notEmptyString('category');
 
