@@ -17,11 +17,17 @@
                     <div class="timeline-panel">
                         <div class="timeline-heading">
                             <h5 class="card-title" style="margin-bottom:5px"><span class="label label-primary">１</span>
-                                オリエンテーション申込</h5>
+                                初めての方へ</h5>
                         </div>
                         <div class="timeline-body">
                             <p class="description" style="margin-bottom:10px">
-                                <small>当サイトの使い方や進める順番について、<a href="https://leeward-utensil-225.notion.site/1b170ba5029a4358b7518450c62184c3?pvs=4" target="blank">こちら</a>から確認して進めてください</small>
+                                <small>当サイトの使い方や進める順番について、確認して進めてください</small>
+                            </p>
+                            <p class="description" style="margin-bottom:5px">
+                                <small>『セルフデザインコース』は<a href="https://angry-manatee-55c.notion.site/19ed059323c280c9b472e35215ea820b?pvs=4" target="blank">こちら</a></small>
+                            </p>
+                            <p class="description" style="margin-bottom:10px">
+                                <small>『自習コース』は<a href="https://angry-manatee-55c.notion.site/19ed059323c280cdbc20c91d6e3ddcfb?pvs=4" target="blank">こちら</a></small>
                             </p>
                             <?php if (!$eventEntry1) : ?>
                                 <!-- <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'view', 1]); ?>"
