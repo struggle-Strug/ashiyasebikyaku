@@ -332,7 +332,6 @@
             lineColor = e.target.value;
             // 色の値をローカルストレージに保存して永続化
             localStorage.setItem('lineColor', lineColor);
-            console.log("色が変更されました: " + lineColor); // デバッグ用
             // 選択中の線があれば、その色を変更
             if (tempLine) {
                 tempLine.setAttribute('stroke', lineColor);
@@ -473,7 +472,6 @@
                             tempLine.setAttribute("stroke", lineColor);
                             tempLine.setAttribute("stroke-width", lineWidth);
                             svgElm_js.appendChild(tempLine);
-                            console.log("Line created at", startX, startY);
                             break;
                         case 'comment-add':
                             // コメント追加
@@ -741,7 +739,6 @@
                     
                     // 直線描画完了の処理
                     if (currentTool === 'line-draw' && tempLine) {
-                        console.log("Line drawing completed");
                         // 短すぎる線は削除
                         const x1 = parseFloat(tempLine.getAttribute("x1"));
                         const y1 = parseFloat(tempLine.getAttribute("y1"));
@@ -953,11 +950,9 @@
             
             // グローバルスコープで使えるように変数を初期化
             window.linetoStr = 'M ' + movetoX + ' ' + movetoY + ' ';
-            console.log("自由入力開始: ", movetoX, movetoY);
         }
 
         function pencilByMouseup(event) {
-            console.log("自由入力終了");
             // イベントリスナーの削除処理を削除（main内で処理されるため）
             // $("#drawingCanvas").off(move_event); // この行を削除
             // $("#drawingCanvas").off(out_event);  // この行を削除
@@ -1106,7 +1101,6 @@
             const img = new Image();
             img.onload = function (result) {
                 aspectRatio = img.naturalWidth / img.naturalHeight;
-                console.log(`Aspect Ratio: ${aspectRatio} (${img.naturalWidth} / ${img.naturalHeight})`);
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = img.width;
@@ -1128,7 +1122,6 @@
             const img = new Image();
             img.onload = function () {
                 const aspectRatio = img.naturalWidth / img.naturalHeight;
-                console.log(`Aspect Ratio: ${aspectRatio} (${img.naturalWidth} / ${img.naturalHeight})`);
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = img.width;
@@ -1297,29 +1290,21 @@
 
         async function downloadBoard() {
             try {
-                console.log("downloadBoard 実行開始");
                 const svg = document.querySelector("svg");
                 const svgData = new XMLSerializer().serializeToString(svg);
-                console.log("SVGデータ:", svgData.substring(0, 200) + "..."); // SVGデータの先頭部分をログ出力
                 
                 // コメント要素の存在確認
                 const commentBoxes = document.querySelectorAll('.comment-box');
-                console.log("コメント要素数:", commentBoxes.length);
                 if (commentBoxes.length > 0) {
-                    console.log("最初のコメント内容:", commentBoxes[0].textContent);
-                    console.log("コメント位置:", commentBoxes[0].style.left, commentBoxes[0].style.top);
                 }
                 
                 const canvas = document.createElement("canvas");
                 
                 const pixelRatio = window.devicePixelRatio || 1;
-                console.log("デバイスピクセル比:", pixelRatio);
                 const viewBox = svg.viewBox.baseVal;
-                console.log("ViewBox:", viewBox.x, viewBox.y, viewBox.width, viewBox.height);
                 
                 canvas.width = viewBox.width * pixelRatio;
                 canvas.height = viewBox.height * pixelRatio;
-                console.log("Canvas サイズ:", canvas.width, canvas.height);
 
                 // スタイルの幅と高さを設定
                 canvas.style.width = viewBox.width + "px";
@@ -1332,26 +1317,21 @@
                 // 背景を白で塗りつぶす
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0, 0, viewBox.width, viewBox.height);
-                console.log("キャンバス背景を塗りつぶし");
                 
                 // SVGをBlobに変換
                 const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
                 const url = URL.createObjectURL(svgBlob);
-                console.log("SVG Blob URL 作成");
 
                 // SVGを画像として読み込み
                 const image = await loadImage(url);
-                console.log("SVG画像ロード完了", image.width, image.height);
                 
                 // SVGを描画
                 ctx.drawImage(image, 0, 0, parseInt(canvas.style.width), parseInt(canvas.style.height));
-                console.log("SVGをキャンバスに描画");
                 
                 // 使用済みのBlobURLを解放
                 URL.revokeObjectURL(url);
 
                 // ここで、コメント要素も描画する処理を追加（previewImage関数と同様）
-                console.log("コメント要素の描画を開始");
                 const svgRect = svg.getBoundingClientRect();
                 
                 commentBoxes.forEach((comment, index) => {
@@ -1363,15 +1343,6 @@
                     const commentWidth = comment.offsetWidth;
                     const commentHeight = comment.offsetHeight;
                     
-                    console.log(`コメント ${index + 1} 情報:`, {
-                        text: comment.textContent,
-                        left: commentLeft,
-                        top: commentTop,
-                        width: commentWidth,
-                        height: commentHeight,
-                        color: window.getComputedStyle(comment).color,
-                        bgColor: window.getComputedStyle(comment).backgroundColor
-                    });
                     
                     // コメントの背景を描画
                     ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
@@ -1413,13 +1384,10 @@
                     });
                 });
                 
-                console.log("コメント要素の描画完了");
 
                 // PNGとして出力
                 const pngDataUrl = canvas.toDataURL('image/png');
-                console.log("PNG生成完了", pngDataUrl.substring(0, 50) + "...");
 
-                console.log("サーバーへの送信開始");
                 uploadImageToServer(pngDataUrl);
             } catch (error) {
                 console.error('Error during SVG to canvas conversion:', error);
@@ -1637,7 +1605,6 @@
             var linetoY = parseInt(getPositionYOnSvg(event)); // SVG上のマウス座標(縦方向)の取得
             window.linetoStr = window.linetoStr + " L " + linetoX + " " + linetoY; // 動いた後の新たなマウス座標を描画点として追加
 
-            console.log("自由入力移動: ", linetoX, linetoY);
             // pathデータ(d属性)の値を更新
             var pathElm = document.querySelector("#drawingCanvas path:last-child");
             if (pathElm) {
