@@ -12,8 +12,9 @@
         }
     }
     
+    /* ツールバー用のスタイル */
     .toolbar {
-        display: flex;        
+        display: flex;
         gap: 10px;
         margin-left: 10px;
         align-items: center;
@@ -37,6 +38,7 @@
         border-color: #0056b3;
     }
     
+    /* コメントボックスのスタイル */
     .comment-box {
         background-color: white;
         border: none;
@@ -44,8 +46,10 @@
         padding: 8px;
         min-width: 100px;
         min-height: 50px;
+        /* リサイズはJavaScriptで制御するため、CSSのresizeプロパティは使用しない */
     }
     
+    /* カラーピッカーコンテナのスタイル */
     .color-picker-container {
         display: none;
         margin-left: 10px;
@@ -58,17 +62,19 @@
         margin-right: 5px;
     }
     
+    /* リサイズハンドルのスタイル - 完全に非表示に変更 */
     .comment-resize-handle {
         position: absolute;
         width: 10px;
         height: 10px;
-        background-color: transparent; 
-        border: none; 
+        background-color: transparent; /* 無色 */
+        border: none; /* 境界線も削除 */
         border-radius: 50%;
         cursor: nwse-resize;
         z-index: 1001;
     }
     
+    /* フォントサイズ変更ツールのスタイル */
     .font-size-tools {
         display: none;
         margin-left: 10px;
@@ -105,6 +111,7 @@
             <div class="p-sm-2 p-md-4 py-2">
                 <button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button>
             </div>
+            <!-- ツールバー -->
             <div class="toolbar p-sm-2 p-md-4 py-2" id="drawing-toolbar" style="display: none;">
                 <button class="btn btn-outline-secondary tool-button active" id="free-draw" title="自由入力">
                     <i class="fas fa-pencil-alt"></i>
@@ -119,6 +126,7 @@
                     <i class="fas fa-eraser"></i>
                 </button>
             </div>
+            <!-- カラーピッカー -->
             <div class="color-picker-container p-sm-2 p-md-4 py-2" id="comment-color-picker">
                 <div class="input-group" style="max-width: 200px;">
                     <div class="input-group-prepend">
@@ -132,6 +140,7 @@
                     </div>
                     <input type="color" id="background-color" class="form-control" value="#ffffff">
                 </div>
+                <!-- フォントサイズ変更ツール -->
                 <div class="font-size-tools input-group" id="font-size-tools" style="max-width: 200px;">
                     <div class="input-group-prepend">
                         <span class="input-group-text">文字サイズ</span>
@@ -145,6 +154,7 @@
                     </button>
                 </div>
             </div>
+            <!-- 線の色ピッカー -->
             <div class="color-picker-container p-sm-2 p-md-4 py-2" id="line-color-picker">
                 <div class="input-group" style="max-width: 200px;">
                     <div class="input-group-prepend">
@@ -220,38 +230,40 @@
         var type = "imageMoveAndZoom";
         var touchType = "move";
         
+        // ツール関連の変数
         var currentTool = "free-draw";
         var isDrawing = false;
         var startX, startY;
         var tempLine = null;
         var textColor = "#000000";
         var backgroundColor = "#ffffff";
-        var lineColor = "#ff0000"; 
-        var lineWidth = 3; 
-        var selectedComment = null; 
-        var fontSize = 14; 
+        var lineColor = "#ff0000"; // 初期値
+        var lineWidth = 3; // 固定値として残す
+        var selectedComment = null; // 選択中のコメント要素
+        var fontSize = 14; // デフォルトのフォントサイズ
 
-        var isResizing = false;
-        var currentResizeElement = null;
-        var startX, startY, startWidth, startHeight;
-        var isErasing = false;
-        var eraseStartX, eraseStartY;
-        var eraseRect = null;
-
+        // 直線移動のための変数を追加
         var isMovingLine = false;
         var selectedLine = null;
         var lineStartX, lineStartY;
         var lineOffsetX, lineOffsetY;
 
+        // 消しゴム機能用のグローバル変数を追加
+        var eraseRect = null;
+        var eraseStartX, eraseStartY;
+
+        // 初期化時にカラーピッカーの値を設定
         $(document).ready(function() {
             document.getElementById('line-color').value = lineColor;
            
+            // ローカルストレージから色を復元（存在する場合）
             if (localStorage.getItem('lineColor')) {
                 lineColor = localStorage.getItem('lineColor');
                 document.getElementById('line-color').value = lineColor;
             }
         });
 
+        // ツールボタンのクリックイベント
         document.querySelectorAll('.tool-button').forEach(button => {
             button.addEventListener('click', () => {
                 document.querySelectorAll('.tool-button').forEach(b => {
@@ -263,45 +275,45 @@
                 button.classList.remove('btn-outline-secondary');
                 button.classList.add('btn-primary');
                 
+                // 以前のツールが消しゴムだった場合、消しゴムモードを終了
                 if (currentTool === 'eraser') {
+                    // 消しゴムモードを終了する際にカーソルを元に戻す
                     document.body.style.cursor = 'auto';
                     
+                    // 範囲選択要素があれば削除
                     if (eraseRect) {
                         eraseRect.remove();
                         eraseRect = null;
                     }
                 }
                 
-                if (selectedLine) {
-                    selectedLine.setAttribute('stroke-width', lineWidth);
-                    selectedLine = null;
-                    isMovingLine = false;
-                }
-                
                 currentTool = button.id;
                 
+                // 各ツールに対応するUIの表示切替
                 if (currentTool === 'comment-add') {
                     document.getElementById('comment-color-picker').style.display = 'flex';
                     document.getElementById('line-color-picker').style.display = 'none';
-                    document.getElementById('font-size-tools').style.display = 'flex'; 
+                    document.getElementById('font-size-tools').style.display = 'flex';
                 } else if (currentTool === 'line-draw') {
                     document.getElementById('comment-color-picker').style.display = 'none';
                     document.getElementById('line-color-picker').style.display = 'flex';
-                    document.getElementById('font-size-tools').style.display = 'none'; 
+                    document.getElementById('font-size-tools').style.display = 'none';
                 } else if (currentTool === 'eraser') {
                     document.getElementById('comment-color-picker').style.display = 'none';
                     document.getElementById('line-color-picker').style.display = 'none';
-                    document.getElementById('font-size-tools').style.display = 'none'; 
+                    document.getElementById('font-size-tools').style.display = 'none';
                 } else {
                     document.getElementById('comment-color-picker').style.display = 'none';
                     document.getElementById('line-color-picker').style.display = 'none';
-                    document.getElementById('font-size-tools').style.display = 'none'; 
+                    document.getElementById('font-size-tools').style.display = 'none';
                 }
             });
         });
 
+        // カラーピッカーのイベントリスナー
         document.getElementById('text-color').addEventListener('change', function(e) {
             textColor = e.target.value;
+            // 選択中のコメントがあれば、その色を変更
             if (selectedComment) {
                 selectedComment.style.color = textColor;
             }
@@ -309,350 +321,25 @@
 
         document.getElementById('background-color').addEventListener('change', function(e) {
             backgroundColor = e.target.value;
+            // 選択中のコメントがあれば、その背景色を変更
             if (selectedComment) {
                 selectedComment.style.backgroundColor = backgroundColor;
             }
         });
 
+        // 線の色のイベントリスナー
         document.getElementById('line-color').addEventListener('change', function(e) {
             lineColor = e.target.value;
+            // 色の値をローカルストレージに保存して永続化
             localStorage.setItem('lineColor', lineColor);
+            console.log("色が変更されました: " + lineColor); // デバッグ用
+            // 選択中の線があれば、その色を変更
             if (tempLine) {
                 tempLine.setAttribute('stroke', lineColor);
             }
         });
 
-        if (localStorage.getItem('lineColor')) {
-            lineColor = localStorage.getItem('lineColor');
-            document.getElementById('line-color').value = lineColor;
-        }
-
-        function main() {
-            $("#drawingCanvas").on(start_event, function (event) {
-                if (event.target.classList && event.target.classList.contains('comment-box')) {
-                    return;
-                }
-                
-                event.preventDefault();
-                if (type === "imageMoveAndZoom") {
-                    moveContentByMousedown(event)
-                } else if (type === "pencil") {
-                    if (currentTool === 'line-draw' && event.target.tagName === 'line') {
-                        selectedLine = event.target;
-                        isMovingLine = true;
-                        isDrawing = false;
-                        
-                        lineStartX = getPositionXOnSvg(event);
-                        lineStartY = getPositionYOnSvg(event);
-                        
-                        const x1 = parseFloat(selectedLine.getAttribute('x1'));
-                        const y1 = parseFloat(selectedLine.getAttribute('y1'));
-                        const x2 = parseFloat(selectedLine.getAttribute('x2'));
-                        const y2 = parseFloat(selectedLine.getAttribute('y2'));
-                        
-                        lineOffsetX = [x1 - lineStartX, x2 - lineStartX];
-                        lineOffsetY = [y1 - lineStartY, y2 - lineStartY];
-                        
-                        selectedLine.setAttribute('stroke-width', lineWidth * 2);
-                        return;
-                    }
-                    
-                    isDrawing = true;
-                    startX = getPositionXOnSvg(event);
-                    startY = getPositionYOnSvg(event);
-                    
-                    switch (currentTool) {
-                        case 'line-draw':
-                            if (selectedLine) {
-                                selectedLine.setAttribute('stroke-width', lineWidth);
-                                selectedLine = null;
-                                isMovingLine = false;
-                            }
-                            
-                            tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                            tempLine.setAttribute("x1", startX);
-                            tempLine.setAttribute("y1", startY);
-                            tempLine.setAttribute("x2", startX);
-                            tempLine.setAttribute("y2", startY);
-                            tempLine.setAttribute("stroke", lineColor);
-                            tempLine.setAttribute("stroke-width", lineWidth);
-                            svgElm_js.appendChild(tempLine);
-                            // console.log("Line created at", startX, startY);
-                            break;
-                        case 'comment-add':
-                            const x = getPositionXOnSvg(event);
-                            const y = getPositionYOnSvg(event);
-                            
-                            if (selectedComment) {
-                                selectedComment.style.outline = 'none';
-                                selectedComment = null;
-                            }
-                            
-                            const commentBox = document.createElement('div');
-                            commentBox.className = 'comment-box';
-                            commentBox.contentEditable = true;
-                            commentBox.style.position = 'absolute';
-                            const svgRect = svgElm_js.getBoundingClientRect();
-                            const clickX = event.clientX || event.touches[0].clientX;
-                            const clickY = event.clientY || event.touches[0].clientY;
-                            commentBox.style.left = (clickX - svgRect.left) + 'px';
-                            commentBox.style.top = (clickY - svgRect.top) + 'px';
-                            commentBox.style.color = textColor;
-                            commentBox.style.backgroundColor = backgroundColor;
-                            commentBox.style.fontSize = fontSize + 'px'; 
-                            commentBox.style.zIndex = '1000';
-                            commentBox.textContent = 'コメントを入力';
-                            
-                            
-                            const resizeHandle = document.createElement('div');
-                            resizeHandle.className = 'comment-resize-handle';
-                            resizeHandle.style.bottom = '0';
-                            resizeHandle.style.right = '0';
-                            resizeHandle.style.transform = 'translate(50%, 50%)';
-                            
-                            
-                            let isResizing = false;
-                            let originalWidth, originalHeight, originalX, originalY;
-
-                            resizeHandle.addEventListener('mousedown', function(e) {
-                                e.stopPropagation();
-                                isResizing = true;
-                                originalWidth = commentBox.offsetWidth;
-                                originalHeight = commentBox.offsetHeight;
-                                originalX = e.clientX;
-                                originalY = e.clientY;
-                                
-                                
-                                document.addEventListener('mousemove', resizeMove);
-                                document.addEventListener('mouseup', resizeEnd);
-                            });
-
-                            function resizeMove(e) {
-                                if (isResizing) {
-                                    const deltaX = e.clientX - originalX;
-                                    const deltaY = e.clientY - originalY;
-                                    commentBox.style.width = (originalWidth + deltaX) + 'px';
-                                    commentBox.style.height = (originalHeight + deltaY) + 'px';
-                                }
-                            }
-
-                            function resizeEnd() {
-                                isResizing = false;
-                                document.removeEventListener('mousemove', resizeMove);
-                                document.removeEventListener('mouseup', resizeEnd);
-                            }
-
-                            commentBox.addEventListener('click', function(e) {
-                                e.stopPropagation();
-                                
-                                // 既存の選択を解除
-                                if (selectedComment) {
-                                    selectedComment.style.outline = 'none';
-                                }
-                                
-                                selectedComment = commentBox;
-                                selectedComment.style.outline = '2px solid blue';
-                                
-                                document.getElementById('text-color').value = rgbToHex(window.getComputedStyle(commentBox).color);
-                                document.getElementById('background-color').value = rgbToHex(window.getComputedStyle(commentBox).backgroundColor);
-                                
-                                const currentFontSize = parseInt(window.getComputedStyle(commentBox).fontSize);
-                                fontSize = currentFontSize;
-                                updateFontSizeDisplay();
-                                
-                                document.querySelectorAll('.tool-button').forEach(b => b.classList.remove('active'));
-                                document.getElementById('comment-add').classList.add('active');
-                                currentTool = 'comment-add';
-                                
-                                document.getElementById('comment-color-picker').style.display = 'flex';
-                                document.getElementById('line-color-picker').style.display = 'none';
-                                document.getElementById('font-size-tools').style.display = 'flex';
-                            });
-
-                            svgElm.parent().append(commentBox);
-                            commentBox.appendChild(resizeHandle);
-                            break;
-                        case 'eraser':
-                            eraseStartX = startX;
-                            eraseStartY = startY;
-                            
-                            eraseRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                            eraseRect.setAttribute("x", startX);
-                            eraseRect.setAttribute("y", startY);
-                            eraseRect.setAttribute("width", "0");
-                            eraseRect.setAttribute("height", "0");
-                            eraseRect.setAttribute("fill", "rgba(128, 128, 128, 0.2)");
-                            eraseRect.setAttribute("stroke", "rgba(128, 128, 128, 0.5)");
-                            eraseRect.setAttribute("stroke-width", "1");
-                            svgElm_js.appendChild(eraseRect);
-                            break;
-                        case 'free-draw':
-                        default:
-                            pencilByMousedown(event);
-                            break;
-                    }
-                }
-            }).on(move_event, function (event) {
-                event.preventDefault();
-                if (type === "imageMoveAndZoom") {
-                    if (typeof moveContentByMousemove === 'function') {
-                        moveContentByMousemove(event);
-                    }
-                } else if (type === "pencil") {
-                    if (isMovingLine && selectedLine) {
-                        const currentX = getPositionXOnSvg(event);
-                        const currentY = getPositionYOnSvg(event);
-                        
-                        selectedLine.setAttribute("x1", lineOffsetX[0] + currentX);
-                        selectedLine.setAttribute("y1", lineOffsetY[0] + currentY);
-                        selectedLine.setAttribute("x2", lineOffsetX[1] + currentX);
-                        selectedLine.setAttribute("y2", lineOffsetY[1] + currentY);
-                        return;
-                    }
-                    
-                    if (!isDrawing) return;
-                    
-                    const currentX = getPositionXOnSvg(event);
-                    const currentY = getPositionYOnSvg(event);
-                    
-                    switch (currentTool) {
-                        case 'line-draw':
-                            if (tempLine) {
-                                tempLine.setAttribute("x2", currentX);
-                                tempLine.setAttribute("y2", currentY);
-                            }
-                            break;
-                        case 'eraser':
-                            if (eraseRect) {
-                                const width = currentX - eraseStartX;
-                                const height = currentY - eraseStartY;
-                                
-                                const x = width < 0 ? currentX : eraseStartX;
-                                const y = height < 0 ? currentY : eraseStartY;
-                                
-                                // 範囲の大きさを設定（絶対値を使用）
-                                eraseRect.setAttribute("x", x);
-                                eraseRect.setAttribute("y", y);
-                                eraseRect.setAttribute("width", Math.abs(width));
-                                eraseRect.setAttribute("height", Math.abs(height));
-                            }
-                            break;
-                        case 'free-draw':
-                        default:
-                            pencilByMousemove(event);
-                            break;
-                    }
-                }
-            }).on(end_event, function (event) {
-                event.preventDefault();
-                if (type === "imageMoveAndZoom") {
-                    moveContentByMouseup(event)
-                } else if (type === "pencil") {
-                    if (isMovingLine && selectedLine) {
-                        isMovingLine = false;
-                        return;
-                    }
-                    
-                    if (currentTool === 'line-draw' && tempLine) {
-                        // console.log("Line drawing completed");
-                        const x1 = parseFloat(tempLine.getAttribute("x1"));
-                        const y1 = parseFloat(tempLine.getAttribute("y1"));
-                        const x2 = parseFloat(tempLine.getAttribute("x2"));
-                        const y2 = parseFloat(tempLine.getAttribute("y2"));
-                        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                        if (length < 5) {
-                            tempLine.remove();
-                        }
-                    }
-                    
-                    if (currentTool === 'eraser' && eraseRect) {
-                        const eraseX = parseFloat(eraseRect.getAttribute("x"));
-                        const eraseY = parseFloat(eraseRect.getAttribute("y"));
-                        const eraseWidth = parseFloat(eraseRect.getAttribute("width"));
-                        const eraseHeight = parseFloat(eraseRect.getAttribute("height"));
-                        
-                        const elements = Array.from(svgElm_js.children);
-                        for (let i = 0; i < elements.length; i++) {
-                            const element = elements[i];
-                            if (element !== eraseRect && (element.tagName === 'path' || 
-                                element.tagName === 'line' || 
-                                element.tagName === 'foreignObject')) {
-                                
-                                let isIntersecting = false;
-                                
-                                if (element.tagName === 'path') {
-                                    const points = element.getAttribute('d').split(' ');
-                                    for (let j = 0; j < points.length; j++) {
-                                        if (points[j] === 'M' || points[j] === 'L') {
-                                            const pointX = parseFloat(points[j + 1]);
-                                            const pointY = parseFloat(points[j + 2]);
-                                            if (pointX >= eraseX && pointX <= eraseX + eraseWidth &&
-                                                pointY >= eraseY && pointY <= eraseY + eraseHeight) {
-                                                isIntersecting = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                } else if (element.tagName === 'line') {
-                                    const x1 = parseFloat(element.getAttribute('x1'));
-                                    const y1 = parseFloat(element.getAttribute('y1'));
-                                    const x2 = parseFloat(element.getAttribute('x2'));
-                                    const y2 = parseFloat(element.getAttribute('y2'));
-                                    
-                                    if ((x1 >= eraseX && x1 <= eraseX + eraseWidth &&
-                                         y1 >= eraseY && y1 <= eraseY + eraseHeight) ||
-                                        (x2 >= eraseX && x2 <= eraseX + eraseWidth &&
-                                         y2 >= eraseY && y2 <= eraseY + eraseHeight)) {
-                                        isIntersecting = true;
-                                    }
-                                } else if (element.tagName === 'foreignObject') {
-                                    const elemX = parseFloat(element.getAttribute('x'));
-                                    const elemY = parseFloat(element.getAttribute('y'));
-                                    if (elemX >= eraseX && elemX <= eraseX + eraseWidth &&
-                                        elemY >= eraseY && elemY <= eraseY + eraseHeight) {
-                                        isIntersecting = true;
-                                    }
-                                }
-                                
-                                if (isIntersecting) {
-                                    element.remove();
-                                }
-                            }
-                        }
-                        
-                        const commentBoxes = document.querySelectorAll('.comment-box');
-                        const svgRect = svgElm_js.getBoundingClientRect();
-                        
-                        commentBoxes.forEach(box => {
-                            const boxRect = box.getBoundingClientRect();
-                            const boxX = (boxRect.left - svgRect.left) * (parseFloat(svgElm_js.getAttribute('viewBox').split(' ')[2]) / svgRect.width);
-                            const boxY = (boxRect.top - svgRect.top) * (parseFloat(svgElm_js.getAttribute('viewBox').split(' ')[3]) / svgRect.height);
-                            
-                            if (boxX >= eraseX && boxX <= eraseX + eraseWidth &&
-                                boxY >= eraseY && boxY <= eraseY + eraseHeight) {
-                                box.remove();
-                                
-                                if (selectedComment === box) {
-                                    selectedComment = null;
-                                }
-                            }
-                        });
-                        
-                        eraseRect.remove();
-                        eraseRect = null;
-                    }
-                    
-                    isDrawing = false;
-                    if (currentTool === 'free-draw') {
-                        pencilByMouseup(event);
-                    }
-                    tempLine = null;
-                }
-            })
-        }
-
-        main();
-
+        // 書き込みモードの切り替え
         document.getElementById("board-type").addEventListener("click", function (e) {
             if (type === "imageMoveAndZoom") {
                 type = "pencil" 
@@ -694,7 +381,479 @@
                     selectedComment = null;
                 }
             }
-        })
+        });
+
+        // フォントサイズ変更ボタンのイベントリスナー
+        document.getElementById('increase-font-size').addEventListener('click', function() {
+            if (fontSize < 36) { // 最大サイズを36pxに制限
+                fontSize += 2;
+                updateFontSizeDisplay();
+                
+                // 選択中のコメントがあれば、そのフォントサイズを変更
+                if (selectedComment) {
+                    selectedComment.style.fontSize = fontSize + 'px';
+                }
+            }
+        });
+        
+        document.getElementById('decrease-font-size').addEventListener('click', function() {
+            if (fontSize > 8) { // 最小サイズを8pxに制限
+                fontSize -= 2;
+                updateFontSizeDisplay();
+                
+                // 選択中のコメントがあれば、そのフォントサイズを変更
+                if (selectedComment) {
+                    selectedComment.style.fontSize = fontSize + 'px';
+                }
+            }
+        });
+        
+        // フォントサイズの表示を更新する関数
+        function updateFontSizeDisplay() {
+            document.getElementById('font-size-value').textContent = fontSize;
+        }
+
+        function main() {
+            $("#drawingCanvas").on(start_event, function (event) {
+                // コメント要素上でのクリックは処理しない
+                if (event.target.classList && event.target.classList.contains('comment-box')) {
+                    return;
+                }
+                
+                event.preventDefault();
+                if (type === "imageMoveAndZoom") {
+                    moveContentByMousedown(event);
+                } else if (type === "pencil") {
+                    // 直線を選択する処理
+                    if (currentTool === 'line-draw' && event.target.tagName === 'line') {
+                        // 既存の線をクリックした場合
+                        selectedLine = event.target;
+                        isMovingLine = true;
+                        isDrawing = false;
+                        
+                        // 線の現在位置を保存
+                        lineStartX = getPositionXOnSvg(event);
+                        lineStartY = getPositionYOnSvg(event);
+                        
+                        // 線の始点と終点を取得
+                        const x1 = parseFloat(selectedLine.getAttribute('x1'));
+                        const y1 = parseFloat(selectedLine.getAttribute('y1'));
+                        const x2 = parseFloat(selectedLine.getAttribute('x2'));
+                        const y2 = parseFloat(selectedLine.getAttribute('y2'));
+                        
+                        // クリック位置と線の始点との差分を計算
+                        lineOffsetX = [x1 - lineStartX, x2 - lineStartX];
+                        lineOffsetY = [y1 - lineStartY, y2 - lineStartY];
+                        
+                        // 選択された線を強調表示
+                        selectedLine.setAttribute('stroke-width', lineWidth * 2);
+                        return;
+                    }
+                    
+                    isDrawing = true;
+                    startX = getPositionXOnSvg(event);
+                    startY = getPositionYOnSvg(event);
+                    
+                    switch (currentTool) {
+                        case 'line-draw':
+                            // 選択中の線があれば選択解除
+                            if (selectedLine) {
+                                selectedLine.setAttribute('stroke-width', lineWidth);
+                                selectedLine = null;
+                                isMovingLine = false;
+                            }
+                            
+                            // 直線描画の開始
+                            tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                            tempLine.setAttribute("x1", startX);
+                            tempLine.setAttribute("y1", startY);
+                            tempLine.setAttribute("x2", startX);
+                            tempLine.setAttribute("y2", startY);
+                            // 現在設定されている線の色を使用
+                            tempLine.setAttribute("stroke", lineColor);
+                            tempLine.setAttribute("stroke-width", lineWidth);
+                            svgElm_js.appendChild(tempLine);
+                            console.log("Line created at", startX, startY);
+                            break;
+                        case 'comment-add':
+                            // コメント追加
+                            const x = getPositionXOnSvg(event);
+                            const y = getPositionYOnSvg(event);
+                            
+                            // 既存のコメント選択を解除
+                            if (selectedComment) {
+                                selectedComment.style.outline = 'none';
+                            }
+                            
+                            // 新しいコメントボックスを作成
+                            const commentBox = document.createElement('div');
+                            commentBox.className = 'comment-box';
+                            commentBox.contentEditable = true;
+                            commentBox.style.position = 'absolute';
+                            // クリックした位置に正確に配置するための座標計算
+                            const svgRect = svgElm_js.getBoundingClientRect();
+                            const clickX = event.clientX || (event.touches && event.touches[0].clientX);
+                            const clickY = event.clientY || (event.touches && event.touches[0].clientY);
+                            commentBox.style.left = (clickX - svgRect.left) + 'px';
+                            commentBox.style.top = (clickY - svgRect.top) + 'px';
+                            commentBox.style.color = textColor;
+                            commentBox.style.backgroundColor = backgroundColor;
+                            commentBox.style.fontSize = fontSize + 'px'; // 現在のフォントサイズを設定
+                            commentBox.style.zIndex = '1000';
+                            commentBox.textContent = 'コメントを入力';
+                            
+                            // リサイズハンドルを追加
+                            const resizeHandle = document.createElement('div');
+                            resizeHandle.className = 'comment-resize-handle';
+                            resizeHandle.style.position = 'absolute';
+                            resizeHandle.style.bottom = '0';
+                            resizeHandle.style.right = '0';
+                            resizeHandle.style.transform = 'translate(50%, 50%)';
+                            
+                            // コメントボックスをクリックしたときの処理
+                            commentBox.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                
+                                // 既存の選択を解除
+                                if (selectedComment && selectedComment !== commentBox) {
+                                    selectedComment.style.outline = 'none';
+                                }
+                                
+                                // このコメントを選択状態にする
+                                selectedComment = commentBox;
+                                selectedComment.style.outline = '2px solid blue';
+                                
+                                // カラーピッカーの値を更新
+                                document.getElementById('text-color').value = rgbToHex(window.getComputedStyle(commentBox).color);
+                                document.getElementById('background-color').value = rgbToHex(window.getComputedStyle(commentBox).backgroundColor);
+                                
+                                // フォントサイズの値を更新
+                                const currentFontSize = parseInt(window.getComputedStyle(commentBox).fontSize);
+                                fontSize = currentFontSize;
+                                updateFontSizeDisplay();
+                                
+                                // コメントツールを選択状態にする
+                                document.querySelectorAll('.tool-button').forEach(b => {
+                                    b.classList.remove('active');
+                                    b.classList.remove('btn-primary');
+                                    b.classList.add('btn-outline-secondary');
+                                });
+                                const commentButton = document.getElementById('comment-add');
+                                commentButton.classList.add('active');
+                                commentButton.classList.remove('btn-outline-secondary');
+                                commentButton.classList.add('btn-primary');
+                                currentTool = 'comment-add';
+                                
+                                // カラーピッカーとフォントサイズツールを表示
+                                document.getElementById('comment-color-picker').style.display = 'flex';
+                                document.getElementById('line-color-picker').style.display = 'none';
+                                document.getElementById('font-size-tools').style.display = 'flex';
+                            });
+                            
+                            // ドラッグ機能の実装
+                            let isDragging = false;
+                            let startDragX, startDragY;
+                            let startLeft, startTop;
+                            
+                            commentBox.addEventListener('mousedown', function(e) {
+                                // リサイズハンドルでの操作時は処理しない
+                                if (e.target === resizeHandle) return;
+                                
+                                isDragging = true;
+                                startDragX = e.clientX;
+                                startDragY = e.clientY;
+                                startLeft = parseInt(commentBox.style.left) || 0;
+                                startTop = parseInt(commentBox.style.top) || 0;
+                                
+                                // ドラッグ中のイベント
+                                document.addEventListener('mousemove', dragMove);
+                                document.addEventListener('mouseup', dragEnd);
+                                
+                                // カーソルをドラッグ形式に変更
+                                commentBox.style.cursor = 'grabbing';
+                            });
+                            
+                            function dragMove(e) {
+                                if (!isDragging) return;
+                                
+                                const dx = e.clientX - startDragX;
+                                const dy = e.clientY - startDragY;
+                                
+                                commentBox.style.left = (startLeft + dx) + 'px';
+                                commentBox.style.top = (startTop + dy) + 'px';
+                            }
+                            
+                            function dragEnd() {
+                                isDragging = false;
+                                document.removeEventListener('mousemove', dragMove);
+                                document.removeEventListener('mouseup', dragEnd);
+                                
+                                // カーソルを元に戻す
+                                commentBox.style.cursor = 'auto';
+                            }
+                            
+                            // リサイズ機能の実装
+                            let isResizing = false;
+                            let originalWidth, originalHeight, originalX, originalY;
+                            
+                            resizeHandle.addEventListener('mousedown', function(e) {
+                                e.stopPropagation();
+                                isResizing = true;
+                                originalWidth = commentBox.offsetWidth;
+                                originalHeight = commentBox.offsetHeight;
+                                originalX = e.clientX;
+                                originalY = e.clientY;
+                                
+                                // マウス移動イベントを追加
+                                document.addEventListener('mousemove', resizeMove);
+                                document.addEventListener('mouseup', resizeEnd);
+                            });
+                            
+                            function resizeMove(e) {
+                                if (isResizing) {
+                                    const deltaX = e.clientX - originalX;
+                                    const deltaY = e.clientY - originalY;
+                                    
+                                    // 最小サイズを設定
+                                    const newWidth = Math.max(100, originalWidth + deltaX);
+                                    const newHeight = Math.max(50, originalHeight + deltaY);
+                                    
+                                    commentBox.style.width = newWidth + 'px';
+                                    commentBox.style.height = newHeight + 'px';
+                                }
+                            }
+                            
+                            function resizeEnd() {
+                                isResizing = false;
+                                document.removeEventListener('mousemove', resizeMove);
+                                document.removeEventListener('mouseup', resizeEnd);
+                            }
+                            
+                            // SVGの親要素にコメントボックスを追加
+                            svgElm.parent().append(commentBox);
+                            commentBox.appendChild(resizeHandle);
+                            
+                            // 作成直後に選択状態にする
+                            selectedComment = commentBox;
+                            commentBox.style.outline = '2px solid blue';
+                            commentBox.focus();
+                            
+                            // テキスト全選択
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            range.selectNodeContents(commentBox);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                            
+                            isDrawing = false;
+                            break;
+                        case 'eraser':
+                            // 消しゴムの範囲選択開始
+                            eraseStartX = startX;
+                            eraseStartY = startY;
+                            
+                            // 範囲表示用の矩形を作成
+                            eraseRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                            eraseRect.setAttribute("x", startX);
+                            eraseRect.setAttribute("y", startY);
+                            eraseRect.setAttribute("width", "0");
+                            eraseRect.setAttribute("height", "0");
+                            eraseRect.setAttribute("fill", "rgba(128, 128, 128, 0.2)");
+                            eraseRect.setAttribute("stroke", "rgba(128, 128, 128, 0.5)");
+                            eraseRect.setAttribute("stroke-width", "1");
+                            svgElm_js.appendChild(eraseRect);
+                            break;
+                        case 'free-draw':
+                            pencilByMousedown(event);
+                            break;
+                        default:
+                            pencilByMousedown(event);
+                            break;
+                    }
+                }
+            }).on(move_event, function (event) {
+                event.preventDefault();
+                if (type === "imageMoveAndZoom") {
+                    moveContentByMousedown(event);
+                } else if (type === "pencil") {
+                    // 線の移動処理
+                    if (isMovingLine && selectedLine) {
+                        const currentX = getPositionXOnSvg(event);
+                        const currentY = getPositionYOnSvg(event);
+                        
+                        // 線の新しい位置を設定
+                        selectedLine.setAttribute("x1", lineOffsetX[0] + currentX);
+                        selectedLine.setAttribute("y1", lineOffsetY[0] + currentY);
+                        selectedLine.setAttribute("x2", lineOffsetX[1] + currentX);
+                        selectedLine.setAttribute("y2", lineOffsetY[1] + currentY);
+                        return;
+                    }
+                    
+                    if (!isDrawing) return;
+                    
+                    const currentX = getPositionXOnSvg(event);
+                    const currentY = getPositionYOnSvg(event);
+                    
+                    switch (currentTool) {
+                        case 'line-draw':
+                            // 直線の更新
+                            if (tempLine) {
+                                tempLine.setAttribute("x2", currentX);
+                                tempLine.setAttribute("y2", currentY);
+                            }
+                            break;
+                        case 'eraser':
+                            // 消しゴムの範囲更新
+                            if (eraseRect) {
+                                const width = currentX - eraseStartX;
+                                const height = currentY - eraseStartY;
+                                
+                                // 範囲の開始位置を調整（負の値の場合）
+                                const x = width < 0 ? currentX : eraseStartX;
+                                const y = height < 0 ? currentY : eraseStartY;
+                                
+                                // 範囲の大きさを設定（絶対値を使用）
+                                eraseRect.setAttribute("x", x);
+                                eraseRect.setAttribute("y", y);
+                                eraseRect.setAttribute("width", Math.abs(width));
+                                eraseRect.setAttribute("height", Math.abs(height));
+                            }
+                            break;
+                        case 'free-draw':
+                            pencilByMousemove(event);
+                            break;
+                        default:
+                            // デフォルトは自由描画の移動処理
+                            pencilByMousemove(event);
+                            break;
+                    }
+                }
+            }).on(end_event, function (event) {
+                event.preventDefault();
+                if (type === "imageMoveAndZoom") {
+                    moveContentByMouseup(event);
+                } else if (type === "pencil") {
+                    // 線の移動終了処理
+                    if (isMovingLine && selectedLine) {
+                        isMovingLine = false;
+                        return;
+                    }
+                    
+                    // 直線描画完了の処理
+                    if (currentTool === 'line-draw' && tempLine) {
+                        console.log("Line drawing completed");
+                        // 短すぎる線は削除
+                        const x1 = parseFloat(tempLine.getAttribute("x1"));
+                        const y1 = parseFloat(tempLine.getAttribute("y1"));
+                        const x2 = parseFloat(tempLine.getAttribute("x2"));
+                        const y2 = parseFloat(tempLine.getAttribute("y2"));
+                        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        if (length < 5) {
+                            tempLine.remove();
+                        }
+                        tempLine = null;
+                    }
+                    
+                    // 消しゴムの処理
+                    if (currentTool === 'eraser' && eraseRect) {
+                        // 選択範囲の座標を取得
+                        const eraseX = parseFloat(eraseRect.getAttribute("x"));
+                        const eraseY = parseFloat(eraseRect.getAttribute("y"));
+                        const eraseWidth = parseFloat(eraseRect.getAttribute("width"));
+                        const eraseHeight = parseFloat(eraseRect.getAttribute("height"));
+                        
+                        // SVG内の全要素をチェック
+                        const elements = Array.from(svgElm_js.children);
+                        for (let i = 0; i < elements.length; i++) {
+                            const element = elements[i];
+                            // 消去対象の要素かチェック（eraseRect自体は除外）
+                            if (element !== eraseRect && (element.tagName === 'path' || 
+                                element.tagName === 'line')) {
+                                
+                                let isIntersecting = false;
+                                
+                                if (element.tagName === 'path') {
+                                    // パスの場合、全ての点をチェック
+                                    const points = element.getAttribute('d').split(' ');
+                                    for (let j = 0; j < points.length; j++) {
+                                        if (points[j] === 'M' || points[j] === 'L') {
+                                            if (j + 2 < points.length) {
+                                                const pointX = parseFloat(points[j + 1]);
+                                                const pointY = parseFloat(points[j + 2]);
+                                                if (pointX >= eraseX && pointX <= eraseX + eraseWidth &&
+                                                    pointY >= eraseY && pointY <= eraseY + eraseHeight) {
+                                                    isIntersecting = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else if (element.tagName === 'line') {
+                                    // 直線の場合、始点と終点をチェック
+                                    const x1 = parseFloat(element.getAttribute('x1'));
+                                    const y1 = parseFloat(element.getAttribute('y1'));
+                                    const x2 = parseFloat(element.getAttribute('x2'));
+                                    const y2 = parseFloat(element.getAttribute('y2'));
+                                    
+                                    if ((x1 >= eraseX && x1 <= eraseX + eraseWidth &&
+                                         y1 >= eraseY && y1 <= eraseY + eraseHeight) ||
+                                        (x2 >= eraseX && x2 <= eraseX + eraseWidth &&
+                                         y2 >= eraseY && y2 <= eraseY + eraseHeight)) {
+                                        isIntersecting = true;
+                                    }
+                                }
+                                
+                                // 交差している要素を削除
+                                if (isIntersecting) {
+                                    element.remove();
+                                    
+                                    // 選択中の線が削除された場合、参照をクリア
+                                    if (selectedLine === element) {
+                                        selectedLine = null;
+                                        isMovingLine = false;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // コメントボックスも削除
+                        const commentBoxes = document.querySelectorAll('.comment-box');
+                        const svgRect = svgElm_js.getBoundingClientRect();
+                        
+                        commentBoxes.forEach(box => {
+                            const boxRect = box.getBoundingClientRect();
+                            
+                            // SVG座標系に変換
+                            const boxX = (boxRect.left - svgRect.left) * (parseFloat(svgElm_js.getAttribute('viewBox').split(' ')[2]) / svgRect.width);
+                            const boxY = (boxRect.top - svgRect.top) * (parseFloat(svgElm_js.getAttribute('viewBox').split(' ')[3]) / svgRect.height);
+                            
+                            // ボックスの中心が選択範囲内にあるかチェック
+                            if (boxX >= eraseX && boxX <= eraseX + eraseWidth &&
+                                boxY >= eraseY && boxY <= eraseY + eraseHeight) {
+                                box.remove();
+                                
+                                // 選択中のコメントが削除された場合、参照をクリア
+                                if (selectedComment === box) {
+                                    selectedComment = null;
+                                }
+                            }
+                        });
+                        
+                        // 消しゴムの範囲表示を削除
+                        eraseRect.remove();
+                        eraseRect = null;
+                    }
+                    
+                    isDrawing = false;
+                    if (currentTool === 'free-draw') {
+                        pencilByMouseup(event);
+                    }
+                    tempLine = null;
+                }
+            });
+        }
+
+        main();
 
         document.getElementById("touch-type").addEventListener("click", function (e) {
             if (touchType === "move") {
@@ -763,17 +922,19 @@
 
             id = Math.random().toString(32).substring(2);
 
+            // 自由入力の色を赤色に固定
             browserDrawData = {
                 "id": id,
                 'type': "draw",
                 "d": "",
                 "fill": "none",
-                "stroke": "red",
-                "strokeSize": "3",
+                "stroke": "red", // 色を赤色に固定
+                "strokeSize": lineWidth,
                 "stroke-linecap": "round",
                 "x": 0,
                 "y": 0
-            }
+            };
+            
             var pathElm = document.createElementNS("http://www.w3.org/2000/svg", "path");
             var path_attr = {
                 "id": browserDrawData.id,
@@ -782,39 +943,24 @@
                 "stroke": browserDrawData.stroke,
                 "stroke-width": browserDrawData.strokeSize,
                 "stroke-linecap": "round"
-            }
+            };
+            
             for (let key in path_attr) {
-                pathElm.setAttribute(key, path_attr[key])
+                pathElm.setAttribute(key, path_attr[key]);
             }
 
             svgElm_js.appendChild(pathElm);
             
-            var linetoX = [],
-                linetoY = [],
-                cntMoveto = 0;
-            linetoStr = 'M ' + movetoX + ' ' + movetoY + ' ';
-        }
-        
-        function pencilByMousemove(event) {
-            var linetoX = [],
-                linetoY = [],
-                cntMoveto = 0;
-                
-            linetoX[cntMoveto] = parseInt(getPositionXOnSvg(event)); 
-            linetoY[cntMoveto] = parseInt(getPositionYOnSvg(event)); 
-            linetoStr = linetoStr + " L " + linetoX[cntMoveto] + " " + linetoY[cntMoveto]; 
-
-            browserDrawingData = {
-                'id': $("path:last").attr("id"),
-                'type': "drawing",
-                "d": linetoStr
-            }
-            $("path:last").attr("d", browserDrawingData.d);
-            cntMoveto++;
+            // グローバルスコープで使えるように変数を初期化
+            window.linetoStr = 'M ' + movetoX + ' ' + movetoY + ' ';
+            console.log("自由入力開始: ", movetoX, movetoY);
         }
 
-        function pencilByMouseup() {
-            browserDrawData["d"] = linetoStr;
+        function pencilByMouseup(event) {
+            console.log("自由入力終了");
+            // イベントリスナーの削除処理を削除（main内で処理されるため）
+            // $("#drawingCanvas").off(move_event); // この行を削除
+            // $("#drawingCanvas").off(out_event);  // この行を削除
         }
 
         function getViewBox() {
@@ -867,6 +1013,7 @@
             return result
         }
 
+
         function createImage(cx, cy, x, y, w, h, href, id, clipPath) {
             var image_elm = document.createElementNS("http://www.w3.org/2000/svg", "image");
             image_elm.setAttribute("href", href);
@@ -900,21 +1047,648 @@
             return mtx;
         }
 
-        function debugSvgElements() {
-            const elements = svgElm_js.children;
-            // console.log("SVG elements count:", elements.length);
-            Array.from(elements).forEach((el, index) => {
-                // console.log(`Element ${index}:`, el.tagName, el);
+        function rightDisplay(aspectRatio, image) {
+            const rightWidth = svgElm_js_width / 2;
+            const imageWidth = rightWidth;
+            const imageHeight = imageWidth / aspectRatio;
+            const centerPosX = rightWidth / 2;
+            const imageWidthHalf = imageWidth / 2;
+            const x = centerPosX - imageWidthHalf;
+            if (maxHeight < imageHeight) {
+                maxHeight = imageHeight
+            }
+            clipRightRect.height.baseVal.value = maxHeight
+            clipLeftRect.height.baseVal.value = maxHeight
+            const textAspect = 45 / 1069;
+            const textSize = svgElm_js_width * textAspect;
+            svgElm_js.style.height = maxHeight + 100
+            var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
+                .map(s => parseFloat(s));
+            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(maxHeight + 100)
+            svgElm_js.setAttribute("viewBox", init_viewBox)
+            const y = 20;
+            createImage(x, y, 0, 0, imageWidth, imageHeight, image, "left-image", "url(#clipleft)")
+        }
+
+        function leftDisplay(aspectRatio, image) {
+            const leftWidth = svgElm_js_width / 2;
+            const imageWidth = leftWidth;
+            const imageHeight = imageWidth / aspectRatio;
+            const centerPosX = (leftWidth / 2) + leftWidth;
+            const imageWidthHalf = imageWidth / 2;
+            const x = leftWidth;
+            const textAspect = 45 / 1069;
+            const textSize = svgElm_js_width * textAspect;
+            if (maxHeight < imageHeight) {
+                maxHeight = imageHeight
+            }
+            clipRightRect.height.baseVal.value = maxHeight
+            clipLeftRect.height.baseVal.value = maxHeight
+            svgElm_js.style.height = maxHeight + 100
+            var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
+                .map(s => parseFloat(s));
+            var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(maxHeight + 100)
+            svgElm_js.setAttribute("viewBox", init_viewBox)
+
+            const y = 20;
+
+            createImage(x, y, 0, 0, imageWidth, imageHeight, image, "right-image", "url(#clipright)")
+            createTextBox(x, y + maxHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("target-image-date").value, textSize, "black")
+            createTextBox(20, y + maxHeight + textSize, 0, 0, "jgnjakfonk", document.getElementById("subject-image-date").value, textSize, "black")
+        }
+
+        var aspectRatio;
+
+        var maxHeight = 0;
+
+        function createImageAspectTarget(image) {
+            const imageUrl = image;
+            const img = new Image();
+            img.onload = function (result) {
+                aspectRatio = img.naturalWidth / img.naturalHeight;
+                console.log(`Aspect Ratio: ${aspectRatio} (${img.naturalWidth} / ${img.naturalHeight})`);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                const base64ImageData = canvas.toDataURL('image/png');
+                leftDisplay(aspectRatio, base64ImageData);
+            };
+            img.onerror = function () {
+                console.error('画像を読み込めませんでした。');
+            };
+            img.crossOrigin = 'Anonymous';
+            img.src = imageUrl;
+        }
+
+
+        function createImageAspectSubject(image) {
+            const imageUrl = image;
+            const img = new Image();
+            img.onload = function () {
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                console.log(`Aspect Ratio: ${aspectRatio} (${img.naturalWidth} / ${img.naturalHeight})`);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                const base64ImageData = canvas.toDataURL('image/png');
+                rightDisplay(aspectRatio, base64ImageData);
+                createImageAspectTarget(document.getElementById("target_image_url").src);
+            };
+            img.onerror = function () {
+                console.error('画像を読み込めませんでした。');
+            };
+            img.crossOrigin = 'Anonymous';
+            img.src = imageUrl;
+        }
+
+        createImageAspectSubject(document.getElementById("subject_image_url").src);
+
+        function createTextBox(cx, cy, x, y, id, text, size, color) {
+            var text_box = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text_box.setAttribute("x", cx);
+            text_box.setAttribute("y", cy);
+            text_box.setAttribute("font-size", size);
+            text_box.setAttribute("fill", color);
+            text_box.setAttribute("id", id);
+            text_box.textContent = text;
+            var transform = text_box.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
+            if (!text_box.hasAttribute("transform")) {
+                text_box.transform.baseVal.appendItem(transform);
+            }
+            var Matrix = text_box.transform.baseVal[0].matrix;
+            Matrix.e += x;
+            Matrix.f += y;
+
+            svgElm.append(text_box);
+        }
+
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.crossOrigin = "anonymous"; // CORS 問題を回避するために追加
+                image.onload = () => resolve(image);
+                image.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+                image.src = url;
             });
         }
-        
-        setInterval(debugSvgElements, 5000);
 
+        async function previewImage() {
+            try {
+                // SVG要素を取得
+                const svg = document.querySelector("svg");
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const canvas = document.createElement("canvas");
+                const board = document.getElementById('board');
+
+                // キャンバスサイズを設定
+                const width = svg.width.baseVal.value;
+                const height = svg.height.baseVal.value;
+                const pixelRatio = window.devicePixelRatio || 1;
+                
+                canvas.width = width * pixelRatio;
+                canvas.height = height * pixelRatio;
+                canvas.style.width = width + "px";
+                canvas.style.height = height + "px";
+
+                // 2Dコンテキストを取得して高解像度対応
+                const ctx = canvas.getContext("2d");
+                ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                
+                // 背景を白で塗りつぶす
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, width, height);
+                
+                // SVGをBlobに変換
+                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+
+                // SVGを画像として読み込み
+                const image = await loadImage(url);
+                
+                // SVGを描画
+                ctx.drawImage(image, 0, 0, parseInt(canvas.style.width), parseInt(canvas.style.height));
+                
+                // 使用済みのBlobURLを解放
+                URL.revokeObjectURL(url);
+
+                // コメント要素を描画
+                const commentBoxes = document.querySelectorAll('.comment-box');
+                const svgRect = svg.getBoundingClientRect();
+                
+                commentBoxes.forEach(comment => {
+                    const commentRect = comment.getBoundingClientRect();
+                    
+                    // コメントの位置をSVG相対座標に変換
+                    const commentLeft = commentRect.left - svgRect.left;
+                    const commentTop = commentRect.top - svgRect.top;
+                    const commentWidth = comment.offsetWidth;
+                    const commentHeight = comment.offsetHeight;
+                    
+                    // コメントの背景を描画
+                    ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
+                    ctx.fillRect(commentLeft, commentTop, commentWidth, commentHeight);
+                    
+                    // コメントの境界線（あれば）
+                    const borderWidth = parseInt(window.getComputedStyle(comment).borderWidth) || 0;
+                    if (borderWidth > 0) {
+                        ctx.strokeStyle = window.getComputedStyle(comment).borderColor;
+                        ctx.lineWidth = borderWidth;
+                        ctx.strokeRect(commentLeft, commentTop, commentWidth, commentHeight);
+                    }
+                    
+                    // 選択されたコメントの青い枠（outlineがある場合）
+                    if (comment.style.outline && comment.style.outline.includes('solid blue')) {
+                        ctx.strokeStyle = 'blue';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(commentLeft - 1, commentTop - 1, commentWidth + 2, commentHeight + 2);
+                    }
+                    
+                    // コメントのテキストを描画
+                    const fontSize = window.getComputedStyle(comment).fontSize;
+                    const fontFamily = window.getComputedStyle(comment).fontFamily;
+                    ctx.font = `${fontSize} ${fontFamily}`;
+                    ctx.fillStyle = window.getComputedStyle(comment).color;
+                    ctx.textBaseline = 'top';
+                    
+                    // テキストの内容を取得し、改行で分割
+                    const text = comment.textContent;
+                    const lines = text.split(/\r?\n/);
+                    
+                    // 各行のテキストを描画（単純な行分割）
+                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
+                    let yPos = commentTop + 8; // パディングの分だけオフセット
+                    
+                    lines.forEach(line => {
+                        ctx.fillText(line, commentLeft + 8, yPos); // パディングの分だけオフセット
+                        yPos += lineHeight;
+                    });
+                });
+
+                // PNGとして出力
+                const pngDataUrl = canvas.toDataURL('image/png');
+                document.getElementById("preview").src = pngDataUrl;
+                document.getElementById("preview").style.display = "block";
+            } catch (error) {
+                console.error('Error during SVG to canvas conversion:', error);
+            }
+        }
+
+        async function initImageLoad() {
+            var svg = document.querySelector("svg");
+            var svgData = new XMLSerializer().serializeToString(svg);
+            var canvas = document.createElement("canvas");
+            canvas.width = svg.width.baseVal.value;
+            canvas.height = svg.height.baseVal.value;
+
+            const ctx = canvas.getContext("2d");
+            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+
+            const image = await loadImage(url);
+            ctx.drawImage(image, 0, 0);
+            URL.revokeObjectURL(url);
+
+            const pngDataUrl = canvas.toDataURL('image/png');
+        }
+
+        async function downloadBoard() {
+            try {
+                console.log("downloadBoard 実行開始");
+                const svg = document.querySelector("svg");
+                const svgData = new XMLSerializer().serializeToString(svg);
+                console.log("SVGデータ:", svgData.substring(0, 200) + "..."); // SVGデータの先頭部分をログ出力
+                
+                // コメント要素の存在確認
+                const commentBoxes = document.querySelectorAll('.comment-box');
+                console.log("コメント要素数:", commentBoxes.length);
+                if (commentBoxes.length > 0) {
+                    console.log("最初のコメント内容:", commentBoxes[0].textContent);
+                    console.log("コメント位置:", commentBoxes[0].style.left, commentBoxes[0].style.top);
+                }
+                
+                const canvas = document.createElement("canvas");
+                
+                const pixelRatio = window.devicePixelRatio || 1;
+                console.log("デバイスピクセル比:", pixelRatio);
+                const viewBox = svg.viewBox.baseVal;
+                console.log("ViewBox:", viewBox.x, viewBox.y, viewBox.width, viewBox.height);
+                
+                canvas.width = viewBox.width * pixelRatio;
+                canvas.height = viewBox.height * pixelRatio;
+                console.log("Canvas サイズ:", canvas.width, canvas.height);
+
+                // スタイルの幅と高さを設定
+                canvas.style.width = viewBox.width + "px";
+                canvas.style.height = viewBox.height + "px";
+
+                // 2Dコンテキストを取得して高解像度対応
+                const ctx = canvas.getContext("2d");
+                ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                
+                // 背景を白で塗りつぶす
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, viewBox.width, viewBox.height);
+                console.log("キャンバス背景を塗りつぶし");
+                
+                // SVGをBlobに変換
+                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(svgBlob);
+                console.log("SVG Blob URL 作成");
+
+                // SVGを画像として読み込み
+                const image = await loadImage(url);
+                console.log("SVG画像ロード完了", image.width, image.height);
+                
+                // SVGを描画
+                ctx.drawImage(image, 0, 0, parseInt(canvas.style.width), parseInt(canvas.style.height));
+                console.log("SVGをキャンバスに描画");
+                
+                // 使用済みのBlobURLを解放
+                URL.revokeObjectURL(url);
+
+                // ここで、コメント要素も描画する処理を追加（previewImage関数と同様）
+                console.log("コメント要素の描画を開始");
+                const svgRect = svg.getBoundingClientRect();
+                
+                commentBoxes.forEach((comment, index) => {
+                    const commentRect = comment.getBoundingClientRect();
+                    
+                    // コメントの位置をSVG相対座標に変換
+                    const commentLeft = commentRect.left - svgRect.left;
+                    const commentTop = commentRect.top - svgRect.top;
+                    const commentWidth = comment.offsetWidth;
+                    const commentHeight = comment.offsetHeight;
+                    
+                    console.log(`コメント ${index + 1} 情報:`, {
+                        text: comment.textContent,
+                        left: commentLeft,
+                        top: commentTop,
+                        width: commentWidth,
+                        height: commentHeight,
+                        color: window.getComputedStyle(comment).color,
+                        bgColor: window.getComputedStyle(comment).backgroundColor
+                    });
+                    
+                    // コメントの背景を描画
+                    ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
+                    ctx.fillRect(commentLeft, commentTop, commentWidth, commentHeight);
+                    
+                    // コメントの境界線（あれば）
+                    const borderWidth = parseInt(window.getComputedStyle(comment).borderWidth) || 0;
+                    if (borderWidth > 0) {
+                        ctx.strokeStyle = window.getComputedStyle(comment).borderColor;
+                        ctx.lineWidth = borderWidth;
+                        ctx.strokeRect(commentLeft, commentTop, commentWidth, commentHeight);
+                    }
+                    
+                    // 選択されたコメントの青い枠（outlineがある場合）
+                    if (comment.style.outline && comment.style.outline.includes('solid blue')) {
+                        ctx.strokeStyle = 'blue';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(commentLeft - 1, commentTop - 1, commentWidth + 2, commentHeight + 2);
+                    }
+                    
+                    // コメントのテキストを描画
+                    const fontSize = window.getComputedStyle(comment).fontSize;
+                    const fontFamily = window.getComputedStyle(comment).fontFamily;
+                    ctx.font = `${fontSize} ${fontFamily}`;
+                    ctx.fillStyle = window.getComputedStyle(comment).color;
+                    ctx.textBaseline = 'top';
+                    
+                    // テキストの内容を取得し、改行で分割
+                    const text = comment.textContent;
+                    const lines = text.split(/\r?\n/);
+                    
+                    // 各行のテキストを描画（単純な行分割）
+                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
+                    let yPos = commentTop + 8; // パディングの分だけオフセット
+                    
+                    lines.forEach(line => {
+                        ctx.fillText(line, commentLeft + 8, yPos); // パディングの分だけオフセット
+                        yPos += lineHeight;
+                    });
+                });
+                
+                console.log("コメント要素の描画完了");
+
+                // PNGとして出力
+                const pngDataUrl = canvas.toDataURL('image/png');
+                console.log("PNG生成完了", pngDataUrl.substring(0, 50) + "...");
+
+                console.log("サーバーへの送信開始");
+                uploadImageToServer(pngDataUrl);
+            } catch (error) {
+                console.error('Error during SVG to canvas conversion:', error);
+            }
+        }
+
+
+        var previewFlag = false;
+
+        initImageLoad();
+        document.getElementById("preview-btn").addEventListener("click", async function () {
+            if (!previewFlag) {
+                await previewImage()
+                this.classList.add("btn-primary");
+                this.classList.remove("btn-outline-primary")
+                this.textContent = "画像プレビューOFF";
+            } else {
+                document.getElementById("preview").style.display = "none";
+                this.classList.remove("btn-primary");
+                this.classList.add("btn-outline-primary")
+                this.textContent = "画像プレビューON";
+
+            }
+            previewFlag = !previewFlag;
+
+        })
+
+        document.getElementById("submit").addEventListener("click", async function () {
+            await downloadBoard()
+        })
+
+
+        function uploadImageToServer(pngDataUrl) {
+            const formData = new FormData();
+            const comment = document.getElementById("comment").value;
+            const target_image = "<?= $param["target_id"] ?>"
+            const subject_image = "<?= $param["subject_id"] ?>"
+            const user = "<?= $param["user"] ?>"
+            formData.append('image', pngDataUrl);
+            formData.append('comment', comment);
+            formData.append('target_image', target_image);
+            formData.append('subject_image', subject_image);
+            formData.append('user_id', user);
+            const nextURL = "/admin/compared-images?start_report_date=&end_report_date=&user_id=" + user;
+            $.ajax({
+                type: 'POST',
+                url: "<?= $this->Url->build(['action' => 'uploadComparedImage']); ?>",
+                data: formData,
+                headers: {
+                    'X-CSRF-Token': "<?= $this->request->getAttribute('csrfToken') ?>",
+                },
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (data, dataType) {
+                    document.getElementById("error").innerHTML = data
+                    location.href = nextURL
+                },
+                error: function (e) {
+                    document.getElementById("error").innerHTML = e.responseText
+                }
+            });
+        }
+
+        var id;
+        var x;
+        var y;
+        var pointX;
+        var pointY;
+
+        function moveContentByMousedown(event) {
+            var target;
+            pointX = parseInt(getPositionXOnSvg(event));
+            pointY = parseInt(getPositionYOnSvg(event));
+            if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin) {
+                if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                    target = document.getElementById("left-image");
+                }
+            } else if (pointX > clipRightRect.width.baseVal.value + margin && pointX < clipRightRect.width.baseVal.value * 2 + margin * 3) {
+                if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                    target = document.getElementById("right-image");
+                }
+            }
+            var mouse_move_x = 0;
+            var mouse_move_y = 0;
+            var mouse_move_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+            var mouse_move_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+
+            var dx = 0;
+            var dy = 0;
+            var transform = target.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
+            if (!target.hasAttribute("transform")) {
+                target.transform.baseVal.appendItem(transform);
+            }
+            id = target.id;
+            var targetContent = document.getElementById(id);
+            x = parseInt(targetContent.getAttribute("x"));
+            y = parseInt(targetContent.getAttribute("y"));
+            var Matrix = target.transform.baseVal[0].matrix;
+            $("#drawingCanvas").on(move_event, function (event) {
+                if (move_event !== "touchmove") {
+                    var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                    var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                    var x_length = mouse_moving_x - mouse_move_x;
+                    var y_length = mouse_moving_y - mouse_move_y;
+                    mouse_move_x = mouse_moving_x;
+                    mouse_move_y = mouse_moving_y;
+                    x += x_length;
+                    y += y_length;
+                    targetContent.setAttribute('x', x + "");
+                    targetContent.setAttribute('y', y + "");
+                } else {
+                    if (touchType === "move") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                        x += x_length;
+                        y += y_length;
+                        targetContent.setAttribute('x', x + "");
+                        targetContent.setAttribute('y', y + "");
+                    } else if (touchType === "zoom") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                        var scale = y_length < 0 ? 0.99 : 1.01
+                        target.width.baseVal.value *= scale;
+                        target.height.baseVal.value *= scale;
+                    }
+                }
+            });
+        }
+
+        function moveContentByMouseup() {
+            svgElm.css('cursor', 'default');
+            $("#drawingCanvas").off(move_event);
+            $("#drawingCanvas").off(out_event);
+        }
+
+        var wheel_event = 'ontouchstart' in window ? "touchmove" : "wheel";
+        var baseDistance = 0;
+        var pointX = 0;
+        var pointY = 0;
+
+        function zoomAction() {
+
+            document.getElementById("drawingCanvas").addEventListener(wheel_event, function (e) {
+                if (type === "pencil" && type !== "move") return;
+                var target;
+                pointX = parseInt(getPositionXOnSvg(event));
+                pointY = parseInt(getPositionYOnSvg(event));
+                if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin) {
+                    if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                        target = document.getElementById("left-image");
+                    }
+                } else if (pointX > clipRightRect.width.baseVal.value + margin && pointX < clipRightRect.width.baseVal.value * 2 + margin * 3) {
+                    if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                        target = document.getElementById("right-image");
+                    }
+                }
+                var scale = 1
+                e.preventDefault()
+                var pointer_x = 0
+                var pointer_y = 0
+                if (wheel_event == "touchmove") {
+                    var touches = e.changedTouches;
+                    if (touches.length > 1) {
+                        try {
+                            var page_x1 = touches[0].pageX;
+                            var page_y1 = touches[0].pageY;
+
+                            // 座標2 (2本目の指)
+                            var page_x2 = touches[1].pageX
+                            var page_y2 = touches[1].pageY
+
+                            var x1 = getPositionXOnSvgByX(touches[0].pageX);
+                            var y1 = getPositionYOnSvgByY(touches[0].pageY);
+
+                            // 座標2 (2本目の指)
+                            var x2 = getPositionXOnSvgByX(touches[1].pageX);
+                            var y2 = getPositionYOnSvgByY(touches[1].pageY);
+
+                            // 2点間の距離
+                            var distance = Math.sqrt(Math.pow(page_x2 - page_x1, 2) + Math.pow(page_y2 - page_y1, 2));
+                            if (baseDistance != 0) {
+                                scale = baseDistance / distance;
+                            }
+                            pointer_x = (x1 + x2) / 2;
+                            pointer_y = (y1 + y2) / 2;
+                            baseDistance = distance
+                        } catch (error) {
+                            console.error(error);
+                        }
+
+                    }
+                } else {
+                    var dy = e.deltaY
+                    scale = dy < 0 ? 0.99 : 1.01
+                    pointer_x = getPositionXOnSvg(e)
+                    pointer_y = getPositionYOnSvg(e)
+                }
+                target.width.baseVal.value *= scale;
+                target.height.baseVal.value *= scale;
+            }, { passive: false })
+        }
+        zoomAction()
+
+        function pencilByMousemove(event) {
+            var linetoX = parseInt(getPositionXOnSvg(event)); // SVG上のマウス座標(横方向)の取得
+            var linetoY = parseInt(getPositionYOnSvg(event)); // SVG上のマウス座標(縦方向)の取得
+            window.linetoStr = window.linetoStr + " L " + linetoX + " " + linetoY; // 動いた後の新たなマウス座標を描画点として追加
+
+            console.log("自由入力移動: ", linetoX, linetoY);
+            // pathデータ(d属性)の値を更新
+            var pathElm = document.querySelector("#drawingCanvas path:last-child");
+            if (pathElm) {
+                pathElm.setAttribute("d", window.linetoStr);
+            } else {
+                console.error("最後のパス要素が見つかりません");
+            }
+        }
+
+        // 点と線分の最短距離を計算する関数
+        function distanceToLine(x, y, x1, y1, x2, y2) {
+            const A = x - x1;
+            const B = y - y1;
+            const C = x2 - x1;
+            const D = y2 - y1;
+
+            const dot = A * C + B * D;
+            const len_sq = C * C + D * D;
+            let param = -1;
+            
+            if (len_sq !== 0) { // 線分の長さが0でない場合
+                param = dot / len_sq;
+            }
+
+            let xx, yy;
+
+            if (param < 0) {
+                xx = x1;
+                yy = y1;
+            } else if (param > 1) {
+                xx = x2;
+                yy = y2;
+            } else {
+                xx = x1 + param * C;
+                yy = y1 + param * D;
+            }
+
+            const dx = x - xx;
+            const dy = y - yy;
+            
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // RGB色をHEX形式に変換する関数
         function rgbToHex(rgb) {
+            // すでにHEX形式の場合はそのまま返す
             if (rgb.startsWith('#')) {
                 return rgb;
             }
             
+            // rgb(r, g, b)形式から数値を抽出
             const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
             if (rgbMatch) {
                 const r = parseInt(rgbMatch[1], 10);
@@ -923,304 +1697,24 @@
                 return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
             }
             
+            // 変換できない場合はデフォルト値を返す
             return '#000000';
         }
 
+        // SVGのクリックイベントを修正して、コメント選択を解除する
         $("#drawingCanvas").on('click', function(event) {
-            if (event.target.classList && event.target.classList.contains('comment-box')) {
+            // コメント要素上でのクリックは処理しない
+            if (event.target.classList && (event.target.classList.contains('comment-box') || 
+                                          event.target.classList.contains('comment-resize-handle'))) {
                 return;
             }
             
+            // コメント選択を解除
             if (selectedComment) {
                 selectedComment.style.outline = 'none';
                 selectedComment = null;
             }
         });
-
-        svgElm.on(start_event, function(event) {
-            if (type === "draw") {
-                if (currentTool === 'free-draw') {
-                    pencilByMousedown(event);
-                    isDrawing = true;
-                } else if (currentTool === 'line-draw') {
-                    startX = getPositionXOnSvg(event);
-                    startY = getPositionYOnSvg(event);
-                    
-                    var currentLineColor = document.getElementById('line-color').value;
-                    // console.log("描画開始時の線の色: " + currentLineColor);
-                    
-                    tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    tempLine.setAttribute("x1", startX);
-                    tempLine.setAttribute("y1", startY);
-                    tempLine.setAttribute("x2", startX);
-                    tempLine.setAttribute("y2", startY);
-                    tempLine.setAttribute("stroke", currentLineColor);
-                    tempLine.setAttribute("stroke-width", lineWidth);
-                    tempLine.setAttribute("stroke-linecap", "round");
-                    
-                    svgElm_js.appendChild(tempLine);
-                    isDrawing = true;
-                } else if (currentTool === 'comment-add') {
-                    const x = getPositionXOnSvg(event);
-                    const y = getPositionYOnSvg(event);
-                    
-                    if (selectedComment) {
-                        selectedComment.style.outline = 'none';
-                        selectedComment = null;
-                    }
-                    
-                    const commentBox = document.createElement('div');
-                    commentBox.className = 'comment-box';
-                    commentBox.contentEditable = true;
-                    commentBox.style.position = 'absolute';
-                    const svgRect = svgElm_js.getBoundingClientRect();
-                    const clickX = event.clientX || event.touches[0].clientX;
-                    const clickY = event.clientY || event.touches[0].clientY;
-                    commentBox.style.left = (clickX - svgRect.left) + 'px';
-                    commentBox.style.top = (clickY - svgRect.top) + 'px';
-                    commentBox.style.color = textColor;
-                    commentBox.style.backgroundColor = backgroundColor;
-                    commentBox.style.fontSize = fontSize + 'px'; 
-                    commentBox.style.zIndex = '1000';
-                    commentBox.textContent = 'コメントを入力';
-                    
-                    const resizeHandle = document.createElement('div');
-                    resizeHandle.className = 'comment-resize-handle';
-                    resizeHandle.style.bottom = '0';
-                    resizeHandle.style.right = '0';
-                    resizeHandle.style.transform = 'translate(50%, 50%)';
-                    
-                    let isResizing = false;
-                    let originalWidth, originalHeight, originalX, originalY;
-
-                    resizeHandle.addEventListener('mousedown', function(e) {
-                        e.stopPropagation();
-                        isResizing = true;
-                        originalWidth = commentBox.offsetWidth;
-                        originalHeight = commentBox.offsetHeight;
-                        originalX = e.clientX;
-                        originalY = e.clientY;
-                        
-                        document.addEventListener('mousemove', resizeMove);
-                        document.addEventListener('mouseup', resizeEnd);
-                    });
-
-                    function resizeMove(e) {
-                        if (isResizing) {
-                            const deltaX = e.clientX - originalX;
-                            const deltaY = e.clientY - originalY;
-                            commentBox.style.width = (originalWidth + deltaX) + 'px';
-                            commentBox.style.height = (originalHeight + deltaY) + 'px';
-                        }
-                    }
-
-                    function resizeEnd() {
-                        isResizing = false;
-                        document.removeEventListener('mousemove', resizeMove);
-                        document.removeEventListener('mouseup', resizeEnd);
-                    }
-
-                    commentBox.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        
-                        if (selectedComment) {
-                            selectedComment.style.outline = 'none';
-                        }
-                        
-                        selectedComment = commentBox;
-                        selectedComment.style.outline = '2px solid blue';
-                        
-                        document.getElementById('text-color').value = rgbToHex(window.getComputedStyle(commentBox).color);
-                        document.getElementById('background-color').value = rgbToHex(window.getComputedStyle(commentBox).backgroundColor);
-                        
-                        const currentFontSize = parseInt(window.getComputedStyle(commentBox).fontSize);
-                        fontSize = currentFontSize;
-                        updateFontSizeDisplay();
-                        
-                        document.querySelectorAll('.tool-button').forEach(b => b.classList.remove('active'));
-                        document.getElementById('comment-add').classList.add('active');
-                        currentTool = 'comment-add';
-                        
-                        document.getElementById('comment-color-picker').style.display = 'flex';
-                        document.getElementById('line-color-picker').style.display = 'none';
-                        document.getElementById('font-size-tools').style.display = 'flex';
-                    });
-
-                    svgElm.parent().append(commentBox);
-                    commentBox.appendChild(resizeHandle);
-                } else if (currentTool === 'eraser') {
-                    isDrawing = true;
-                    
-                    const x = getPositionXOnSvg(event);
-                    const y = getPositionYOnSvg(event);
-                    
-                    eraseElementsAt(x, y);
-                }
-            }
-        });
-
-        svgElm.on(move_event, function(event) {
-            if (type === "draw" && isDrawing) {
-                if (currentTool === 'free-draw') {
-                    pencilByMousemove(event);
-                } else if (currentTool === 'line-draw' && tempLine) {
-                    const currentX = getPositionXOnSvg(event);
-                    const currentY = getPositionYOnSvg(event);
-                    tempLine.setAttribute("x2", currentX);
-                    tempLine.setAttribute("y2", currentY);
-                } else if (currentTool === 'eraser') {
-                    const x = getPositionXOnSvg(event);
-                    const y = getPositionYOnSvg(event);
-                    
-                    eraseElementsAt(x, y);
-                }
-            }
-        });
-
-        svgElm.on(end_event, function() {
-            if (type === "draw" && isDrawing) {
-                if (currentTool === 'free-draw') {
-                    pencilByMouseup();
-                } else if (currentTool === 'line-draw' && tempLine) {
-                    tempLine = null;
-                }
-                isDrawing = false;
-            }
-        });
-
-        function eraserClick(e) {
-            if (currentTool === 'eraser') {
-                
-                let target = e.target;
-                let isCommentBox = false;
-                
-                while (target && !target.classList.contains('comment-box')) {
-                    target = target.parentElement;
-                }
-                
-                if (target && target.classList.contains('comment-box')) {
-                    isCommentBox = true;
-                    target.remove();
-                    
-                    if (selectedComment === target) {
-                        selectedComment = null;
-                    }
-                }
-                
-                if (!isCommentBox) {
-                    const eraserCursor = document.getElementById('eraser-cursor');
-                    const eraserRect = eraserCursor.getBoundingClientRect();
-                    const eraserX = eraserRect.left + eraserRect.width / 2;
-                    const eraserY = eraserRect.top + eraserRect.height / 2;
-                    
-                    const commentBoxes = document.querySelectorAll('.comment-box');
-                    
-                    commentBoxes.forEach(box => {
-                        const boxRect = box.getBoundingClientRect();
-                        const boxCenterX = boxRect.left + boxRect.width / 2;
-                        const boxCenterY = boxRect.top + boxRect.height / 2;
-                        
-                        const distance = Math.sqrt(
-                            Math.pow(eraserX - boxCenterX, 2) + 
-                            Math.pow(eraserY - boxCenterY, 2)
-                        );
-                        
-                        if (distance < 30) {
-                            box.remove();
-                            
-                            if (selectedComment === box) {
-                                selectedComment = null;
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        function eraseElementsAt(x, y) {
-            const elements = svgElm_js.querySelectorAll('path, line');
-            const eraserRadius = 15; 
-            
-            elements.forEach(element => {
-                if (element.tagName === 'line') {
-                    const x1 = parseFloat(element.getAttribute('x1'));
-                    const y1 = parseFloat(element.getAttribute('y1'));
-                    const x2 = parseFloat(element.getAttribute('x2'));
-                    const y2 = parseFloat(element.getAttribute('y2'));
-                    
-                    const distance = distanceToLine(x, y, x1, y1, x2, y2);
-                    
-                    if (distance < eraserRadius) {
-                        element.remove();
-                    }
-                } else if (element.tagName === 'path') {
-                    const d = element.getAttribute('d');
-                    if (d) {
-                        const match = d.match(/M\s*([0-9.]+)\s*,?\s*([0-9.]+)/);
-                        if (match) {
-                            const pathX = parseFloat(match[1]);
-                            const pathY = parseFloat(match[2]);
-                            const distance = Math.sqrt(Math.pow(x - pathX, 2) + Math.pow(y - pathY, 2));
-                            
-                            if (distance < eraserRadius) {
-                                element.remove();
-                            }
-                        }
-                    }
-                }
-            });
-            
-            const svgRect = svgElm_js.getBoundingClientRect();
-            const clientX = svgRect.left + x;
-            const clientY = svgRect.top + y;
-            
-            const commentBoxes = document.querySelectorAll('.comment-box');
-            
-            commentBoxes.forEach(box => {
-                const boxRect = box.getBoundingClientRect();
-                const boxCenterX = boxRect.left + boxRect.width / 2;
-                const boxCenterY = boxRect.top + boxRect.height / 2;
-                
-                const distance = Math.sqrt(
-                    Math.pow(clientX - boxCenterX, 2) + 
-                    Math.pow(clientY - boxCenterY, 2)
-                );
-                
-                if (distance < 30) {
-                    box.remove();
-                    
-                    if (selectedComment === box) {
-                        selectedComment = null;
-                    }
-                }
-            });
-        }
-
-        document.getElementById('increase-font-size').addEventListener('click', function() {
-            if (fontSize < 36) { 
-                fontSize += 2;
-                updateFontSizeDisplay();
-                
-                if (selectedComment) {
-                    selectedComment.style.fontSize = fontSize + 'px';
-                }
-            }
-        });
-        
-        document.getElementById('decrease-font-size').addEventListener('click', function() {
-            if (fontSize > 8) { 
-                fontSize -= 2;
-                updateFontSizeDisplay();
-                
-                if (selectedComment) {
-                    selectedComment.style.fontSize = fontSize + 'px';
-                }
-            }
-        });
-        
-        function updateFontSizeDisplay() {
-            document.getElementById('font-size-value').textContent = fontSize;
-        }
 
     });
 </script>
