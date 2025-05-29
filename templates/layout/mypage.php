@@ -129,7 +129,7 @@
                         echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Courses', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-user-lock"></i>
-                            <p>初めての方は</p>
+                            <p>初めての方へ</p>
                         </a>
                     </li>
                     <?php if ($this->request->getSession()->read('Auth.User.staff_plan') == 0) : ?>
