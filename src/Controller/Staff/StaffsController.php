@@ -24,6 +24,8 @@ class StaffsController extends AppController
     {
         parent::beforeFilter($event);
         $this->Authentication->addUnauthenticatedActions(['login']);
+         // CSRFチェックを無効化
+        $this->getEventManager()->off($this->Csrf);
     }
 
     /**
