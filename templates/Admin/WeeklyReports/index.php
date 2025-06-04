@@ -18,15 +18,11 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                
-                <!-- Search box -->
-                <input type="text" id="userSearchInput" class="form-control mb-2" placeholder="名前で絞り込み">
 
-                <!-- Original dropdown -->
-                <?= $this->Form->select('user_id', $users, [
+                <?= $this->Form->input('user_name', [
                     'class' => 'form-control',
                     'empty' => '-',
-                    'default' => $param['user_id'],
+                    'default' => $param['user_name'],
                     'id' => 'userSelectBox'
                 ]) ?>
             </div>

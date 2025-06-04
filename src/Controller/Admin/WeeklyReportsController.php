@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
+use Cake\Database\Expression\QueryExpression;
 use Cake\I18n\Time;
 use Cake\ORM\Query;
 use Cake\Core\Configure;
@@ -86,33 +87,51 @@ class WeeklyReportsController extends AppController
         }
 
         // 会員
-        if (!empty($param['user_id'])) {
-            $query->where(['WeeklyReports.user_id' => $param['user_id']]);
+        $user = null;
+        if (!empty($param['user_name'])) {
+            // Remove all whitespace from the input name
+            $cleanName = preg_replace('/\s+/u', '', $param['user_name']);
+            
+            // Fetch all users and compare combined name in PHP
+            $user = $this->WeeklyReports->Users->find()
+            ->all()
+            ->filter(function ($u) use ($cleanName) {
+                $full = preg_replace('/\s+/u', '', $u->fullname);
+                    return $full === $cleanName;
+                })
+                ->first();
+        }
+
+
+        if (!empty($param['user_name']) && $user) {
+            $query->where(['WeeklyReports.user_id' => $user->id]);
             $weeklyReports = $query->all();
-        } else if (empty($param['user_id']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
-            $param['user_id'] = '';
+        } else if (!empty($param['user_name']) && !$user) {
+            $weeklyReports = null;
+        } else if (empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
+            $param['user_name'] = '';
             $weeklyReports = null;
         } else {
-            $param['user_id'] = '';
+            $param['user_name'] = '';
             $weeklyReports = $query->all();
             // $weeklyReports = null;
         }
 
         // ユーザーを配列で取得
-        $users = $this->WeeklyReports->Users->find('list', [
-            'keyField' => 'id',
-            'valueField' => function ($q) {
-                return $q->get('fullname');
-            },
-            'conditions' => [
-                'is_deleted' => 0
-            ],
-            'order' => [
-                'id' => 'desc'
-            ]
-        ])->toArray();
+        // $users = $this->WeeklyReports->Users->find('list', [
+        //     'keyField' => 'id',
+        //     'valueField' => function ($q) {
+        //         return $q->get('fullname');
+        //     },
+        //     'conditions' => [
+        //         'is_deleted' => 0
+        //     ],
+        //     'order' => [
+        //         'id' => 'desc'
+        //     ]
+        // ])->toArray();
 
-        $this->set(compact('weeklyReports', 'photoName', 'users', 'param'));
+        $this->set(compact('weeklyReports', 'photoName', 'param'));
     }
 
 
