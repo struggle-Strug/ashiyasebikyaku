@@ -89,9 +89,13 @@ class WeeklyReportsController extends AppController
         if (!empty($param['user_id'])) {
             $query->where(['WeeklyReports.user_id' => $param['user_id']]);
             $weeklyReports = $query->all();
-        } else {
+        } else if (empty($param['user_id']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
             $param['user_id'] = '';
             $weeklyReports = null;
+        } else {
+            $param['user_id'] = '';
+            $weeklyReports = $query->all();
+            // $weeklyReports = null;
         }
 
         // ユーザーを配列で取得
