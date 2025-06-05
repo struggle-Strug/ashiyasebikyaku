@@ -300,6 +300,7 @@ class WeeklyReportsController extends AppController
             $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "weekly_report", ['today' => $formattedDateTime]]);
             $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl , 'today' => $formattedDateTime]]);
             $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrlStaff, 'today' => $formattedDateTime ]]);
+            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "ank2019.studio@gmail.com", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrlStaff, 'today' => $formattedDateTime ]]);
             $this->Flash->success(__('情報を送信しました。'));
             return $this->redirect(['action' => 'history']);
         }
