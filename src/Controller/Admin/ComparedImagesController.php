@@ -64,7 +64,31 @@ class ComparedImagesController extends AppController
             $comparedImages = $query->all();
         } else {
             $param['user_id'] = '';
+            $comparedImages = $query->all();
+        }
+
+        $user = null;
+        if (!empty($param['user_name'])) {
+            $cleanName = preg_replace('/\s+/u', '', $param['user_name']);
+            $user = $this->ComparedImages->Users->find()
+                ->filter(function ($u) use ($cleanName) {
+                    $full = preg_replace('/\s+/u', '', $u->fullname);
+                    return $full === $cleanName;
+                })
+                ->first();
+        }
+
+        if (!empty($param['user_name']) && $user) {
+            $query->where(['ComparedImages.user_id' => $user->id]);
+            $comparedImages = $query->all();
+        } else if (!empty($param['user_name']) && !$user) {
             $comparedImages = null;
+        } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
+            $param['user_name'] = '';
+            $comparedImages = null;
+        } else {
+            $param['user_name'] = '';
+            $comparedImages = $query->all();
         }
 
         $users = $this->ComparedImages->Users->find('list', [
