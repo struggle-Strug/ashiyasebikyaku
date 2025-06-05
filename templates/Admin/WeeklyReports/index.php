@@ -18,7 +18,13 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+
+                <?= $this->Form->input('user_name', [
+                    'class' => 'form-control',
+                    'empty' => '-',
+                    'default' => $param['user_name'],
+                    'id' => 'userSelectBox'
+                ]) ?>
             </div>
             <div class="col-md-12 text-right mt-2">
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
@@ -48,11 +54,7 @@
     <div class="card-body">
         <?php if (!$weeklyReports || count($weeklyReports) == 0) : ?>
 
-           <?php if (empty($param['user_id'])) : ?>
-                会員を選択してください。
-            <?php else : ?>
                 該当のデータはありません。
-            <?php endif ?>
 
         <?php else : ?>
 

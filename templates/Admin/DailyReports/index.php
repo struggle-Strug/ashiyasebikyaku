@@ -10,7 +10,10 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+                <div class="input-group">
+                    <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
+                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+                </div>
             </div>
             <div class="col-md-12 text-right mt-2">
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
