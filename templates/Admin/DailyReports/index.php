@@ -15,7 +15,6 @@
                     'empty' => '-',
                     'placeholder' => '会員名',
                     'default' => $param['user_name'],
-                    'style' => 'border-top-right-radius: 0.2rem; border-bottom-right-radius: 0.2rem;'
                     ]) ?>
             </div>
             <div class="col-md-3 mt-2">
@@ -23,7 +22,7 @@
                     ['class' => 'form-control', 
                     'empty' => '-', 
                     'default' => $param['user_id'],
-                    'style' => 'border-top-left-radius: 0.2rem; border-bottom-left-radius: 0.2rem; margin-top: 1.75rem;'
+                    'style' => 'margin-top: 1.75rem;'
                 ]) ?>
             </div>
             <div class="col-md-12 text-right mt-2">

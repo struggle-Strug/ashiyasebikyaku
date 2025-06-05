@@ -70,10 +70,12 @@ class ComparedImagesController extends AppController
         $user = null;
         if (!empty($param['user_name'])) {
             $cleanName = preg_replace('/\s+/u', '', $param['user_name']);
+
             $user = $this->ComparedImages->Users->find()
+                ->all()
                 ->filter(function ($u) use ($cleanName) {
                     $full = preg_replace('/\s+/u', '', $u->fullname);
-                    return $full === $cleanName;
+                    return strpos($full, $cleanName) !== false; // "includes" check
                 })
                 ->first();
         }
