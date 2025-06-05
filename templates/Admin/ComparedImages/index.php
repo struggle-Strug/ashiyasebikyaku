@@ -19,8 +19,8 @@
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
                 <div class="input-group">
-                    <?= $this->Form->input('user_name', ['class' => 'form-control', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    
+                    <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
                     <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
                 </div>
             </div>
