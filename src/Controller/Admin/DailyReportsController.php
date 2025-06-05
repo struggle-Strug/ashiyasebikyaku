@@ -75,6 +75,26 @@ class DailyReportsController extends AppController
             $param['user_id'] = '';
         }
 
+        $user = null;
+        if (!empty($param['user_name'])) {
+            $cleanName = preg_replace('/\s+/u', '', $param['user_name']);
+            $user = $this->DailyReports->Users->find()
+                ->filter(function ($u) use ($cleanName) {
+                    $full = preg_replace('/\s+/u', '', $u->fullname);
+                    return $full === $cleanName;
+                })
+                ->first();
+        }
+
+        if (!empty($param['user_name']) && $user) {
+            $query->where(['DailyReports.user_id' => $user->id]);
+        } else if (!empty($param['user_name']) && !$user) {
+            $param['user_name'] = '';
+            $dailyReports = null;
+        } else if (empty($param['user_name']) && empty($param['user_id'])) {
+            $param['user_name'] = '';
+        }
+
         $dailyReports = $this->paginate($query);
 
         // ユーザーを配列で取得
