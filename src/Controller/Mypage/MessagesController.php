@@ -91,6 +91,7 @@ class MessagesController extends AppController
                 $this->Flash->success(__('メッセージを送信しました。'));
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ank2019.studio@gmail.com", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('データを送信できませんでした。'));

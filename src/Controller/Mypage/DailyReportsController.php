@@ -63,6 +63,7 @@ class DailyReportsController extends AppController
                 $this->getMailer('App')->send('sendGridEmail',["【日報】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "daily_report", ['today' => $formattedDateTime]]);
                 $this->getMailer('App')->send('sendGridEmail',["【日報】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "daily_report_operation", ['reportUrl' => $fullUrl, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
                 $this->getMailer('App')->send('sendGridEmail',["【日報】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "daily_report_operation", ['reportUrl' => $fullUrlStaff, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail',["【日報】脚やせ美脚リバースエイジングプログラム", "ank2019.studio@gmail.com", "daily_report_operation", ['reportUrl' => $fullUrlStaff, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
                 $this->Flash->success(__('報告を送信しました。'));
 
                 return $this->redirect(['action' => 'history']);
