@@ -114,22 +114,7 @@ class WeeklyReportsController extends AppController
         } else {
             $param['user_name'] = '';
             $weeklyReports = $query->all();
-            // $weeklyReports = null;
         }
-
-        // ユーザーを配列で取得
-        // $users = $this->WeeklyReports->Users->find('list', [
-        //     'keyField' => 'id',
-        //     'valueField' => function ($q) {
-        //         return $q->get('fullname');
-        //     },
-        //     'conditions' => [
-        //         'is_deleted' => 0
-        //     ],
-        //     'order' => [
-        //         'id' => 'desc'
-        //     ]
-        // ])->toArray();
 
         $this->set(compact('weeklyReports', 'photoName', 'param'));
     }
