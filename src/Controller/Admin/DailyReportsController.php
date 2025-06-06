@@ -58,45 +58,6 @@ class DailyReportsController extends AppController
             'DailyReports.report_date' => 'desc'
         ]);
 
-        // 検索
-        $param = $this->request->getQuery();
-
-        // 報告日
-        if (!empty($param['report_date'])) {
-            $query->where(['DailyReports.report_date' => $param['report_date']]);
-        } else {
-            $param['report_date'] = '';
-        }
-
-        // 会員
-        if (!empty($param['user_id'])) {
-            $query->where(['DailyReports.user_id' => $param['user_id']]);
-        } else {
-            $param['user_id'] = '';
-        }
-
-        $user = null;
-        if (!empty($param['user_name'])) {
-            $cleanName = preg_replace('/\s+/u', '', $param['user_name']);
-            $user = $this->DailyReports->Users->find()
-                ->filter(function ($u) use ($cleanName) {
-                    $full = preg_replace('/\s+/u', '', $u->fullname);
-                    return $full === $cleanName;
-                })
-                ->first();
-        }
-
-        if (!empty($param['user_name']) && $user) {
-            $query->where(['DailyReports.user_id' => $user->id]);
-        } else if (!empty($param['user_name']) && !$user) {
-            $param['user_name'] = '';
-            $dailyReports = null;
-        } else if (empty($param['user_name']) && empty($param['user_id'])) {
-            $param['user_name'] = '';
-        }
-
-        $dailyReports = $this->paginate($query);
-
         // ユーザーを配列で取得
         $users = $this->DailyReports->Users->find('list', [
             'keyField' => 'id',
@@ -110,6 +71,52 @@ class DailyReportsController extends AppController
                 'id' => 'desc'
             ]
         ])->toArray();
+
+        // 検索
+        $param = $this->request->getQuery();
+
+        // 報告日
+        if (!empty($param['report_date'])) {
+            $query->where(['DailyReports.report_date' => $param['report_date']]);
+        } else {
+            $param['report_date'] = '';
+            $dailyReports = null;
+        }
+
+        // 会員
+        if (!empty($param['user_id'])) {
+            $query->where(['DailyReports.user_id' => $param['user_id']]);
+        } else {
+            $param['user_id'] = '';
+            $dailyReports = null;
+        }
+
+        $user = null;
+        if (!empty($param['user_name'])) {
+            $cleanName = preg_replace('/\s+/u', '', $param['user_name']);
+
+            $user = $this->DailyReports->Users->find()
+                ->all()
+                ->filter(function ($u) use ($cleanName) {
+                    $full = preg_replace('/\s+/u', '', $u->fullname);
+                    return strpos($full, $cleanName) !== false; // "includes" check
+                })
+                ->first();
+        }
+
+
+        if (!empty($param['user_name']) && $user) {
+            $query->where(['DailyReports.user_id' => $user->id]);
+            $dailyReports = $query->all();
+        }  else if (!empty($param['user_name']) && !$user) {
+            $param['user_name'] = '';
+            $dailyReports = $this->paginate($this->DailyReports->find()->where(['id' => -1])); // return empty result
+            $this->set(compact('dailyReports', 'users', 'param'));
+            return;
+        }
+        
+
+        $dailyReports = $this->paginate($query);
 
         $this->set(compact('dailyReports', 'users', 'param'));
     }
