@@ -69,15 +69,17 @@ class ComparedImagesController extends AppController
 
         $user = null;
         if (!empty($param['user_name'])) {
-            $cleanName = preg_replace('/\s+/u', '', $param['user_name']);
-
-            $user = $this->ComparedImages->Users->find()
-                ->all()
-                ->filter(function ($u) use ($cleanName) {
-                    $full = preg_replace('/\s+/u', '', $u->fullname);
-                    return strpos($full, $cleanName) !== false; // "includes" check
-                })
-                ->first();
+            $user = $this->ComparedImages->Users->find('all')
+            ->where([
+                'OR' => [
+                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                ]
+            ])->first();
+        } else {
+            $param['user_name'] = '';
         }
 
         if (!empty($param['user_name']) && $user) {
