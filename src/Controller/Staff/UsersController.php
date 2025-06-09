@@ -144,7 +144,9 @@ class UsersController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
     }
 
     /**
@@ -176,7 +178,9 @@ class UsersController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
-        $this->set(compact('user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
     }
 
     /**
@@ -222,7 +226,9 @@ class UsersController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('user', 'userPoint'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'userPoint', 'param'));
     }
 
     /**
@@ -277,7 +283,9 @@ class UsersController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('user', 'userPoint'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'userPoint', 'param'));
 
         $this->render('point_add');
     }
@@ -378,7 +386,9 @@ class UsersController extends AppController
             ])
             ->all();
 
-        $this->set(compact('messages', 'user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('messages', 'user', 'param'));
     }
 
 

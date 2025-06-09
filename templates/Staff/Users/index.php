@@ -68,13 +68,13 @@
                         </td>
                         <td nowrap>
                             <div>
-                                <a href="<?= $this->Url->build(['action' => 'edit', $user->id]); ?>"
+                                <a href="<?= $this->Url->build(['action' => 'edit', $user->id, '?' => $param]); ?>"
                                     class="btn btn-outline-primary btn-xs">編集</a>
                             </div>
                         </td>
                         <td nowrap>
                             <div>
-                                <a href="<?= $this->Url->build(['action' => 'point', $user->id]); ?>"
+                                <a href="<?= $this->Url->build(['action' => 'point', $user->id, '?' => $param]); ?>"
                                     class="btn btn-outline-primary btn-xs">登録</a>
                             </div>
                             <div>
@@ -89,7 +89,7 @@
                         </td>
                         <td nowrap>
                             <div>
-                                <a href="<?= $this->Url->build(['action' => 'message', $user->id]); ?>" class="btn btn-outline-primary btn-xs">メッセージ確認</a>
+                                <a href="<?= $this->Url->build(['action' => 'message', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-xs">メッセージ確認</a>
                             </div>
                             <div>
                                 <?php if ($user->messages) : ?>
@@ -98,7 +98,7 @@
                             </div>
                         </td>
                         <td nowrap>
-                            <a href="<?= $this->Url->build(['controller' => 'DailyReports', 'action' => 'index', '?' => ['user_id' => $user->id]]); ?>"
+                            <a href="<?= $this->Url->build(['controller' => 'DailyReports', 'action' => 'index', '?' => ['user_id' => $user->id, 'member_number' => $param['member_number'], 'name' => $param['name']]]); ?>"
                                 class="btn btn-outline-primary btn-xs">日次報告確認</a>
                             <div>
                                 最新：
@@ -111,7 +111,7 @@
                             </div>
                         </td>
                         <td nowrap>
-                            <a href="<?= $this->Url->build(['controller' => 'WeeklyReports', 'action' => 'index', '?' => ['user_id' => $user->id]]); ?>"
+                            <a href="<?= $this->Url->build(['controller' => 'WeeklyReports', 'action' => 'index', '?' => ['user_id' => $user->id, 'member_number' => $param['member_number'], 'name' => $param['name']]]); ?>"
                                 class="btn btn-outline-primary btn-xs">週次報告確認</a>
                             <div>
                                 最新：

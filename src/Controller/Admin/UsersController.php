@@ -114,7 +114,9 @@ class UsersController extends AppController
         // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
 
-        $this->set(compact('user', 'staffs', 'prefectures'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
     }
 
     /**
