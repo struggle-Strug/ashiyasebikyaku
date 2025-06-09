@@ -15,7 +15,7 @@
             <label for="" class="col-sm-2 col-form-label text-md-right">アップロード動画 *</label>
             <div class="col-sm-4">
                 <a href="javascript:void(0)" class="btn btn-default" id="select-video">ファイルを選択</a>
-                <input type="file" id="video_file" name="video_file" accept="video/*" style="display:none">
+                <input type="file" id="video_file" name="video_file" accept="video/*,audio/*" style="display:none">
                 <p id="video_name"></p>
                 <span class="text-danger"><?= $this->Form->error('video_file') ?></span>
             </div>
