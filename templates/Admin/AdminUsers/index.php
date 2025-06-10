@@ -27,7 +27,7 @@
                     <tr>
                     <tr>
                         <th style="width:150px">ID</th>
-                        <th style="width:150px">ROLE_ID</th>
+                        <th style="width:150px">属性</th>
                         <th nowrap>管理者名</th>
                         <th nowrap>ログインID</th>
                         <th style="width:150px"></th>
