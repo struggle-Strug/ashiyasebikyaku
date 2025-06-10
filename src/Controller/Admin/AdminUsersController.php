@@ -19,8 +19,23 @@ class AdminUsersController extends AppController
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
+
         $this->Authentication->addUnauthenticatedActions(['login']);
+
+        $currentAction = $this->request->getParam('action');
+
+        // Allow 'login' and 'logout' actions without role restriction
+        if (in_array($currentAction, ['login', 'logout'])) {
+            return;
+        }
+
+        $user = $this->Authentication->getIdentity();
+        if ($user && $user->role_id == 1) {
+            $this->Flash->error('このページへのアクセス権がありません。');
+            return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
+        }
     }
+
 
     /**
      * Login method
