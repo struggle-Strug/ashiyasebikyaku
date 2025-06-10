@@ -45,6 +45,12 @@
 </head>
 
 <body class="hold-transition text-sm">
+    <?php
+        $user = null;
+        if ($this->Identity->isLoggedIn()) {
+            $user = $this->Identity->get();
+        }
+    ?>
     <!-- Site wrapper -->
     <div class="wrapper">
         <!-- Navbar -->
@@ -82,6 +88,7 @@
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
 
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'Users') echo 'active'; ?>">
@@ -91,7 +98,9 @@
                                 </p>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
+                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'Staffs', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'Staffs') echo 'active'; ?>">
                                 <i class="nav-icon fa-solid fa-user-pen"></i>
@@ -100,6 +109,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'AdminUsers', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'AdminUsers') echo 'active'; ?>">
@@ -110,6 +121,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'Courses', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'Courses' || $this->request->getParam('controller') == 'CourseMovies') echo 'active'; ?>">
@@ -119,6 +132,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'LessonMovies', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'LessonMovies') echo 'active'; ?>">
@@ -128,6 +143,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'Informations', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'Informations') echo 'active'; ?>">
@@ -137,6 +154,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'Events') echo 'active'; ?>">
@@ -146,6 +165,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'DailyReports', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'DailyReports') echo 'active'; ?>">
@@ -155,6 +176,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'WeeklyReports', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'WeeklyReports') echo 'active'; ?>">
@@ -164,6 +187,8 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'StaffWeeklyMessages', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'StaffWeeklyMessages') echo 'active'; ?>">
@@ -173,6 +198,7 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'UploadMovies', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'UploadMovies') echo 'active'; ?>">
@@ -182,6 +208,7 @@
                                 </p>
                             </a>
                         </li>
+                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'ComparedImages') echo 'active'; ?>">
@@ -191,6 +218,7 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } ?>
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->

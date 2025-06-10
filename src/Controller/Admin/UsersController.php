@@ -16,6 +16,17 @@ use Cake\Core\Configure;
  */
 class UsersController extends AppController
 {
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $user = $this->Authentication->getIdentity();
+        if($user->role_id == 1) {
+            $this->Flash->error('このページへのアクセス権がありません。');
+            return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
+        }
+    }
+    
     /**
      * Index method
      *
@@ -114,7 +125,9 @@ class UsersController extends AppController
         // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
 
-        $this->set(compact('user', 'staffs', 'prefectures'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
     }
 
     /**

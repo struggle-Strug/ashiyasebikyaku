@@ -43,7 +43,7 @@
 <!-- Default box -->
 <div class="card">
     <div class="card-header">
-        <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規会員登録</a>
+    <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]) ?>" class="btn btn-outline-primary">新規会員登録</a>
     </div>
     <div class="card-body">
         <div class="table-responsive-md scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh; ">

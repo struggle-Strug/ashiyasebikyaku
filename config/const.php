@@ -5,6 +5,11 @@
 return [
     'FROM_EMAIL' => 'info@ashiyase.jp',
 
+    'ADMIN_ROLES' => [
+        '0' => '管理者',
+        '1' => '運営',
+    ],
+
     'PREFECTURES' => [
         '北海道' => '北海道',
         '青森県' => '青森県',

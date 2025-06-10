@@ -29,6 +29,7 @@ class AdminUser extends Entity
      */
     protected $_accessible = [
         'loginid' => true,
+        'role_id' => true,
         'password' => true,
         'name' => true,
         'created' => true,
