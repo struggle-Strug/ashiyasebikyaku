@@ -6,9 +6,17 @@
     <div class="card-body">
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">パスワード</label>
-            <div class="col-sm-10">
+            <div class="col-sm-6">
                 <?= $this->Form->password('password', ['class' => 'form-control', 'placeholder' => 'パスワード', 'default' => ""]) ?>
                 <span class="text-danger"><?= $this->Form->error('password') ?></span>
+            </div>
+           
+        </div>
+        <div class="form-group row">
+            <label for="" class="col-sm-2 col-form-label text-md-right">属性</label>
+            <div class="col-sm-2">
+                <?= $this->Form->select('role_id', $roles, ['class' => 'form-control']) ?>
+                <span class="text-danger"><?= $this->Form->error('role_id') ?></span>
             </div>
         </div>
     </div>

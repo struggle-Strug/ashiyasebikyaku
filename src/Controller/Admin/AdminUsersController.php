@@ -112,7 +112,8 @@ class AdminUsersController extends AppController
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
-        $this->set(compact('adminUser'));
+        $roles = Configure::read('ADMIN_ROLES');
+        $this->set(compact('adminUser', 'roles'));
     }
 
     use MailerAwareTrait;
