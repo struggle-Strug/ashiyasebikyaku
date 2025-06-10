@@ -1,5 +1,5 @@
 <?php $this->assign('title', '管理者管理'); ?>
-<?php phpinfo(); ?>
+<!-- <?php phpinfo(); ?> -->
 <?= $this->Form->create(null, ['type' => 'get']) ?>
 <div class="card">
     <div class="card-body">
@@ -27,6 +27,7 @@
                     <tr>
                     <tr>
                         <th style="width:150px">ID</th>
+                        <th style="width:150px">ROLE_ID</th>
                         <th nowrap>管理者名</th>
                         <th nowrap>ログインID</th>
                         <th style="width:150px"></th>
@@ -37,6 +38,7 @@
                 <?php foreach ($adminUsers as $admin): ?>
                     <tr>
         <td><?= h($admin->id) ?></td>
+        <td><?= h($admin->role_id == 0 ? '管理者' : '運営') ?></td>
         <td><?= h($admin->name) ?></td>
         <td><?= h($admin->loginid) ?></td>
         <td nowrap>

@@ -7,7 +7,7 @@ use App\Controller\AppController;
 
 use App\Mailer\AppMailer;
 use Cake\Mailer\MailerAwareTrait;
-
+use Cake\Core\Configure;
 /**
  * AdminUsers Controller
  *
@@ -37,11 +37,20 @@ class AdminUsersController extends AppController
 
         // Login successful or Already logged in
         if ($result->isValid()) {
-            $redirect = $this->request->getQuery('redirect', [
-                'controller' => 'Users',
-                'action' => 'index',
-            ]);
-            return $this->redirect($redirect);
+            $user = $this->Authentication->getIdentity();
+            if($user->role_id == 0) {
+                $redirect = $this->request->getQuery('redirect', [
+                    'controller' => 'Users',
+                    'action' => 'index',
+                ]);
+                return $this->redirect($redirect);
+            } else {
+                $redirect = $this->request->getQuery('redirect', [
+                    'controller' => 'UploadMovies',
+                    'action' => 'index',
+                ]);
+                return $this->redirect($redirect);
+            }
         }
 
         // Login failure
@@ -119,7 +128,8 @@ class AdminUsersController extends AppController
             }
             $this->Flash->error(__('管理者を追加できませんでした。'));
         }
-        $this->set('adminUser', $adminUser);
+        $roles = Configure::read('ADMIN_ROLES');
+        $this->set(compact('adminUser', 'roles'));
     }
 
     public function delete($id = null)

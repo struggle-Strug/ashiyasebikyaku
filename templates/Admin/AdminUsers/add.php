@@ -20,6 +20,11 @@
                 <?= $this->Form->password('password', ['class' => 'form-control', 'placeholder' => 'パスワード']) ?>
                 <span class="text-danger"><?= $this->Form->error('password') ?></span>
             </div>
+            <label for="" class="col-sm-2 col-form-label text-md-right">ROLE_ID</label>
+            <div class="col-sm-4">
+                <?= $this->Form->select('role_id', $roles, ['class' => 'form-control']) ?>
+                <span class="text-danger"><?= $this->Form->error('role_id') ?></span>
+            </div>
         </div>
     </div>
     <!-- /.card-body -->
