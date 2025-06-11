@@ -79,7 +79,6 @@ class ComparedImagesController extends AppController
             $comparedImages = $query->all();
         }
 
-        $user = null;
         if (!empty($param['user_name'])) {
             $users = $this->ComparedImages->Users->find('all')
             ->where([
@@ -97,7 +96,7 @@ class ComparedImagesController extends AppController
         if (!empty($param['user_name']) && !empty($users)) {
             $userIds = array_column($users, 'id');
             $query->where(['ComparedImages.user_id IN' => $userIds]);
-        } else if (!empty($param['user_name']) && !$user) {
+        } else if (!empty($param['user_name']) && empty($users)) {
             $comparedImages = null;
         } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
             $param['user_name'] = '';
@@ -210,6 +209,35 @@ class ComparedImagesController extends AppController
         } else {
             $param['user_id'] = '';
             $weeklyReports = null;
+        }
+
+        if (!empty($param['user_name'])) {
+            $users = $this->WeeklyReports->Users->find('all')
+            ->where([
+                'OR' => [
+                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                ]
+            ])->toArray();
+        } else {
+            $param['user_name'] = '';
+        }
+
+
+        if (!empty($param['user_name']) && !empty($users)) {
+            $userIds = array_column($users, 'id');
+            $query->where(['WeeklyReports.user_id IN' => $userIds]);
+            $weeklyReports = $query->all();
+        } else if (!empty($param['user_name']) && empty($users)) {
+            $weeklyReports = null;
+        } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date']) && empty($param['target_image_id']) && empty($param['subject_image_id']) && empty($param['target_image']) && empty($param['subject_image'])) {
+            $param['user_name'] = '';
+            $weeklyReports = null;
+        } else {
+            $param['user_name'] = '';
+            $weeklyReports = $query->all();
         }
 
         $users = $this->WeeklyReports->Users->find('list', [
