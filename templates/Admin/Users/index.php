@@ -106,7 +106,12 @@
                         <td><?= h($user->end_datetime) ?></td>
                         <td><?= ($user->staff) ? $user->staff->name : '' ?></td>
                         <td nowrap>
-                            <a href="<?= $this->Url->build(['action' => 'message', $user->id]); ?>" class="btn btn-outline-primary btn-sm">メッセージ確認</a>
+                            <a href="<?= $this->Url->build(['action' => 'message', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm">メッセージ確認</a>
+                            <div>
+                                <?php if ($user->messages) : ?>
+                                    <span class="right badge badge-danger">未読</span>
+                                <?php endif ?>
+                            </div>
                         </td>
                         <td nowrap>
                             <a href="<?= $this->Url->build(['action' => 'edit', $user->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
