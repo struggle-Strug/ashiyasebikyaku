@@ -133,7 +133,6 @@
                             </a>
                         </li>
                         <?php } ?>
-                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'LessonMovies', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'LessonMovies') echo 'active'; ?>">
@@ -143,7 +142,6 @@
                                 </p>
                             </a>
                         </li>
-                        <?php } ?>
                         <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'Informations', 'action' => 'index']); ?>"
