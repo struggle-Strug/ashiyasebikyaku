@@ -85,6 +85,11 @@
                 return true;
             }
         });
+
+        // Disable the send button after first click
+        $('form').on('submit', function () {
+            $('button[type="submit"]').prop('disabled', true).text('送信中...');
+        });
     });
 </script>
 
