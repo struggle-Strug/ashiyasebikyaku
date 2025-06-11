@@ -36,6 +36,12 @@ class UsersController extends AppController
     {
         $query = $this->Users->find('all')
         ->contain([
+            'Messages' => function (Query $q) {
+                    return $q->where([
+                        'Messages.sender' => '1',
+                        'Messages.is_read' => 0
+                    ]);
+                },
             'Staffs'
         ])
         ->where([
@@ -179,7 +185,9 @@ class UsersController extends AppController
         // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
 
-        $this->set(compact('user', 'staffs', 'prefectures'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
 
         $this->render('add');
     }
