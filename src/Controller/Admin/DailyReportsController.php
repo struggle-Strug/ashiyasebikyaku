@@ -51,12 +51,12 @@ class DailyReportsController extends AppController
     public function index()
     {
         $query = $this->DailyReports->find('all')
-        ->contain([
-            'Users'
-        ])
-        ->order([
-            'DailyReports.report_date' => 'desc'
-        ]);
+            ->contain([
+                'Users'
+            ])
+            ->order([
+                'DailyReports.report_date' => 'desc'
+            ]);
 
         // ユーザーを配列で取得
         $users = $this->DailyReports->Users->find('list', [
@@ -93,33 +93,35 @@ class DailyReportsController extends AppController
 
         $user = null;
         if (!empty($param['user_name'])) {
-            $user = $this->DailyReports->Users->find('all')
-            ->where([
-                'OR' => [
-                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                ]
-            ])->first();
+            $users = $this->DailyReports->Users->find('all')
+                ->where([
+                    'OR' => [
+                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    ]
+                ])
+                ->extract('id')
+                ->toArray();
         } else {
             $param['user_name'] = '';
         }
 
-        if (!empty($param['user_name']) && $user) {
-            $query->where(['DailyReports.user_id' => $user->id]);
+        if (!empty($param['user_name']) && !empty($users)) {
+            $query->where(['DailyReports.user_id IN' => $users]);
             $dailyReports = $query->all();
-        }  else if (!empty($param['user_name']) && !$user) {
+        } else if (!empty($param['user_name']) && !$user) {
             $param['user_name'] = '';
             $dailyReports = $this->paginate($this->DailyReports->find()->where(['id' => -1])); // return empty result
             $this->set(compact('dailyReports', 'users', 'param'));
             return;
         }
-        
+
 
         $dailyReports = $this->paginate($query);
 
-        
+
 
         $this->set(compact('dailyReports', 'users', 'param'));
     }
