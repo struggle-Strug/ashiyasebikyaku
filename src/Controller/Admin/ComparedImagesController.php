@@ -81,7 +81,7 @@ class ComparedImagesController extends AppController
 
         $user = null;
         if (!empty($param['user_name'])) {
-            $user = $this->ComparedImages->Users->find('all')
+            $users = $this->ComparedImages->Users->find('all')
             ->where([
                 'OR' => [
                     'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
@@ -89,14 +89,14 @@ class ComparedImagesController extends AppController
                     'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
                     'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
                 ]
-            ])->first();
+            ])->toArray();
         } else {
             $param['user_name'] = '';
         }
 
-        if (!empty($param['user_name']) && $user) {
-            $query->where(['ComparedImages.user_id' => $user->id]);
-            $comparedImages = $query->all();
+        if (!empty($param['user_name']) && !empty($users)) {
+            $userIds = array_column($users, 'id');
+            $query->where(['ComparedImages.user_id IN' => $userIds]);
         } else if (!empty($param['user_name']) && !$user) {
             $comparedImages = null;
         } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
