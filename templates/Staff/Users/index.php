@@ -68,24 +68,28 @@
                         </td>
                         <td nowrap>
                             <div>
+                                <?php if ($user->staff_id == $staff->id) : ?>
                                 <a href="<?= $this->Url->build(['action' => 'edit', $user->id, '?' => $param]); ?>"
                                     class="btn btn-outline-primary btn-xs">編集</a>
+                                <?php endif ?>
                             </div>
                         </td>
                         <td nowrap>
+                            <?php if ($user->staff_id == $staff->id) : ?>
                             <div>
                                 <a href="<?= $this->Url->build(['action' => 'point', $user->id, '?' => $param]); ?>"
                                     class="btn btn-outline-primary btn-xs">登録</a>
-                            </div>
-                            <div>
-                                最新：
-                                <?php
+                                </div>
+                                <div>
+                                    最新：
+                                    <?php
                                     foreach ($user->user_points as $userPoint) {
                                         echo h($userPoint->point_1 + $userPoint->point_2 + $userPoint->point_3 + $userPoint->point_4 + $userPoint->point_5);
                                         break;
                                     }
-                                ?>
+                                    ?>
                             </div>
+                            <?php endif ?>
                         </td>
                         <td nowrap>
                             <div>
@@ -98,6 +102,7 @@
                             </div>
                         </td>
                         <td nowrap>
+                            <?php if ($user->staff_id == $staff->id) : ?>
                             <a href="<?= $this->Url->build(['controller' => 'DailyReports', 'action' => 'index', '?' => ['user_id' => $user->id, 'member_number' => $param['member_number'], 'name' => $param['name']]]); ?>"
                                 class="btn btn-outline-primary btn-xs">日次報告確認</a>
                             <div>
@@ -109,8 +114,10 @@
                                     }
                                 ?>
                             </div>
+                            <?php endif ?>
                         </td>
                         <td nowrap>
+                            <?php if ($user->staff_id == $staff->id) : ?>
                             <a href="<?= $this->Url->build(['controller' => 'WeeklyReports', 'action' => 'index', '?' => ['user_id' => $user->id, 'member_number' => $param['member_number'], 'name' => $param['name']]]); ?>"
                                 class="btn btn-outline-primary btn-xs">週次報告確認</a>
                             <div>
@@ -122,6 +129,7 @@
                                     }
                                 ?>
                             </div>
+                            <?php endif ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

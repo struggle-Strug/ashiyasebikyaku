@@ -31,7 +31,6 @@ class UsersController extends AppController
             ->contain([
                 'Messages' => function (Query $q) {
                     return $q->where([
-                        'Messages.staff_id' => $this->Authentication->getIdentity()->id,
                         'Messages.sender' => '1',
                         'Messages.is_read' => 0
                     ]);
@@ -53,7 +52,6 @@ class UsersController extends AppController
                 }
             ])
             ->where([
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->order([
@@ -86,7 +84,9 @@ class UsersController extends AppController
 
         $users = $this->paginate($query);
 
-        $this->set(compact('users', 'param'));
+        $staff = $this->Authentication->getIdentity();
+
+        $this->set(compact('users', 'param', 'staff'));
     }
 
     /**
@@ -351,7 +351,6 @@ class UsersController extends AppController
         $user = $this->Users->find('all')
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -366,7 +365,6 @@ class UsersController extends AppController
                 'is_read' => 1
             ],
             [
-                'staff_id' => $this->Authentication->getIdentity()->id,
                 'user_id' => $user->id,
                 'sender' => '1',
                 'is_read' => 0
@@ -380,7 +378,6 @@ class UsersController extends AppController
                 'Staffs'
             ])
             ->where([
-                'Messages.staff_id' => $this->Authentication->getIdentity()->id,
                 'Messages.user_id' => $user->id,
                 'Messages.is_deleted' => 0
             ])
@@ -405,7 +402,6 @@ class UsersController extends AppController
             $user = $this->Users->find('all')
                 ->where([
                     'Users.id' => $data['user_id'],
-                    'Users.staff_id' => $this->Authentication->getIdentity()->id,
                     'Users.is_deleted' => 0
                 ])
                 ->first();
