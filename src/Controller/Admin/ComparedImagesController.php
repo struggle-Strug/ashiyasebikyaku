@@ -275,7 +275,6 @@ class ComparedImagesController extends AppController
     {
         $comparedImage = $this->ComparedImages->newEmptyEntity();
         $param = $this->request->getQuery();
-        debug($param);
         $targetImage = $this->Photos->find("all");
         $subjectImage = $this->Photos->find("all");
         if (!empty($param["target_id"])) {
