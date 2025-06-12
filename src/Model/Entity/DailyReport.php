@@ -41,5 +41,7 @@ class DailyReport extends Entity
         'created' => true,
         'modified' => true,
         'user' => true,
+        'staff_id' => true,
+        'staff_comment' => true,
     ];
 }
