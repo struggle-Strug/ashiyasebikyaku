@@ -60,6 +60,15 @@
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/fullcalendar.min.js"></script>
     <!-- Paper Dashboard PRO Core javascript and methods for Demo purpose -->
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/paper-dashboard.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HQJS5TYF85"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-HQJS5TYF85');
+    </script>
 
     <!-- Swiper -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
