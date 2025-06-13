@@ -46,7 +46,23 @@
                             <?php endif ?>
                             <?php if ($dailyReport->comment) : ?>
                                 <div>
-                                    <?= $this->Link->linkify(h($dailyReport->comment)) ?>
+                                    <h5 style="margin-top:0px;margin-bottom:5px">
+                                        コメント：<?= $this->Link->linkify(h($dailyReport->comment)) ?>
+                                    </h5>
+                                </div>
+                            <?php endif ?>
+                            <?php if ($dailyReport->staff_comment) : ?>
+                                <div>
+                                    <h5 style="margin-top:0px;margin-bottom:5px">
+                                        スタッフコメント：<?= $this->Link->linkify(h($dailyReport->staff_comment)) ?>
+                                    </h5>
+                                </div>
+                            <?php endif ?>
+                            <?php if ($dailyReport->comment_update) : ?>
+                                <div>
+                                    <h5 style="margin-top:0px;margin-bottom:5px">
+                                        コメント更新日時：<?= date('Y年n月j日 H:i:s', strtotime($dailyReport->comment_update)) ?>
+                                    </h5>
                                 </div>
                             <?php endif ?>
                         </td>

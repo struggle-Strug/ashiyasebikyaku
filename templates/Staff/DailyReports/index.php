@@ -33,6 +33,8 @@
                     <th nowrap>状態</th>
                     <th nowrap>セルフイメージ</th>
                     <th nowrap>コメント</th>
+                    <th nowrap>スタッフコメント</th>
+                    <th width="150px">&nbsp;</th>
                     <th width="150px">&nbsp;</th>
                 </tr>
             </thead>
@@ -77,6 +79,12 @@
                     </td>
                     <td>
                         <small><?= $this->Link->linkify(h($dailyReport->comment)) ?></small>
+                    </td>
+                    <td>
+                        <small><?= $this->Link->linkify(h($dailyReport->staff_comment)) ?></small>
+                    </td>
+                    <td>
+                        <a href="<?= $this->Url->build(['action' => 'comment', $dailyReport->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">コメント入力</a>
                     </td>
                     <td>
                         <?php if (!$dailyReport->is_checked) : ?>
