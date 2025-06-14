@@ -54,7 +54,11 @@
                             <?php if ($dailyReport->staff_comment) : ?>
                                 <div>
                                     <h5 style="margin-top:0px;margin-bottom:5px">
-                                        スタッフコメント：<?= $this->Link->linkify(h($dailyReport->staff_comment)) ?>
+                                        <?php if ($dailyReport->staff_comment != '' && $dailyReport->staff_comment != null) : ?>
+                                            スタッフコメント：<?= $this->Link->linkify(h($dailyReport->staff_comment)) ?>
+                                        <?php else : ?>
+                                            スタッフコメント：<span class="text-muted">未記入</span>
+                                        <?php endif ?>
                                     </h5>
                                 </div>
                             <?php endif ?>

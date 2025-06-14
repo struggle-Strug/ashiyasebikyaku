@@ -195,8 +195,8 @@
         </div>
     </div>
     <div class="card-footer">
-        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index']); ?>"><i
-                class="fas fa-arrow-circle-left"></i> 戻る</a>
+    <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'index', 'prefix' => 'Staff']); ?>"><i
+    class="fas fa-arrow-circle-left"></i> 戻る</a>
         <span class="float-right">
             <button type="submit" class="btn btn-primary" id="submit">保存</button>
         </span>
@@ -474,7 +474,6 @@
                             svgElm_js.appendChild(tempLine);
                             break;
                         case 'comment-add':
-                            // コメント追加
                             const x = getPositionXOnSvg(event);
                             const y = getPositionYOnSvg(event);
                             
@@ -670,9 +669,9 @@
                     }
                 }
             }).on(move_event, function (event) {
-                event.preventDefault();
+                // event.preventDefault();
                 if (type === "imageMoveAndZoom") {
-                    moveContentByMousedown(event);
+                    // moveContentByMousedown(event);
                 } else if (type === "pencil") {
                     // 線の移動処理
                     if (isMovingLine && selectedLine) {
@@ -954,8 +953,6 @@
 
         function pencilByMouseup(event) {
             // イベントリスナーの削除処理を削除（main内で処理されるため）
-            // $("#drawingCanvas").off(move_event); // この行を削除
-            // $("#drawingCanvas").off(out_event);  // この行を削除
         }
 
         function getViewBox() {
@@ -1434,7 +1431,7 @@
             const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user;
             $.ajax({
                 type: 'POST',
-                url: "<?= $this->Url->build(['action' => 'uploadComparedImage']); ?>",
+                url: "<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'uploadComparedImage', 'prefix' => 'Staff']); ?>",
                 data: formData,
                 headers: {
                     'X-CSRF-Token': "<?= $this->request->getAttribute('csrfToken') ?>",
@@ -1460,13 +1457,12 @@
 
         function moveContentByMousedown(event) {
             var target = null;
-            let isDragging = false; // ✅ Add this
+            let isDragging = false;
 
             pointX = parseInt(getPositionXOnSvg(event));
             pointY = parseInt(getPositionYOnSvg(event));
             
-            // Only assign target if real click is detected inside valid area
-            if (event.buttons === 1) { // ✅ Only when left-click held
+            if (event.buttons === 1) {
                 if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin &&
                     pointY > margin && pointY < clipRightRect.height.baseVal.value) {
                     target = document.getElementById("left-image");
@@ -1476,7 +1472,7 @@
                     target = document.getElementById("right-image");
                 }
 
-                if (!target) return; // ✅ Prevent any further action
+                if (!target) return;
 
                 isDragging = true;
                 var mouse_move_x = parseInt(getPositionXOnSvg(event));
@@ -1494,6 +1490,7 @@
                     var dx = mouse_moving_x - mouse_move_x;
                     var dy = mouse_moving_y - mouse_move_y;
 
+
                     x += dx;
                     y += dy;
                     target.setAttribute('x', x + "");
@@ -1505,8 +1502,6 @@
 
                 $("#drawingCanvas").on(end_event, function () {
                     isDragging = false;
-                    $("#drawingCanvas").off(move_event);
-                    $("#drawingCanvas").off(end_event);
                 });
             }
         }
@@ -1514,8 +1509,7 @@
 
         function moveContentByMouseup() {
             svgElm.css('cursor', 'default');
-            $("#drawingCanvas").off(move_event);
-            $("#drawingCanvas").off(out_event);
+            isDragging = false;  // ドラッグ状態を確実にリセット
         }
 
         var wheel_event = 'ontouchstart' in window ? "touchmove" : "wheel";
