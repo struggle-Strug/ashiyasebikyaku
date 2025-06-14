@@ -109,7 +109,7 @@
                                 <?php foreach ($weeklyReport->photos as $photo) : ?>
                                     <td>
                                         <?php if ($photo->image_url) : ?>
-                                            <?php if (strstr($photo->image_url, '.mp4') !== false || strstr($photo->image_url, '.m4v') !== false || strstr($photo->image_url, '.3gp') !== false || strstr($photo->image_url, '.mov') !== false) : ?>
+                                            <?php if (strstr($photo->image_url, '.mp4') !== false || strstr($photo->image_url, '.m4v') !== false || strstr($photo->image_url, '.3gp') !== false || strstr($photo->image_url, '.mov') !== false || strstr($photo->image_url, '.webm') !== false) : ?>
                                                 <video src="<?= $photo->image_url ?>" style="max-width:100%;" controls></video>
                                             <?php else : ?>
                                                 <a href="<?= $photo->image_url ?>" title="<?= h($photoName[$photo->photo_number]) ?> - <?= date('Y年n月j日', strtotime($weeklyReport->report_date)) ?>" data-lightbox="<?= $photo->photo_number ?>"><img src="<?= $photo->image_url ?>" style="max-width:100%;"></a>
