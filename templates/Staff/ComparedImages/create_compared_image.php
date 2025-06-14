@@ -953,8 +953,6 @@
 
         function pencilByMouseup(event) {
             // イベントリスナーの削除処理を削除（main内で処理されるため）
-            // $("#drawingCanvas").off(move_event); // この行を削除
-            // $("#drawingCanvas").off(out_event);  // この行を削除
         }
 
         function getViewBox() {
@@ -1504,8 +1502,6 @@
 
                 $("#drawingCanvas").on(end_event, function () {
                     isDragging = false;
-                    // $("#drawingCanvas").off(move_event);
-                    // $("#drawingCanvas").off(end_event);
                 });
             }
         }
@@ -1513,8 +1509,6 @@
 
         function moveContentByMouseup() {
             svgElm.css('cursor', 'default');
-            // $("#drawingCanvas").off(move_event);
-            // $("#drawingCanvas").off(end_event);
             isDragging = false;  // ドラッグ状態を確実にリセット
         }
 
