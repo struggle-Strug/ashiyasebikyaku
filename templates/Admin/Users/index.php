@@ -43,10 +43,10 @@
 <!-- Default box -->
 <div class="card">
     <div class="card-header">
-        <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規会員登録</a>
+    <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]) ?>" class="btn btn-outline-primary" id="add-member-btn">新規会員登録</a>
     </div>
     <div class="card-body">
-        <div class="table-responsive-md scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh; ">
+        <div class="table-responsive-md scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh;" id="member-table-container">
             <table class="table table-bordered table-striped" style="overflow-y: scroll;">
                 <thead>
                     <tr>
@@ -106,11 +106,16 @@
                         <td><?= h($user->end_datetime) ?></td>
                         <td><?= ($user->staff) ? $user->staff->name : '' ?></td>
                         <td nowrap>
-                            <a href="<?= $this->Url->build(['action' => 'message', $user->id]); ?>" class="btn btn-outline-primary btn-sm">メッセージ確認</a>
+                            <a href="<?= $this->Url->build(['action' => 'message', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">メッセージ確認</a>
+                            <div>
+                                <?php if ($user->messages) : ?>
+                                    <span class="right badge badge-danger">未読</span>
+                                <?php endif ?>
+                            </div>
                         </td>
                         <td nowrap>
-                            <a href="<?= $this->Url->build(['action' => 'edit', $user->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
-                            <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $user->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('退会は編集から「利用終了日時」を設定してください。本当に削除してよろしいですか？', $user->id)]) ?>
+                            <a href="<?= $this->Url->build(['action' => 'edit', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">編集</a>
+                            <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $user->id], ['class' => 'btn btn-outline-secondary btn-sm save-scroll-link', 'confirm' => __('退会は編集から「利用終了日時」を設定してください。本当に削除してよろしいですか？', $user->id)]) ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -124,3 +129,109 @@
     </div>
 </div>
 <!-- /.card -->
+
+<script>
+$(document).ready(function() {
+    // Scroll position management for index page only
+    const SCROLL_STORAGE_KEY = 'memberIndexScrollPosition';
+    const tableContainer = $('#member-table-container');
+    
+    // Function to save scroll position
+    function saveScrollPosition() {
+        const tableScrollTop = tableContainer.scrollTop();
+        const tableScrollLeft = tableContainer.scrollLeft();
+        const windowScrollTop = $(window).scrollTop();
+        
+        const scrollData = {
+            tableTop: tableScrollTop,
+            tableLeft: tableScrollLeft,
+            windowTop: windowScrollTop,
+            timestamp: Date.now()
+        };
+        
+        sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify(scrollData));
+    }
+    
+    // Function to restore scroll position
+    function restoreScrollPosition() {
+        const savedScrollData = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+        
+        if (savedScrollData) {
+            try {
+                const scrollData = JSON.parse(savedScrollData);
+                
+                // Check if data is not too old (within 30 minutes)
+                const currentTime = Date.now();
+                const maxAge = 30 * 60 * 1000; // 30 minutes
+                
+                if (currentTime - scrollData.timestamp < maxAge) {
+                    // Restore scroll positions with slight delay to ensure DOM is ready
+                    setTimeout(function() {
+                        if (scrollData.tableTop > 0) {
+                            tableContainer.scrollTop(scrollData.tableTop);
+                        }
+                        if (scrollData.tableLeft > 0) {
+                            tableContainer.scrollLeft(scrollData.tableLeft);
+                        }
+                        if (scrollData.windowTop > 0) {
+                            $(window).scrollTop(scrollData.windowTop);
+                        }
+                    }, 100);
+                } else {
+                    // Remove old data
+                    sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+                }
+            } catch (e) {
+                console.error('Error restoring scroll position:', e);
+                sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+            }
+        }
+    }
+    
+    // Restore scroll position when page loads
+    restoreScrollPosition();
+    
+    // Save scroll position when navigating to other pages
+    $('.save-scroll-link').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position when clicking "新規会員登録" button
+    $('#add-member-btn').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position when clicking pagination links
+    $('.pagination a').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position when submitting search form
+    $('form').on('submit', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position periodically while scrolling (debounced)
+    let scrollTimeout;
+    tableContainer.on('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(function() {
+            saveScrollPosition();
+        }, 200);
+    });
+    
+    // Save window scroll position
+    let windowScrollTimeout;
+    $(window).on('scroll', function() {
+        clearTimeout(windowScrollTimeout);
+        windowScrollTimeout = setTimeout(function() {
+            saveScrollPosition();
+        }, 200);
+    });
+    
+    // Save scroll position before page unload
+    $(window).on('beforeunload', function() {
+        saveScrollPosition();
+    });
+});
+</script>

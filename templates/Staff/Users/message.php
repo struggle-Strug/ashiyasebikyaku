@@ -57,15 +57,15 @@
 </div>
 
 <div class="card-footer">
-    <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index']); ?>"><i class="fas fa-arrow-circle-left"></i> 戻る</a>
+    <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]); ?>"><i class="fas fa-arrow-circle-left"></i> 戻る</a>
 </div>
 
 <script>
     $(function() {
-        // 最下部までスクロール
+        // Scroll to the bottom of the message board
         $("#msg-board").scrollTop($("#msg-footer").position().top);
 
-        // エンターキー無効
+        // Disable Enter key on inputs
         $("input").on("keydown", function(e) {
             if ((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
                 return false;
@@ -73,6 +73,12 @@
                 return true;
             }
         });
+
+        // Disable the send button after first click
+        $('form').on('submit', function () {
+            $('button[type="submit"]').prop('disabled', true).text('送信中...');
+        });
     });
 </script>
+
 

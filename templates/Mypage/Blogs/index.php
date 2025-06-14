@@ -192,15 +192,11 @@
                                         <?php foreach ($informations as $information): ?>
                                         <tr>
                                             <td class="text-center align-middle">
-                                                <?php
-                                                $url = $this->Url->build(['action' => 'information', $information->id]);
-                                                ?>
-                                                <a href="<?= $url ?>" class="text-dark">
-                                                    <?= $information->start_datetime->format('Y年n月j日') ?>
-                                                </a>
+                                                <?= $information->start_datetime->format('Y年n月j日') ?>
                                             </td>
                                             <td class="text-start align-middle">
                                                 <?php
+                                                $url = $this->Url->build(['action' => 'information', $information->id]);
                                                 $content = str_replace(["\r\n", "\r", "\n"], ' ', $information->content);
                                                 $content = preg_replace('/\s+/', ' ', $content);
                                                 $maxLength = (isset($_SERVER['HTTP_USER_AGENT']) && 
@@ -212,7 +208,9 @@
                                                     $content = mb_substr($content, 0, $maxLength) . ' ・・・';
                                                 }
                                                 ?>
-                                                <p class="content-text"><?= $this->Link->linkify(h($content)) ?></p>
+                                                <a href="<?= $url ?>" class="text-dark">
+                                                    <?= $this->Link->linkify(h($content)) ?>
+                                                </a>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>

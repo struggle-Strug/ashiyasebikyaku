@@ -20,6 +20,17 @@ use ZipArchive;
  */
 class StaffWeeklyMessagesController extends AppController
 {
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $user = $this->Authentication->getIdentity();
+        if($user->role_id == 1) {
+            $this->Flash->error('このページへのアクセス権がありません。');
+            return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
+        }
+    }
+
     public function index()
     {
         $param = $this->request->getQuery();

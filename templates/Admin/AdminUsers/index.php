@@ -26,6 +26,7 @@
                     <tr>
                     <tr>
                         <th style="width:150px">ID</th>
+                        <th style="width:150px">属性</th>
                         <th nowrap>管理者名</th>
                         <th nowrap>ログインID</th>
                         <th style="width:150px"></th>
@@ -36,6 +37,7 @@
                 <?php foreach ($adminUsers as $admin): ?>
                     <tr>
         <td><?= h($admin->id) ?></td>
+        <td><?= h($admin->role_id == 0 ? '管理者' : '運営') ?></td>
         <td><?= h($admin->name) ?></td>
         <td><?= h($admin->loginid) ?></td>
         <td nowrap>

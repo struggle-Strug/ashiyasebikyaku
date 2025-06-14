@@ -18,7 +18,14 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+                <div class="input-group">
+                    <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
+                </div>
+            </div>
+            <div class="col-md-3 mt-2">
+                <div class="input-group">
+                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id'], 'style' => 'margin-top: 1.75rem;']) ?>
+                </div>
             </div>
             <div class="col-md-12 text-right mt-2">
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
@@ -30,17 +37,11 @@
 
 <div class="card">
     <div class="card-header">
-        <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
+        <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
     </div>
     <div class="card-body">
         <?php if (!$comparedImages || count($comparedImages) == 0): ?>
-
-            <?php if (empty($param['user_id'])): ?>
-                会員を選択してください。
-            <?php else: ?>
                 該当のデータはありません。
-            <?php endif ?>
-
         <?php else: ?>
             <div class="table-responsive-md" style="height: 50vh; ">
                 <?php foreach ($comparedImages as $comparedImage): ?>

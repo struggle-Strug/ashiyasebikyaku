@@ -18,7 +18,18 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+
+                <?= $this->Form->input('user_name', [
+                    'class' => 'form-control',
+                    'empty' => '-',
+                    'default' => $param['user_name'],
+                    'id' => 'userSelectBox'
+                ]) ?>
+            </div>
+            <div class="col-md-3 mt-2">
+                <div class="input-group">
+                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id'], 'style' => 'margin-top: 1.75rem;']) ?>
+                </div>
             </div>
             <div class="col-md-12 text-right mt-2">
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
@@ -48,11 +59,7 @@
     <div class="card-body">
         <?php if (!$weeklyReports || count($weeklyReports) == 0) : ?>
 
-           <?php if (empty($param['user_id'])) : ?>
-                会員を選択してください。
-            <?php else : ?>
                 該当のデータはありません。
-            <?php endif ?>
 
         <?php else : ?>
 
@@ -62,6 +69,7 @@
                         <tr>
                         <th nowrap>ダウンロード</th>
                             <th nowrap>測定日</th>
+                            <th nowrap>会員名</th>
                             <th nowrap>体重</th>
                             <th nowrap>体脂肪率</th>
                             <th nowrap>アンダー<br>バスト</th>
@@ -86,6 +94,7 @@
                                     <?php echo $this->Html->link('一括ダウンロード', ['controller' => 'WeeklyReports', 'action' => 'downloadImages', $weeklyReport->id], ['class' => 'btn btn-primary']); ?>
                                 </td>
                                 <td nowrap><?= date('Y年n月j日', strtotime($weeklyReport->report_date)) ?></td>
+                                <td nowrap><?= h($weeklyReport->user->fullname) ?></td>
                                 <td nowrap style="text-align:right"><?= h($weeklyReport->weight) ?> kg</td>
                                 <td nowrap style="text-align:right"><?= h($weeklyReport->fat_percent) ?> %</td>
                                 <td nowrap style="text-align:right"><?= h($weeklyReport->size1) ?> cm</td>

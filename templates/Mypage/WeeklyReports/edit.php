@@ -190,8 +190,6 @@
             $('#image_file').click();
         });
 
-        console.log('写真データ:', <?= $photo && (strstr($photo->image_url, '.mp4') === false && strstr($photo->image_url, '.m4v') === false && strstr($photo->image_url, '.3gp') === false && strstr($photo->image_url, '.mov') === false && strstr($photo->image_url, '.webm') === false) ?>);
-
         const video = document.getElementById('video');
         const photo = document.getElementById('photo');
 

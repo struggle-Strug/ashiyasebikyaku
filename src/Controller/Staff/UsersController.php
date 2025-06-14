@@ -31,7 +31,6 @@ class UsersController extends AppController
             ->contain([
                 'Messages' => function (Query $q) {
                     return $q->where([
-                        'Messages.staff_id' => $this->Authentication->getIdentity()->id,
                         'Messages.sender' => '1',
                         'Messages.is_read' => 0
                     ]);
@@ -53,7 +52,6 @@ class UsersController extends AppController
                 }
             ])
             ->where([
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->order([
@@ -86,7 +84,9 @@ class UsersController extends AppController
 
         $users = $this->paginate($query);
 
-        $this->set(compact('users', 'param'));
+        $staff = $this->Authentication->getIdentity();
+
+        $this->set(compact('users', 'param', 'staff'));
     }
 
     /**
@@ -144,7 +144,9 @@ class UsersController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
     }
 
     /**
@@ -176,7 +178,9 @@ class UsersController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
-        $this->set(compact('user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
     }
 
     /**
@@ -222,7 +226,9 @@ class UsersController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('user', 'userPoint'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'userPoint', 'param'));
     }
 
     /**
@@ -277,7 +283,9 @@ class UsersController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('user', 'userPoint'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'userPoint', 'param'));
 
         $this->render('point_add');
     }
@@ -343,7 +351,6 @@ class UsersController extends AppController
         $user = $this->Users->find('all')
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -358,7 +365,6 @@ class UsersController extends AppController
                 'is_read' => 1
             ],
             [
-                'staff_id' => $this->Authentication->getIdentity()->id,
                 'user_id' => $user->id,
                 'sender' => '1',
                 'is_read' => 0
@@ -372,13 +378,14 @@ class UsersController extends AppController
                 'Staffs'
             ])
             ->where([
-                'Messages.staff_id' => $this->Authentication->getIdentity()->id,
                 'Messages.user_id' => $user->id,
                 'Messages.is_deleted' => 0
             ])
             ->all();
 
-        $this->set(compact('messages', 'user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('messages', 'user', 'param'));
     }
 
 
@@ -395,7 +402,6 @@ class UsersController extends AppController
             $user = $this->Users->find('all')
                 ->where([
                     'Users.id' => $data['user_id'],
-                    'Users.staff_id' => $this->Authentication->getIdentity()->id,
                     'Users.is_deleted' => 0
                 ])
                 ->first();
@@ -419,6 +425,7 @@ class UsersController extends AppController
                 $this->Flash->success(__('メッセージを送信しました。'));
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $user->email, "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
+                // $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
                 return $this->redirect(['action' => 'message', $data['user_id']]);
             }
             $this->Flash->error(__('データを送信できませんでした。'));

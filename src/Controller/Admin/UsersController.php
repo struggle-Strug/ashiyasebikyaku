@@ -16,6 +16,17 @@ use Cake\Core\Configure;
  */
 class UsersController extends AppController
 {
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $user = $this->Authentication->getIdentity();
+        if($user->role_id == 1) {
+            $this->Flash->error('このページへのアクセス権がありません。');
+            return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
+        }
+    }
+    
     /**
      * Index method
      *
@@ -25,6 +36,12 @@ class UsersController extends AppController
     {
         $query = $this->Users->find('all')
         ->contain([
+            'Messages' => function (Query $q) {
+                    return $q->where([
+                        'Messages.sender' => '1',
+                        'Messages.is_admin_read' => false
+                    ]);
+                },
             'Staffs'
         ])
         ->where([
@@ -66,7 +83,6 @@ class UsersController extends AppController
         }
 
         $users = $this->paginate($query);
-
         // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
@@ -114,7 +130,9 @@ class UsersController extends AppController
         // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
 
-        $this->set(compact('user', 'staffs', 'prefectures'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
     }
 
     /**
@@ -166,7 +184,9 @@ class UsersController extends AppController
         // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
 
-        $this->set(compact('user', 'staffs', 'prefectures'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
 
         $this->render('add');
     }
@@ -219,6 +239,18 @@ class UsersController extends AppController
         if (!$user) {
             return $this->redirect(['action' => 'index']);
         }
+
+         // 既読にする
+         $this->Users->Messages->updateAll(
+            [
+                'is_admin_read' => true
+            ],
+            [
+                'user_id' => $user->id,
+                'sender' => '1',
+                'is_admin_read' => false
+            ]
+        );
 
         $messages = $this->Users->Messages->find('all')
         ->contain([

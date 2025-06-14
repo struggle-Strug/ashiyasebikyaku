@@ -20,6 +20,17 @@ use ZipArchive;
  */
 class WeeklyReportsController extends AppController
 {
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $user = $this->Authentication->getIdentity();
+        if($user->role_id == 1) {
+            $this->Flash->error('このページへのアクセス権がありません。');
+            return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
+        }
+    }
+    
     /**
      * [ajax] 確認済みにする
      */
@@ -92,6 +103,36 @@ class WeeklyReportsController extends AppController
         } else {
             $param['user_id'] = '';
             $weeklyReports = null;
+        }
+
+        $user = null;
+        if (!empty($param['user_name'])) {
+            $users = $this->WeeklyReports->Users->find('all')
+            ->where([
+                'OR' => [
+                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                ]
+            ])->toArray();
+        } else {
+            $param['user_name'] = '';
+            $users = [];
+        }
+
+        if (!empty($param['user_name']) && !empty($users)) {
+            $userIds = array_column($users, 'id');
+            $query->where(['WeeklyReports.user_id IN' => $userIds]);
+            $weeklyReports = $query->all();
+        } else if (!empty($param['user_name']) && empty($users)) {
+            $weeklyReports = null;
+        } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
+            $param['user_name'] = '';
+            $weeklyReports = null;
+        } else {
+            $param['user_name'] = '';
+            $weeklyReports = $query->all();
         }
 
         // ユーザーを配列で取得

@@ -7,7 +7,7 @@ use App\Controller\AppController;
 
 use App\Mailer\AppMailer;
 use Cake\Mailer\MailerAwareTrait;
-
+use Cake\Core\Configure;
 /**
  * AdminUsers Controller
  *
@@ -19,8 +19,23 @@ class AdminUsersController extends AppController
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
+
         $this->Authentication->addUnauthenticatedActions(['login']);
+
+        $currentAction = $this->request->getParam('action');
+
+        // Allow 'login' and 'logout' actions without role restriction
+        if (in_array($currentAction, ['login', 'logout'])) {
+            return;
+        }
+
+        $user = $this->Authentication->getIdentity();
+        if ($user && $user->role_id == 1) {
+            $this->Flash->error('このページへのアクセス権がありません。');
+            return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
+        }
     }
+
 
     /**
      * Login method
@@ -37,11 +52,20 @@ class AdminUsersController extends AppController
 
         // Login successful or Already logged in
         if ($result->isValid()) {
-            $redirect = $this->request->getQuery('redirect', [
-                'controller' => 'Users',
-                'action' => 'index',
-            ]);
-            return $this->redirect($redirect);
+            $user = $this->Authentication->getIdentity();
+            if($user->role_id == 0) {
+                $redirect = $this->request->getQuery('redirect', [
+                    'controller' => 'Users',
+                    'action' => 'index',
+                ]);
+                return $this->redirect($redirect);
+            } else {
+                $redirect = $this->request->getQuery('redirect', [
+                    'controller' => 'UploadMovies',
+                    'action' => 'index',
+                ]);
+                return $this->redirect($redirect);
+            }
         }
 
         // Login failure
@@ -103,7 +127,8 @@ class AdminUsersController extends AppController
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
-        $this->set(compact('adminUser'));
+        $roles = Configure::read('ADMIN_ROLES');
+        $this->set(compact('adminUser', 'roles'));
     }
 
     use MailerAwareTrait;
@@ -119,7 +144,8 @@ class AdminUsersController extends AppController
             }
             $this->Flash->error(__('管理者を追加できませんでした。'));
         }
-        $this->set('adminUser', $adminUser);
+        $roles = Configure::read('ADMIN_ROLES');
+        $this->set(compact('adminUser', 'roles'));
     }
 
     public function delete($id = null)
