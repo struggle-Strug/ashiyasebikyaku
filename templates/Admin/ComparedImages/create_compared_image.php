@@ -474,7 +474,6 @@
                             svgElm_js.appendChild(tempLine);
                             break;
                         case 'comment-add':
-                            // コメント追加
                             const x = getPositionXOnSvg(event);
                             const y = getPositionYOnSvg(event);
                             
@@ -670,9 +669,9 @@
                     }
                 }
             }).on(move_event, function (event) {
-                event.preventDefault();
+                // event.preventDefault();
                 if (type === "imageMoveAndZoom") {
-                    moveContentByMousedown(event);
+                    // moveContentByMousedown(event);
                 } else if (type === "pencil") {
                     // 線の移動処理
                     if (isMovingLine && selectedLine) {
@@ -1460,13 +1459,12 @@
 
         function moveContentByMousedown(event) {
             var target = null;
-            let isDragging = false; // ✅ Add this
+            let isDragging = false;
 
             pointX = parseInt(getPositionXOnSvg(event));
             pointY = parseInt(getPositionYOnSvg(event));
             
-            // Only assign target if real click is detected inside valid area
-            if (event.buttons === 1) { // ✅ Only when left-click held
+            if (event.buttons === 1) {
                 if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin &&
                     pointY > margin && pointY < clipRightRect.height.baseVal.value) {
                     target = document.getElementById("left-image");
@@ -1476,7 +1474,7 @@
                     target = document.getElementById("right-image");
                 }
 
-                if (!target) return; // ✅ Prevent any further action
+                if (!target) return;
 
                 isDragging = true;
                 var mouse_move_x = parseInt(getPositionXOnSvg(event));
@@ -1494,6 +1492,7 @@
                     var dx = mouse_moving_x - mouse_move_x;
                     var dy = mouse_moving_y - mouse_move_y;
 
+
                     x += dx;
                     y += dy;
                     target.setAttribute('x', x + "");
@@ -1505,8 +1504,8 @@
 
                 $("#drawingCanvas").on(end_event, function () {
                     isDragging = false;
-                    $("#drawingCanvas").off(move_event);
-                    $("#drawingCanvas").off(end_event);
+                    // $("#drawingCanvas").off(move_event);
+                    // $("#drawingCanvas").off(end_event);
                 });
             }
         }
@@ -1514,8 +1513,9 @@
 
         function moveContentByMouseup() {
             svgElm.css('cursor', 'default');
-            $("#drawingCanvas").off(move_event);
-            $("#drawingCanvas").off(out_event);
+            // $("#drawingCanvas").off(move_event);
+            // $("#drawingCanvas").off(end_event);
+            isDragging = false;  // ドラッグ状態を確実にリセット
         }
 
         var wheel_event = 'ontouchstart' in window ? "touchmove" : "wheel";
