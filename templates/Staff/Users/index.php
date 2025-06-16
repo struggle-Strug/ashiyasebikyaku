@@ -12,6 +12,14 @@
                 <label>氏名</label>
                 <?= $this->Form->text('name', ['class' => 'form-control', 'placeholder' => '', 'default' => $param['name']]) ?>
             </div>
+            <div class="col-md-3">
+                <label>担当</label>
+                <?= $this->Form->select('in_charge', [
+                    '' => '選択してください',
+                    '1' => '担当',
+                    '2' => '非担当'
+                ], ['class' => 'form-control', 'default' => $param['in_charge']]) ?>
+            </div>
             <div class="col-md-12 text-right">
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
             </div>
