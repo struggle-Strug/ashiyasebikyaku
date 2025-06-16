@@ -205,10 +205,8 @@ class ComparedImagesController extends AppController
         // 会員
         if (!empty($param['user_id'])) {
             $query->where(['WeeklyReports.user_id' => $param['user_id']]);
-            $weeklyReports = $query->all();
         } else {
             $param['user_id'] = '';
-            $weeklyReports = null;
         }
 
         if (!empty($param['user_name'])) {

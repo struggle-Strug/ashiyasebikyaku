@@ -86,6 +86,7 @@
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                            <th nowrap style="min-width:120px">会員名</th>
                             <?php foreach ($photoName as $key => $name): ?>
                                 <th nowrap style="min-width:120px">
                                     <?= h($name) ?>
@@ -96,6 +97,7 @@
                     <tbody>
                         <?php foreach ($weeklyReports as $key => $weeklyReport): ?>
                             <tr>
+                                <td><?= $weeklyReport->user->last_name . ' ' . $weeklyReport->user->first_name ?></td>
                                 <?php foreach ($weeklyReport->photos as $photo): ?>
                                     <td>
                                         <?php if ($photo->image_url): ?>
