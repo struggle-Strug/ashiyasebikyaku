@@ -217,6 +217,17 @@
                             </a>
                         </li>
                         <?php } ?>
+                        <?php if ($user && $user->role_id == 0) { ?>
+                        <li class="nav-item">
+                            <a href="<?= $this->Url->build(['controller' => 'Categories', 'action' => 'index']); ?>"
+                                class="nav-link <?php if ($this->request->getParam('controller') == 'Categories') echo 'active'; ?>">
+                                <i class="nav-icon fa-solid fa-list"></i>
+                                <p>
+                                    動画カテゴリー
+                                </p>
+                            </a>
+                        </li>
+                        <?php } ?>
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->
