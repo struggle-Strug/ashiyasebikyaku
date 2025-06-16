@@ -33,6 +33,7 @@ class EventsController extends AppController
     {
         parent::initialize();
         $this->loadModel('Users');
+        $this->loadModel('Staffs');
     }
 
 
@@ -251,8 +252,20 @@ class EventsController extends AppController
         if ($this->Events->EventEntries->save($eventEntry)) {
             $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "events", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", 'today' => $formattedDateTime]]);
             $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", "esaki1217@gmail.com", "events_operation", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
-            $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "events_operation", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
-            $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", "ank2019.studio@gmail.com", "events_operation", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
+            $staff = $this->Staffs->find('all')
+                ->where([
+                    'id' => $this->Authentication->getIdentity()->staff_id,
+                ])
+                ->first();
+            if ($staff) {
+                if ($staff->email) {
+                    $this->getMailer('App')->send('sendGridEmail', ["【{$types[$event->type]}予約】脚やせ美脚リバースエイジングプログラム", $staff->email, "events_operation", ["type" => $types[$event->type], "datetime" => "{$eventScheduleDate} {$start_time} - {$end_time}", "name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
+                } else {
+                    $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
+                }
+            } else {
+                $this->Flash->error(__('担当講師が設定されていません'));
+            }
             $this->Flash->success(__('応募しました。'));
         } else {
             $this->Flash->error(__('データを送信できませんでした。再度応募しなおしてください。'));
