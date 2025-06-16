@@ -1,12 +1,16 @@
-# Uncomment the following to prevent the httpoxy vulnerability
-# See: https://httpoxy.org/
-#<IfModule mod_headers.c>
-#    RequestHeader unset Proxy
-#</IfModule>
-
 <IfModule mod_rewrite.c>
     RewriteEngine on
+    
+    # Let's Encryptの認証用（変更なし）
     RewriteRule    ^(\.well-known/.*)$ $1 [L]
-    RewriteRule    ^$    webroot/    [L]
-    RewriteRule    (.*) webroot/$1    [L]
+
+    # すでに webroot/ にいる場合はリダイレクトしない
+    RewriteCond %{REQUEST_URI} !^/webroot/
+    
+    # ルートURL（/）を webroot/ にリダイレクト
+    RewriteRule ^$ webroot/ [L]
+
+    # 他のリクエストも webroot/ へリダイレクト
+    RewriteRule (.*) webroot/$1 [L]
 </IfModule>
+

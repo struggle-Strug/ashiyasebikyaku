@@ -132,6 +132,12 @@ class UsersController extends AppController
             'start_datetime <=' => date('Y-m-d H:i:s'),
             'is_deleted' => 0
         ])
+        ->where([
+            'OR' => [
+                ['category' => 10],
+                ['category IS' => null]
+            ]
+        ])
         ->order([
             'id' => 'desc'
         ])

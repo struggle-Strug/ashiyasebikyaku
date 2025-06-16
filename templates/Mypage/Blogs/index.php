@@ -166,7 +166,7 @@
                                     すべて
                                 </button>
                                 <?php foreach ($categories as $key => $value): ?>
-                                    <?php if ($key !== ''): ?>
+                                    <?php if ($key !== '' && $value !== '事務局からのお知らせ'): ?>
                                         <button type="button" 
                                             class="category-btn <?= $category == $key ? 'active' : '' ?>"
                                             onclick="updateCategory('<?= $key ?>')">
