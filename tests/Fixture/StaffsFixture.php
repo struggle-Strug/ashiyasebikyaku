@@ -23,9 +23,10 @@ class StaffsFixture extends TestFixture
                 'loginid' => 'Lorem ipsum dolor sit amet',
                 'password' => 'Lorem ipsum dolor sit amet',
                 'name' => 'Lorem ipsum dolor sit amet',
-                'created' => '2023-06-24 00:15:56',
-                'modified' => '2023-06-24 00:15:56',
+                'created' => '2025-06-16 11:38:40',
+                'modified' => '2025-06-16 11:38:40',
                 'is_deleted' => 1,
+                'email' => 'Lorem ipsum dolor sit amet',
             ],
         ];
         parent::init();

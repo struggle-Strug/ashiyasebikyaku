@@ -11,6 +11,7 @@ use Cake\Validation\Validator;
 /**
  * Staffs Model
  *
+ * @property \App\Model\Table\MessagesTable&\Cake\ORM\Association\HasMany $Messages
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\HasMany $Users
  *
  * @method \App\Model\Entity\Staff newEmptyEntity()
@@ -47,10 +48,19 @@ class StaffsTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->hasMany('Users', [
+        $this->hasMany('DailyReports', [
+            'foreignKey' => 'staff_id',
+        ]);
+        $this->hasMany('Events', [
             'foreignKey' => 'staff_id',
         ]);
         $this->hasMany('Messages', [
+            'foreignKey' => 'staff_id',
+        ]);
+        $this->hasMany('StaffWeeklyMessages', [
+            'foreignKey' => 'staff_id',
+        ]);
+        $this->hasMany('Users', [
             'foreignKey' => 'staff_id',
         ]);
     }
@@ -84,6 +94,10 @@ class StaffsTable extends Table
         $validator
             ->boolean('is_deleted')
             ->allowEmptyString('is_deleted');
+
+        $validator
+            ->email('email')
+            ->allowEmptyString('email');
 
         return $validator;
     }
