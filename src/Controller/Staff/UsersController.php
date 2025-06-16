@@ -57,8 +57,7 @@ class UsersController extends AppController
                         'WeeklyReports.report_date' => 'desc'
                     ]);
                 }
-            ])
-            ->where([
+            ])->where([
                 'Users.is_deleted' => 0
             ])
             ->order([
@@ -73,6 +72,18 @@ class UsersController extends AppController
             $query->where(['Users.member_number LIKE' => '%' . $param['member_number'] . '%']);
         } else {
             $param['member_number'] = '';
+        }
+
+        if (!empty($param['in_charge']) && $param['in_charge'] == '1') {
+            $query->where([
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+            ]);
+        } else if (!empty($param['in_charge']) && $param['in_charge'] == '2') {
+            $query->where([
+                'Users.staff_id !=' => $this->Authentication->getIdentity()->id,
+            ]);
+        } else {
+            $param['in_charge'] = '';
         }
 
         // 会員名
