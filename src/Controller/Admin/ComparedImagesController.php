@@ -73,10 +73,8 @@ class ComparedImagesController extends AppController
         // 会員
         if (!empty($param['user_id'])) {
             $query->where(['ComparedImages.user_id' => $param['user_id']]);
-            $comparedImages = $query->all();
         } else {
             $param['user_id'] = '';
-            $comparedImages = $query->all();
         }
 
         if (!empty($param['user_name'])) {
@@ -88,14 +86,15 @@ class ComparedImagesController extends AppController
                     'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
                     'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
                 ]
-            ])->toArray();
+            ])
+            ->extract('id')
+            ->toArray();
         } else {
             $param['user_name'] = '';
         }
 
         if (!empty($param['user_name']) && !empty($users)) {
-            $userIds = array_column($users, 'id');
-            $query->where(['ComparedImages.user_id IN' => $userIds]);
+            $query->where(['ComparedImages.user_id IN' => $users]);
         } else if (!empty($param['user_name']) && empty($users)) {
             $comparedImages = null;
         } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
@@ -103,8 +102,9 @@ class ComparedImagesController extends AppController
             $comparedImages = null;
         } else {
             $param['user_name'] = '';
-            $comparedImages = $query->all();
         }
+
+        $comparedImages = $query->all();
 
         $users = $this->ComparedImages->Users->find('list', [
             'keyField' => 'id',
