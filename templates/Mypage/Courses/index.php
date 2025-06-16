@@ -147,7 +147,7 @@
                     <div class="timeline-panel">
                         <div class="timeline-heading">
                             <h5 class="card-title" style="margin-bottom:5px"><span class="label label-primary">５</span>
-                            初回の個別コンサル予約</h5>
+                            初回の個別コンサル予約（該当コースの方のみ）</h5>
                         </div>
                         <div class="timeline-body">
                             <p class="description" style="margin-bottom:10px">
