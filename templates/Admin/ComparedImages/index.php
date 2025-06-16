@@ -48,7 +48,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h5 style="display: flex; justify-content: space-between; align-items:center">
-                                <div><?= $comparedImage->created->format('Y年m月d日'); ?></div>
+                                <div><?= $comparedImage->created->format('Y年m月d日'); ?>  <?= $comparedImage->user->last_name . ' ' . $comparedImage->user->first_name ?></div>
                                 <div style="flex-grow: 0; display: flex;">
                                     <div style="margin: 4px">
                                         <?php if ($comparedImage->active): ?>
