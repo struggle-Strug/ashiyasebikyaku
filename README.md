@@ -29,7 +29,9 @@ docker-compose up
 
 4. seed.sqlを(http://localhost:8085/phpmyadmin/)でインポートする
 
-5. http://localhost:8765/admin/login にログインする
+5. migrateを実行する
+
+6. http://localhost:8765/admin/login にログインする
 
 
 ## 管理ユーザー
