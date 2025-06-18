@@ -23,6 +23,13 @@ class LessonMoviesController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
+
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->loadModel('Categories');
+    }
+
     public function index()
     {
         $query = $this->LessonMovies->find('all')
@@ -111,7 +118,9 @@ class LessonMoviesController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('lessonMovie'));
+        $categories = $this->Categories->find('all');
+
+        $this->set(compact('lessonMovie', 'categories', 'type'));
     }
 
     /**

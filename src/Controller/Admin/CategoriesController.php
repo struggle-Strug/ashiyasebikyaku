@@ -61,6 +61,8 @@ class CategoriesController extends AppController
     public function add()
     {
         $category = $this->Categories->newEmptyEntity();
+        $param = $this->request->getQuery();
+
         if ($this->request->is('post')) {
             $data = $this->request->getData();
 
@@ -81,8 +83,6 @@ class CategoriesController extends AppController
                 $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
             }
         }
-
-        $param = $this->request->getQuery();
 
         $this->set(compact('category', 'param'));
     }

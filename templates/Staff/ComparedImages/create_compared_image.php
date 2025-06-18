@@ -1423,12 +1423,14 @@
             const target_image = "<?= $param["target_id"] ?>"
             const subject_image = "<?= $param["subject_id"] ?>"
             const user = "<?= $param["user"] ?>"
+            const user_name = "<?= $param["user_name"] ?>"
             formData.append('image', pngDataUrl);
             formData.append('comment', comment);
             formData.append('target_image', target_image);
             formData.append('subject_image', subject_image);
             formData.append('user_id', user);
-            const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user;
+            formData.append('user_name', user_name);
+            const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user + "&user_name=" + user_name;
             $.ajax({
                 type: 'POST',
                 url: "<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'uploadComparedImage', 'prefix' => 'Staff']); ?>",

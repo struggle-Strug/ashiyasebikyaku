@@ -37,12 +37,12 @@ class ComparedImagesController extends AppController
         parent::beforeFilter($event);
 
         $user = $this->Authentication->getIdentity();
-        if($user->role_id == 1) {
+        if ($user->role_id == 1) {
             $this->Flash->error('このページへのアクセス権がありません。');
             return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
         }
     }
-    
+
     public function index()
     {
         $this->paginate = [
@@ -79,16 +79,16 @@ class ComparedImagesController extends AppController
 
         if (!empty($param['user_name'])) {
             $users = $this->ComparedImages->Users->find('all')
-            ->where([
-                'OR' => [
-                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                ]
-            ])
-            ->extract('id')
-            ->toArray();
+                ->where([
+                    'OR' => [
+                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    ]
+                ])
+                ->extract('id')
+                ->toArray();
         } else {
             $param['user_name'] = '';
         }
@@ -211,14 +211,14 @@ class ComparedImagesController extends AppController
 
         if (!empty($param['user_name'])) {
             $users = $this->WeeklyReports->Users->find('all')
-            ->where([
-                'OR' => [
-                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                ]
-            ])->toArray();
+                ->where([
+                    'OR' => [
+                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    ]
+                ])->toArray();
         } else {
             $param['user_name'] = '';
         }
@@ -280,6 +280,16 @@ class ComparedImagesController extends AppController
                 "id" => $param["target_id"]
             ])
                 ->first();
+            if ($targetImage) {
+                $weeklyReport = $this->WeeklyReports->find()
+                    ->where(['id' => $targetImage->weekly_report_id])
+                    ->first();
+
+                if ($weeklyReport) {
+                    $comparedImage->user_id = $weeklyReport->user_id;
+                    $param['user'] = $weeklyReport->user_id;
+                }
+            }
         } else {
             $targetImage = null;
         }
@@ -385,7 +395,8 @@ class ComparedImagesController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
-    public function setActive($id = null) {
+    public function setActive($id = null)
+    {
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
@@ -399,7 +410,8 @@ class ComparedImagesController extends AppController
         }
     }
 
-    public function setNotActive($id = null) {
+    public function setNotActive($id = null)
+    {
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
@@ -411,6 +423,6 @@ class ComparedImagesController extends AppController
             $this->Flash->success(__('送信取り消し完了いたしました。'));
             return $this->redirect(['action' => 'index']);
         }
-        
+
     }
 }

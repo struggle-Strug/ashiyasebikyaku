@@ -15,7 +15,6 @@
             </div>
 
             <?php foreach ($comparedImages as $comparedImage): ?>
-                <?php if ($comparedImage->active): ?>
                     <div class="card">
                         <div class="card-header">
                             <h5><?= $comparedImage->created->format('Y年m月d日'); ?>
@@ -30,7 +29,6 @@
                                     width="100%" /></a>
                         </div>
                     </div>
-                <?php endif ?>
             <?php endforeach ?>
 
         </div>
