@@ -23,7 +23,8 @@
                         <td><?= h($staff->loginid) ?></td>
                         <td><?= h($staff->email) ?></td>
                         <td><?= h($staff->name) ?></td>
-                        <td><?= h($loginidNameMap[$staff->parent] ?? '') ?></td>                        <td nowrap>
+                        <td><?= h($staff->parent_staff->name ?? '') ?></td>
+                        <td nowrap>
                             <a href="<?= $this->Url->build(['action' => 'edit', $staff->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $staff->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('削除してよろしいですか？', $staff->id)]) ?>
                         </td>

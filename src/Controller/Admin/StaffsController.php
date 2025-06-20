@@ -35,16 +35,11 @@ class StaffsController extends AppController
     public function index()
     {
         $staffs = $this->Staffs->find('all')
+        ->contain(['ParentStaff'])
         ->where(['Staffs.is_deleted' => 0])
         ->all();
 
-        $loginidNameMap = $this->Staffs->find('list', [
-            'keyField' => 'loginid',
-            'valueField' => 'name',
-            'conditions' => ['is_deleted' => 0]
-        ])->toArray();
-
-        $this->set(compact('staffs', 'loginidNameMap'));
+        $this->set(compact('staffs'));
     }
 
     /**
@@ -67,7 +62,7 @@ class StaffsController extends AppController
         }
 
         $parentStaffs = $this->Staffs->find('list', [
-            'keyField' => 'loginid',
+            'keyField' => 'id',
             'valueField' => 'name',
             'conditions' => ['is_deleted' => 0]
         ])->toArray();
@@ -112,7 +107,7 @@ class StaffsController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
         $parentStaffs = $this->Staffs->find('list', [
-            'keyField' => 'loginid',
+            'keyField' => 'id',
             'valueField' => 'name',
             'conditions' => ['is_deleted' => 0]
             ])->toArray();
