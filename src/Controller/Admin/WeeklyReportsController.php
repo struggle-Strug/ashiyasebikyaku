@@ -107,7 +107,7 @@ class WeeklyReportsController extends AppController
 
         $user = null;
         if (!empty($param['user_name'])) {
-            $user = $this->WeeklyReports->Users->find('all')
+            $users = $this->WeeklyReports->Users->find('all')
             ->where([
                 'OR' => [
                     'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
@@ -115,15 +115,17 @@ class WeeklyReportsController extends AppController
                     'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
                     'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
                 ]
-            ])->first();
+            ])->toArray();
         } else {
             $param['user_name'] = '';
+            $users = [];
         }
 
-        if (!empty($param['user_name']) && $user) {
-            $query->where(['WeeklyReports.user_id' => $user->id]);
+        if (!empty($param['user_name']) && !empty($users)) {
+            $userIds = array_column($users, 'id');
+            $query->where(['WeeklyReports.user_id IN' => $userIds]);
             $weeklyReports = $query->all();
-        } else if (!empty($param['user_name']) && !$user) {
+        } else if (!empty($param['user_name']) && empty($users)) {
             $weeklyReports = null;
         } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
             $param['user_name'] = '';

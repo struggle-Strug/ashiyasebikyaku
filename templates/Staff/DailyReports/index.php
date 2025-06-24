@@ -33,6 +33,9 @@
                     <th nowrap>状態</th>
                     <th nowrap>セルフイメージ</th>
                     <th nowrap>コメント</th>
+                    <th nowrap>スタッフコメント</th>
+                    <th nowrap>コメント更新日時</th>
+                    <th width="150px">&nbsp;</th>
                     <th width="150px">&nbsp;</th>
                 </tr>
             </thead>
@@ -76,7 +79,26 @@
                         <?php endif ?>
                     </td>
                     <td>
-                        <small><?= $this->Link->linkify(h($dailyReport->comment)) ?></small>
+                        <?php if ($dailyReport->comment != '' && $dailyReport->comment != null) : ?>
+                            <small><?= $this->Link->linkify(h($dailyReport->comment)) ?></small>
+                        <?php else : ?>
+                            <small><span class="text-muted">未記入</span></small>
+                        <?php endif ?>
+                    </td>
+                    <td>
+                        <?php if ($dailyReport->staff_comment != '' && $dailyReport->staff_comment != null) : ?>
+                            <small><?= $this->Link->linkify(h($dailyReport->staff_comment)) ?></small>
+                        <?php else : ?>
+                            <small><span class="text-muted">未記入</span></small>
+                        <?php endif ?>
+                    </td>
+                    <td>
+                    <?php if ($dailyReport->comment_update) : ?>
+                            <?= date('Y年n月j日 H:i:s', strtotime($dailyReport->comment_update)) ?>
+                    <?php endif ?>
+                    </td>
+                    <td>
+                        <a href="<?= $this->Url->build(['action' => 'comment', $dailyReport->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">コメント入力</a>
                     </td>
                     <td>
                         <?php if (!$dailyReport->is_checked) : ?>

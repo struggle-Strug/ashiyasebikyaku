@@ -37,7 +37,7 @@
 
 <div class="card">
     <div class="card-header">
-        <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
+        <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
     </div>
     <div class="card-body">
         <?php if (!$comparedImages || count($comparedImages) == 0): ?>
@@ -48,7 +48,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h5 style="display: flex; justify-content: space-between; align-items:center">
-                                <div><?= $comparedImage->created->format('Y年m月d日'); ?></div>
+                                <div><?= $comparedImage->created->format('Y年m月d日'); ?>  <?= $comparedImage->user->last_name . ' ' . $comparedImage->user->first_name ?></div>
                                 <div style="flex-grow: 0; display: flex;">
                                     <div style="margin: 4px">
                                         <?php if ($comparedImage->active): ?>

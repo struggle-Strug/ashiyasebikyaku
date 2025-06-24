@@ -24,6 +24,13 @@
                 <span class="text-danger"><?= $this->Form->error('name') ?></span>
             </div>
         </div>
+        <div class="form-group row">
+            <label for="" class="col-sm-2 col-form-label text-md-right">メールアドレス</label>
+            <div class="col-sm-4">
+                <?= $this->Form->text('email', ['class' => 'form-control', 'placeholder' => '']) ?>
+                <span class="text-danger"><?= $this->Form->error('email') ?></span>
+            </div>
+        </div>
     </div>
     <!-- /.card-body -->
     <div class="card-footer">

@@ -28,29 +28,30 @@ class WeeklyReportsController extends AppController
      */
 
     public function initialize(): void
-     {
-         parent::initialize();
-         $this->loadModel('ComparedImages');
-     }
+    {
+        parent::initialize();
+        $this->loadModel('ComparedImages');
+        $this->loadModel('Staffs');
+    }
 
     use MailerAwareTrait;
     public function index()
     {
         // 初めての週次報告かチェック
         $firstWeeklyReport = $this->WeeklyReports->find('all')
-        ->where([
-            'user_id' => $this->Authentication->getIdentity()->id,
-            'is_draft' => 0
-        ])
-        ->first();
+            ->where([
+                'user_id' => $this->Authentication->getIdentity()->id,
+                'is_draft' => 0
+            ])
+            ->first();
 
         // 下書きの週次報告を取得
         $weeklyReport = $this->WeeklyReports->find('all')
-        ->where([
-            'user_id' => $this->Authentication->getIdentity()->id,
-            'is_draft' => 1
-        ])
-        ->first();
+            ->where([
+                'user_id' => $this->Authentication->getIdentity()->id,
+                'is_draft' => 1
+            ])
+            ->first();
 
         if (!$weeklyReport) {
             $weeklyReport = $this->WeeklyReports->newEmptyEntity();
@@ -88,26 +89,26 @@ class WeeklyReportsController extends AppController
 
         // 初めての週次報告かチェック
         $firstWeeklyReport = $this->WeeklyReports->find('all')
-        ->where([
-            'user_id' => $this->Authentication->getIdentity()->id,
-            'is_draft' => 0
-        ])
-        ->first();
+            ->where([
+                'user_id' => $this->Authentication->getIdentity()->id,
+                'is_draft' => 0
+            ])
+            ->first();
 
         $weeklyReport = $this->WeeklyReports->find('all')
-        ->contain([
-            'Photos' => function (Query $q) {
-                return $q->order([
-                    'Photos.photo_number' => 'desc'
-                ]);
-            }
-        ])
-        ->where([
-            'WeeklyReports.user_id' => $this->Authentication->getIdentity()->id,
-            'WeeklyReports.id' => $id,
-            'is_draft' => 1
-        ])
-        ->first();
+            ->contain([
+                'Photos' => function (Query $q) {
+                    return $q->order([
+                        'Photos.photo_number' => 'desc'
+                    ]);
+                }
+            ])
+            ->where([
+                'WeeklyReports.user_id' => $this->Authentication->getIdentity()->id,
+                'WeeklyReports.id' => $id,
+                'is_draft' => 1
+            ])
+            ->first();
 
         if (!$weeklyReport) {
             return $this->redirect(['action' => 'index']);
@@ -137,11 +138,11 @@ class WeeklyReportsController extends AppController
 
         // 写真の登録があれば取得
         $photo = $this->WeeklyReports->Photos->find('all')
-        ->where([
-            'weekly_report_id' => $id,
-            'photo_number' => $requestPhotoNumber
-        ])
-        ->first();
+            ->where([
+                'weekly_report_id' => $id,
+                'photo_number' => $requestPhotoNumber
+            ])
+            ->first();
 
         if (!$photo) {
             $photo = $this->WeeklyReports->Photos->newEmptyEntity();
@@ -186,7 +187,7 @@ class WeeklyReportsController extends AppController
                 }
 
                 // check MIME-TYPE
-                $finfo  = finfo_open(FILEINFO_MIME_TYPE);
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
                 $mimetype = finfo_file($finfo, $_FILES['image_file']['tmp_name']);
                 finfo_close($finfo);
                 if ($mimetype != 'image/jpeg' && $mimetype != 'image/png' && $mimetype != 'video/mp4' && $mimetype != 'video/m4v' && $mimetype != 'video/3gpp' && $mimetype != 'video/quicktime' && $mimetype != 'video/x-matroska') {
@@ -224,7 +225,7 @@ class WeeklyReportsController extends AppController
                     $dir = new Folder(WWW_ROOT . 'uploads/weekly_report/' . $weeklyReport->id, true, 0777);
 
                     // ファイルの移動
-                    if (!@move_uploaded_file($fromMoveFile, WWW_ROOT . $toMoveFile)){
+                    if (!@move_uploaded_file($fromMoveFile, WWW_ROOT . $toMoveFile)) {
                         $this->Flash->set('写真の保存に失敗しました。');
                     } else {
                         // データベースを更新
@@ -259,26 +260,26 @@ class WeeklyReportsController extends AppController
 
         // 初めての週次報告かチェック
         $firstWeeklyReport = $this->WeeklyReports->find('all')
-        ->where([
-            'user_id' => $this->Authentication->getIdentity()->id,
-            'is_draft' => 0
-        ])
-        ->first();
+            ->where([
+                'user_id' => $this->Authentication->getIdentity()->id,
+                'is_draft' => 0
+            ])
+            ->first();
 
         $weeklyReport = $this->WeeklyReports->find('all')
-        ->contain([
-            'Photos' => function (Query $q) {
-                return $q->order([
-                    'Photos.photo_number' => 'asc'
-                ]);
-            }
-        ])
-        ->where([
-            'WeeklyReports.user_id' => $this->Authentication->getIdentity()->id,
-            'WeeklyReports.id' => $id,
-            'is_draft' => 1
-        ])
-        ->first();
+            ->contain([
+                'Photos' => function (Query $q) {
+                    return $q->order([
+                        'Photos.photo_number' => 'asc'
+                    ]);
+                }
+            ])
+            ->where([
+                'WeeklyReports.user_id' => $this->Authentication->getIdentity()->id,
+                'WeeklyReports.id' => $id,
+                'is_draft' => 1
+            ])
+            ->first();
 
         if (!$weeklyReport) {
             return $this->redirect(['action' => 'index']);
@@ -288,8 +289,8 @@ class WeeklyReportsController extends AppController
         $path = '/admin/weekly-reports?start_report_date=&end_report_date=&user_id=';
         $pathStaff = '/staff/weekly-reports?start_report_date=&end_report_date=&user_id=';
         $port = $this->request->getUri()->getPort();
-        $fullUrl = $host . ($port ? ":$port" : '') . $path  . $this->Authentication->getIdentity()->id;
-        $fullUrlStaff = $host . ($port ? ":$port" : '') . $pathStaff  . $this->Authentication->getIdentity()->id;
+        $fullUrl = $host . ($port ? ":$port" : '') . $path . $this->Authentication->getIdentity()->id;
+        $fullUrlStaff = $host . ($port ? ":$port" : '') . $pathStaff . $this->Authentication->getIdentity()->id;
 
         $now = Time::now();
         $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
@@ -297,10 +298,22 @@ class WeeklyReportsController extends AppController
         if ($this->request->is(['patch', 'post', 'put'])) {
             $weeklyReport->is_draft = 0;
             $this->WeeklyReports->save($weeklyReport);
-            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "weekly_report", ['today' => $formattedDateTime]]);
-            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl , 'today' => $formattedDateTime]]);
-            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrlStaff, 'today' => $formattedDateTime ]]);
-            $this->getMailer('App')->send('sendGridEmail',["【週報提出】脚やせ美脚リバースエイジングプログラム", "ank2019.studio@gmail.com", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrlStaff, 'today' => $formattedDateTime ]]);
+            $this->getMailer('App')->send('sendGridEmail', ["【週報提出】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "weekly_report", ['today' => $formattedDateTime]]);
+            $this->getMailer('App')->send('sendGridEmail', ["【週報提出】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl, 'today' => $formattedDateTime]]);
+            $staff = $this->Staffs->find('all')
+                ->where([
+                    'id' => $this->Authentication->getIdentity()->staff_id,
+                ])
+                ->first();
+            if ($staff) {
+                if ($staff->email) {
+                    $this->getMailer('App')->send('sendGridEmail', ["【週報提出】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl, 'today' => $formattedDateTime]]);
+                } else {
+                    $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
+                }
+            } else {
+                $this->Flash->error(__('担当講師が設定されていません'));
+            }
             $this->Flash->success(__('情報を送信しました。'));
             return $this->redirect(['action' => 'history']);
         }
@@ -321,33 +334,34 @@ class WeeklyReportsController extends AppController
         $photoName = Configure::read('PHOTO_NAME');
 
         $query = $this->WeeklyReports->find('all')
-        ->contain([
-            'Photos' => function (Query $q) {
-                return $q->order([
-                    'Photos.photo_number' => 'asc'
-                ]);
-            }
-        ])
-        ->where([
-            'WeeklyReports.user_id' => $this->Authentication->getIdentity()->id,
-            'WeeklyReports.is_draft' => 0
-        ])
-        ->order([
-            'WeeklyReports.report_date' => 'desc'
-        ]);
+            ->contain([
+                'Photos' => function (Query $q) {
+                    return $q->order([
+                        'Photos.photo_number' => 'asc'
+                    ]);
+                }
+            ])
+            ->where([
+                'WeeklyReports.user_id' => $this->Authentication->getIdentity()->id,
+                'WeeklyReports.is_draft' => 0
+            ])
+            ->order([
+                'WeeklyReports.report_date' => 'desc'
+            ]);
         $weeklyReports = $this->paginate($query);
 
         $this->set(compact('weeklyReports', 'photoName'));
     }
 
-    public function comparedImages($id = null) {
+    public function comparedImages($id = null)
+    {
         $query = $this->ComparedImages->find('all')
-        ->where([
-            'user_id' => $this->Authentication->getIdentity()->id,
-        ])
-        ->order([
-            'created' => 'desc'
-        ]);
+            ->where([
+                'user_id' => $this->Authentication->getIdentity()->id,
+            ])
+            ->order([
+                'created' => 'desc'
+            ]);
         $comparedImages = $this->paginate($query);
 
         $this->set(compact('comparedImages'));

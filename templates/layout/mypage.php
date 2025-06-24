@@ -60,6 +60,15 @@
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/fullcalendar.min.js"></script>
     <!-- Paper Dashboard PRO Core javascript and methods for Demo purpose -->
     <script src="<?= $this->Url->build('paper-dashboard/') ?>js/paper-dashboard.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HQJS5TYF85"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-HQJS5TYF85');
+    </script>
 
     <!-- Swiper -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
@@ -111,25 +120,18 @@
                             <p>マイページトップ</p>
                         </a>
                     </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'Videos')
-                        echo 'active'; ?>">
-                        <a href="<?= $this->Url->build(['controller' => 'Videos', 'action' => 'index']); ?>">
-                            <i class="fa-solid fa-film"></i>
-                            <p>動画</p>
-                        </a>
-                    </li>
-                    <li class="<?php if ($this->request->getParam('controller') == 'Archives')
-                        echo 'active'; ?>">
-                        <a href="<?= $this->Url->build(['controller' => 'Archives', 'action' => 'index']); ?>">
-                            <i class="fa-solid fa-file-video"></i>
-                            <p>アーカイブ</p>
-                        </a>
-                    </li>
                     <li class="<?php if ($this->request->getParam('controller') == 'Courses')
                         echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Courses', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-user-lock"></i>
-                            <p>初めての方は</p>
+                            <p>初めての方へ</p>
+                        </a>
+                    </li>
+                    <li class="<?php if ($this->request->getParam('controller') == 'Videos')
+                        echo 'active'; ?>">
+                        <a href="<?= $this->Url->build(['controller' => 'Videos', 'action' => 'index']); ?>">
+                            <i class="fa-solid fa-film"></i>
+                            <p>オンライン講座</p>
                         </a>
                     </li>
                     <?php if ($this->request->getSession()->read('Auth.User.staff_plan') == 0) : ?>
@@ -137,7 +139,7 @@
                         echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'DailyReports', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-file-signature"></i>
-                            <p>毎日の報告</p>
+                            <p>毎日の報告（日報）</p>
                         </a>
                     </li>
                     <?php endif ?>
@@ -145,14 +147,14 @@
                         echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'WeeklyReports', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-photo-film"></i>
-                            <p><?php echo ($this->request->getSession()->read('Auth.User.staff_plan') == 1) ? '成果履歴' : '毎週の報告'; ?></p>
+                            <p><?php echo ($this->request->getSession()->read('Auth.User.staff_plan') == 1) ? '成果履歴' : '毎週の報告（週報）'; ?></p>
                         </a>
                     </li>
                     <li class="<?php if ($this->request->getParam('controller') == 'Events')
                         echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Events', 'action' => 'index']); ?>">
                             <i class="fa-regular fa-calendar-days"></i>
-                            <p>予約</p>
+                            <p>ワーク・コンサル予約</p>
                         </a>
                     </li>
                     <li class="<?php if ($this->request->getParam('controller') == 'Messages')
@@ -160,6 +162,13 @@
                         <a href="<?= $this->Url->build(['controller' => 'Messages', 'action' => 'index']); ?>">
                             <i class="fa-solid fa-comment-dots"></i>
                             <p>コミュニケーションツール</p>
+                        </a>
+                    </li>
+                    <li class="<?php if ($this->request->getParam('controller') == 'Archives')
+                        echo 'active'; ?>">
+                        <a href="<?= $this->Url->build(['controller' => 'Archives', 'action' => 'index']); ?>">
+                            <i class="fa-solid fa-file-video"></i>
+                            <p>アーカイブ</p>
                         </a>
                     </li>
                     <li class="<?php if ($this->request->getParam('controller') == 'Blogs')

@@ -25,13 +25,19 @@ class UsersController extends AppController
      * @return \Cake\Http\Response|null|void Renders view
      */
     use MailerAwareTrait;
+
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->loadModel('Staffs');
+    }
+
     public function index()
     {
         $query = $this->Users->find('all')
             ->contain([
                 'Messages' => function (Query $q) {
                     return $q->where([
-                        'Messages.staff_id' => $this->Authentication->getIdentity()->id,
                         'Messages.sender' => '1',
                         'Messages.is_read' => 0
                     ]);
@@ -51,9 +57,7 @@ class UsersController extends AppController
                         'WeeklyReports.report_date' => 'desc'
                     ]);
                 }
-            ])
-            ->where([
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+            ])->where([
                 'Users.is_deleted' => 0
             ])
             ->order([
@@ -68,6 +72,18 @@ class UsersController extends AppController
             $query->where(['Users.member_number LIKE' => '%' . $param['member_number'] . '%']);
         } else {
             $param['member_number'] = '';
+        }
+
+        if (!empty($param['in_charge']) && $param['in_charge'] == '1') {
+            $query->where([
+                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+            ]);
+        } else if (!empty($param['in_charge']) && $param['in_charge'] == '2') {
+            $query->where([
+                'Users.staff_id !=' => $this->Authentication->getIdentity()->id,
+            ]);
+        } else {
+            $param['in_charge'] = '';
         }
 
         // 会員名
@@ -86,7 +102,9 @@ class UsersController extends AppController
 
         $users = $this->paginate($query);
 
-        $this->set(compact('users', 'param'));
+        $staff = $this->Authentication->getIdentity();
+
+        $this->set(compact('users', 'param', 'staff'));
     }
 
     /**
@@ -351,7 +369,6 @@ class UsersController extends AppController
         $user = $this->Users->find('all')
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -366,7 +383,6 @@ class UsersController extends AppController
                 'is_read' => 1
             ],
             [
-                'staff_id' => $this->Authentication->getIdentity()->id,
                 'user_id' => $user->id,
                 'sender' => '1',
                 'is_read' => 0
@@ -380,7 +396,6 @@ class UsersController extends AppController
                 'Staffs'
             ])
             ->where([
-                'Messages.staff_id' => $this->Authentication->getIdentity()->id,
                 'Messages.user_id' => $user->id,
                 'Messages.is_deleted' => 0
             ])
@@ -405,7 +420,6 @@ class UsersController extends AppController
             $user = $this->Users->find('all')
                 ->where([
                     'Users.id' => $data['user_id'],
-                    'Users.staff_id' => $this->Authentication->getIdentity()->id,
                     'Users.is_deleted' => 0
                 ])
                 ->first();
@@ -430,6 +444,7 @@ class UsersController extends AppController
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $user->email, "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
                 // $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
+                
                 return $this->redirect(['action' => 'message', $data['user_id']]);
             }
             $this->Flash->error(__('データを送信できませんでした。'));

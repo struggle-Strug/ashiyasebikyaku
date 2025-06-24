@@ -19,7 +19,14 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+                <div class="input-group">
+                    <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
+                </div>
+            </div>
+            <div class="col-md-3 mt-2">
+                <div class="input-group">
+                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id'], 'style' => 'margin-top: 1.75rem;']) ?>
+                </div>
             </div>
             <input type="text" name="target_image" id="target_image" style="display: none;"
                 value="<?= $param['target_image'] ?>" />
@@ -117,12 +124,18 @@
             </div>
         <?php endif ?>
         <?= $this->Form->create(null, ['type' => 'get', 'action' => 'createComparedImage']) ?>
+        <?php foreach ($param as $key => $value): ?>
+            <input type="hidden" name="<?= h($key) ?>" value="<?= h($value) ?>">
+        <?php endforeach; ?>
         <input type="text" name="target_id" id="target_id" style="display: none;"
             value="<?= $param['target_image_id'] ?>" />
         <input type="text" name="subject_id" id="subject_id" style="display: none;"
             value="<?= $param['subject_image_id'] ?>" />
         <input type="text" name="user" id="user" style="display: none;" value="<?= $param['user_id'] ?>" />
-        <button type="submit" class="btn btn-primary" style="">画像作成ページへ</button>
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>">
+            <i class="fas fa-arrow-circle-left"></i> 戻る
+        </a>
+        <button type="submit" class="btn btn-primary ml-2" style="">画像作成ページへ</button>
         <?= $this->Form->end() ?>
     </div>
 </div>
