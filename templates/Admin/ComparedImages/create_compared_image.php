@@ -187,9 +187,9 @@
         <div class="form-group row">
             <label for="" class="col-form-label">コメント</label>
             <div class="col-sm-10">
-                <textarea class="form-control" rows="5" name="comment" id="comment"></textarea>
+                <textarea class="form-control" rows="5" name="admin_comment" id="admin_comment"></textarea>
                 <span class="text-danger">
-                    <?= $this->Form->error('comment') ?>
+                    <?= $this->Form->error('admin_comment') ?>
                 </span>
             </div>
         </div>
@@ -1419,12 +1419,12 @@
 
         function uploadImageToServer(pngDataUrl) {
             const formData = new FormData();
-            const comment = document.getElementById("comment").value;
+            const comment = document.getElementById("admin_comment").value;
             const target_image = "<?= $param["target_id"] ?>"
             const subject_image = "<?= $param["subject_id"] ?>"
             const user = "<?= $param["user"] ?>"
             formData.append('image', pngDataUrl);
-            formData.append('comment', comment);
+            formData.append('admin_comment', comment);
             formData.append('target_image', target_image);
             formData.append('subject_image', subject_image);
             formData.append('user_id', user);
