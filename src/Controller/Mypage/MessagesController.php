@@ -27,6 +27,13 @@ class MessagesController extends AppController
      */
 
     use MailerAwareTrait;
+
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->loadModel('Staffs');
+    }
+
     public function index()
     {
         $messages = $this->Messages->find('all')
@@ -77,21 +84,33 @@ class MessagesController extends AppController
             $path = '/staff/users/message/';
             $adminPath = '/admin/users/message/';
             $port = $this->request->getUri()->getPort();
-            $fullUrl = $host . ($port ? ":$port" : '') . $path  . $data['user_id'];
-            $adminFullUrl = $host . ($port ? ":$port" : '') . $adminPath  . $data['user_id'];
-            
+            $fullUrl = $host . ($port ? ":$port" : '') . $path . $data['user_id'];
+            $adminFullUrl = $host . ($port ? ":$port" : '') . $adminPath . $data['user_id'];
+
 
             $message = $this->Messages->newEmptyEntity();
             $message = $this->Messages->patchEntity($message, $data);
 
             $now = Time::now();
-            $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');  
+            $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
 
             if ($this->Messages->save($message)) {
                 $this->Flash->success(__('メッセージを送信しました。'));
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "shocola.stayfit@gmail.com", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ank2019.studio@gmail.com", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                $staff = $this->Staffs->find('all')
+                    ->where([
+                        'id' => $this->Authentication->getIdentity()->staff_id,
+                    ])
+                    ->first();
+                if ($staff) {
+                    if ($staff->email) {
+                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                    } else {
+                        $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
+                    }
+                } else {
+                    $this->Flash->error(__('担当講師が設定されていません'));
+                }
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('データを送信できませんでした。'));

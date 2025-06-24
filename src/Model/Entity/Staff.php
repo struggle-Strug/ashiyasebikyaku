@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
-use Cake\Auth\DefaultPasswordHasher;
 
 /**
  * Staff Entity
@@ -16,8 +15,10 @@ use Cake\Auth\DefaultPasswordHasher;
  * @property \Cake\I18n\FrozenTime|null $created
  * @property \Cake\I18n\FrozenTime|null $modified
  * @property bool|null $is_deleted
+ * @property string|null $email
  *
  * @property \App\Model\Entity\User[] $users
+ * @property \App\Model\Entity\Message[] $messages
  */
 class Staff extends Entity
 {
@@ -37,7 +38,9 @@ class Staff extends Entity
         'created' => true,
         'modified' => true,
         'is_deleted' => true,
+        'email' => true,
         'users' => true,
+        'messages' => true,
     ];
 
     /**
@@ -48,11 +51,4 @@ class Staff extends Entity
     protected $_hidden = [
         'password',
     ];
-
-    protected function _setPassword($password)
-    {
-        if (strlen($password) > 0) {
-            return (new DefaultPasswordHasher)->hash($password);
-        }
-    }
 }

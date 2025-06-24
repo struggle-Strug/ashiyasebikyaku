@@ -38,6 +38,7 @@ class Message extends Entity
         'message' => true,
         'sender' => true,
         'is_read' => true,
+        'is_admin_read' => true,
         'created' => true,
         'modified' => true,
         'is_deleted' => true,
