@@ -123,7 +123,7 @@ class LessonMoviesController extends AppController
 
         $categories = $this->Categories->find('all')->combine('id', 'name')->toArray();
 
-        $this->set(compact('lessonMovie', 'categories', 'type'));
+        $this->set(compact('lessonMovie', 'categories'));
     }
 
     /**

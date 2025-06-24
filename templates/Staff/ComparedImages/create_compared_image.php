@@ -1423,14 +1423,12 @@
             const target_image = "<?= $param["target_id"] ?>"
             const subject_image = "<?= $param["subject_id"] ?>"
             const user = "<?= $param["user"] ?>"
-            const user_name = "<?= $param["user_name"] ?>"
             formData.append('image', pngDataUrl);
             formData.append('comment', comment);
             formData.append('target_image', target_image);
             formData.append('subject_image', subject_image);
             formData.append('user_id', user);
-            formData.append('user_name', user_name);
-            const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user + "&user_name=" + user_name;
+            const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user;
             $.ajax({
                 type: 'POST',
                 url: "<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'uploadComparedImage', 'prefix' => 'Staff']); ?>",
@@ -1554,8 +1552,8 @@
                             var y1 = getPositionYOnSvgByY(touches[0].pageY);
 
                             // 座標2 (2本目の指)
-                            var x2 = getPositionXOnSvgByX(touches[1].pageX);
-                            var y2 = getPositionYOnSvgByY(touches[1].pageY);
+                            var x2 = getPositionXOnSvg({pageX: touches[1].pageX, changedTouches: [touches[1]]});
+                            var y2 = getPositionYOnSvg({pageY: touches[1].pageY, changedTouches: [touches[1]]});
 
                             // 2点間の距離
                             var distance = Math.sqrt(Math.pow(page_x2 - page_x1, 2) + Math.pow(page_y2 - page_y1, 2));

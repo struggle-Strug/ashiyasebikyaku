@@ -25,9 +25,12 @@ class WeeklyReportsController extends AppController
         parent::beforeFilter($event);
 
         $user = $this->Authentication->getIdentity();
-        if($user->role_id == 1) {
+        $action = $this->request->getParam('action');
+        
+        // role_idが1の場合は、index()のみアクセス可能
+        if($user->role_id == 1 && $action !== 'index') {
             $this->Flash->error('このページへのアクセス権がありません。');
-            return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
+            return $this->redirect(['controller' => 'WeeklyReportsController', 'action' => 'index']);
         }
     }
     
@@ -149,7 +152,12 @@ class WeeklyReportsController extends AppController
             ]
         ])->toArray();
 
-        $this->set(compact('weeklyReports', 'photoName', 'users', 'param'));
+        $user = $this->Authentication->getIdentity();
+        $role_id = $user->role_id;
+
+
+
+        $this->set(compact('weeklyReports', 'photoName', 'users', 'param', 'role_id'));
     }
 
 
