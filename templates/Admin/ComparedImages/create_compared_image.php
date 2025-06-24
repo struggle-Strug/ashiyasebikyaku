@@ -110,6 +110,8 @@
         <div style="display: flex; flex-wrap: wrap; align-items: center;">
             <div class="p-sm-2 p-md-4 py-2">
                 <button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button>
+                <button class="btn btn-outline-secondary mx-2" id="rotate-left-image">左の画像：90度回転</button>
+                <button class="btn btn-outline-secondary" id="rotate-right-image">右の画像：90度回転</button>
             </div>
             <!-- ツールバー -->
             <div class="toolbar p-sm-2 p-md-4 py-2" id="drawing-toolbar" style="display: none;">
@@ -195,7 +197,7 @@
         </div>
     </div>
     <div class="card-footer">
-        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index']); ?>"><i
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'add', '?' => $param]); ?>"><i
                 class="fas fa-arrow-circle-left"></i> 戻る</a>
         <span class="float-right">
             <button type="submit" class="btn btn-primary" id="submit">保存</button>
@@ -474,7 +476,6 @@
                             svgElm_js.appendChild(tempLine);
                             break;
                         case 'comment-add':
-                            // コメント追加
                             const x = getPositionXOnSvg(event);
                             const y = getPositionYOnSvg(event);
                             
@@ -670,9 +671,9 @@
                     }
                 }
             }).on(move_event, function (event) {
-                event.preventDefault();
+                // event.preventDefault();
                 if (type === "imageMoveAndZoom") {
-                    moveContentByMousedown(event);
+                    // moveContentByMousedown(event);
                 } else if (type === "pencil") {
                     // 線の移動処理
                     if (isMovingLine && selectedLine) {
@@ -954,8 +955,6 @@
 
         function pencilByMouseup(event) {
             // イベントリスナーの削除処理を削除（main内で処理されるため）
-            // $("#drawingCanvas").off(move_event); // この行を削除
-            // $("#drawingCanvas").off(out_event);  // この行を削除
         }
 
         function getViewBox() {
@@ -1459,77 +1458,60 @@
         var pointY;
 
         function moveContentByMousedown(event) {
-            var target;
+            var target = null;
+            let isDragging = false;
+
             pointX = parseInt(getPositionXOnSvg(event));
             pointY = parseInt(getPositionYOnSvg(event));
-            if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin) {
-                if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+            
+            if (event.buttons === 1) {
+                if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin &&
+                    pointY > margin && pointY < clipRightRect.height.baseVal.value) {
                     target = document.getElementById("left-image");
-                }
-            } else if (pointX > clipRightRect.width.baseVal.value + margin && pointX < clipRightRect.width.baseVal.value * 2 + margin * 3) {
-                if (pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                } else if (pointX > clipRightRect.width.baseVal.value + margin && 
+                        pointX < clipRightRect.width.baseVal.value * 2 + margin * 3 &&
+                        pointY > margin && pointY < clipRightRect.height.baseVal.value) {
                     target = document.getElementById("right-image");
                 }
-            }
-            var mouse_move_x = 0;
-            var mouse_move_y = 0;
-            var mouse_move_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
-            var mouse_move_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
 
-            var dx = 0;
-            var dy = 0;
-            var transform = target.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
-            if (!target.hasAttribute("transform")) {
-                target.transform.baseVal.appendItem(transform);
-            }
-            id = target.id;
-            var targetContent = document.getElementById(id);
-            x = parseInt(targetContent.getAttribute("x"));
-            y = parseInt(targetContent.getAttribute("y"));
-            var Matrix = target.transform.baseVal[0].matrix;
-            $("#drawingCanvas").on(move_event, function (event) {
-                if (move_event !== "touchmove") {
-                    var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
-                    var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
-                    var x_length = mouse_moving_x - mouse_move_x;
-                    var y_length = mouse_moving_y - mouse_move_y;
+                if (!target) return;
+
+                isDragging = true;
+                var mouse_move_x = parseInt(getPositionXOnSvg(event));
+                var mouse_move_y = parseInt(getPositionYOnSvg(event));
+
+                var x = parseInt(target.getAttribute("x"));
+                var y = parseInt(target.getAttribute("y"));
+
+                $("#drawingCanvas").on(move_event, function (event) {
+                    if (!isDragging) return;
+
+                    var mouse_moving_x = parseInt(getPositionXOnSvg(event));
+                    var mouse_moving_y = parseInt(getPositionYOnSvg(event));
+
+                    var dx = mouse_moving_x - mouse_move_x;
+                    var dy = mouse_moving_y - mouse_move_y;
+
+
+                    x += dx;
+                    y += dy;
+                    target.setAttribute('x', x + "");
+                    target.setAttribute('y', y + "");
+
                     mouse_move_x = mouse_moving_x;
                     mouse_move_y = mouse_moving_y;
-                    x += x_length;
-                    y += y_length;
-                    targetContent.setAttribute('x', x + "");
-                    targetContent.setAttribute('y', y + "");
-                } else {
-                    if (touchType === "move") {
-                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
-                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
-                        var x_length = mouse_moving_x - mouse_move_x;
-                        var y_length = mouse_moving_y - mouse_move_y;
-                        mouse_move_x = mouse_moving_x;
-                        mouse_move_y = mouse_moving_y;
-                        x += x_length;
-                        y += y_length;
-                        targetContent.setAttribute('x', x + "");
-                        targetContent.setAttribute('y', y + "");
-                    } else if (touchType === "zoom") {
-                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
-                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
-                        var x_length = mouse_moving_x - mouse_move_x;
-                        var y_length = mouse_moving_y - mouse_move_y;
-                        mouse_move_x = mouse_moving_x;
-                        mouse_move_y = mouse_moving_y;
-                        var scale = y_length < 0 ? 0.99 : 1.01
-                        target.width.baseVal.value *= scale;
-                        target.height.baseVal.value *= scale;
-                    }
-                }
-            });
+                });
+
+                $("#drawingCanvas").on(end_event, function () {
+                    isDragging = false;
+                });
+            }
         }
+
 
         function moveContentByMouseup() {
             svgElm.css('cursor', 'default');
-            $("#drawingCanvas").off(move_event);
-            $("#drawingCanvas").off(out_event);
+            isDragging = false;  // ドラッグ状態を確実にリセット
         }
 
         var wheel_event = 'ontouchstart' in window ? "touchmove" : "wheel";
@@ -1599,6 +1581,33 @@
             }, { passive: false })
         }
         zoomAction()
+
+        let leftRotation = 0;
+        let rightRotation = 0;
+
+        document.getElementById("rotate-left-image").addEventListener("click", function () {
+            leftRotation = (leftRotation + 90) % 360;
+            const leftImage = document.getElementById("left-image");
+            if (leftImage) {
+                applyRotationTransform(leftImage, leftRotation);
+            }
+        });
+
+        document.getElementById("rotate-right-image").addEventListener("click", function () {
+            rightRotation = (rightRotation + 90) % 360;
+            const rightImage = document.getElementById("right-image");
+            if (rightImage) {
+                applyRotationTransform(rightImage, rightRotation);
+            }
+        });
+
+        function applyRotationTransform(imageElement, angle) {
+            const bbox = imageElement.getBBox();
+            const cx = bbox.x + bbox.width / 2;
+            const cy = bbox.y + bbox.height / 2;
+            imageElement.setAttribute("transform", `rotate(${angle} ${cx} ${cy})`);
+        }
+
 
         function pencilByMousemove(event) {
             var linetoX = parseInt(getPositionXOnSvg(event)); // SVG上のマウス座標(横方向)の取得
