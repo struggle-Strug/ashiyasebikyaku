@@ -36,6 +36,12 @@ class UsersController extends AppController
     {
         $query = $this->Users->find('all')
         ->contain([
+            'Messages' => function (Query $q) {
+                    return $q->where([
+                        'Messages.sender' => '1',
+                        'Messages.is_admin_read' => false
+                    ]);
+                },
             'Staffs'
         ])
         ->where([
@@ -77,7 +83,6 @@ class UsersController extends AppController
         }
 
         $users = $this->paginate($query);
-
         // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
@@ -97,7 +102,20 @@ class UsersController extends AppController
      */
     public function add()
     {
-        $user = $this->Users->newEmptyEntity();
+        // Get the largest member_number
+        $latestMemberNumber = $this->Users->find()
+            ->select(['member_number'])
+            ->where(['member_number IS NOT' => null])
+            ->orderDesc('CAST(member_number AS UNSIGNED)')
+            ->first();
+
+        $nextMemberNumber = $latestMemberNumber ? (int)$latestMemberNumber->member_number + 1 : 1;
+
+        // Set default value into the new entity
+        $user = $this->Users->newEntity([
+            'member_number' => $nextMemberNumber
+        ]);
+
         if ($this->request->is('post')) {
             $data = $this->request->getData();
 
@@ -107,13 +125,11 @@ class UsersController extends AppController
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('登録しました。'));
-
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
             'valueField' => 'name',
@@ -122,13 +138,12 @@ class UsersController extends AppController
             ]
         ])->toArray();
 
-        // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
-
         $param = $this->request->getQuery();
 
         $this->set(compact('user', 'staffs', 'prefectures', 'param'));
     }
+
 
     /**
      * Edit method
@@ -179,7 +194,9 @@ class UsersController extends AppController
         // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
 
-        $this->set(compact('user', 'staffs', 'prefectures'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
 
         $this->render('add');
     }
@@ -232,6 +249,18 @@ class UsersController extends AppController
         if (!$user) {
             return $this->redirect(['action' => 'index']);
         }
+
+         // 既読にする
+         $this->Users->Messages->updateAll(
+            [
+                'is_admin_read' => true
+            ],
+            [
+                'user_id' => $user->id,
+                'sender' => '1',
+                'is_admin_read' => false
+            ]
+        );
 
         $messages = $this->Users->Messages->find('all')
         ->contain([
