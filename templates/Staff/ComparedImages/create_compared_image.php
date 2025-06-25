@@ -107,9 +107,23 @@
 </style>
 <div class="card">
     <div class="card-body">
-    <div style="display: flex; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center;">
             <div class="p-sm-2 p-md-4 py-2">
                 <button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button>
+                <span class="mx-2">左の画像:</span>
+                <button class="btn btn-outline-secondary" id="rotate-left-image-left" title="左回転">
+                    <i class="fas fa-undo-alt"></i>
+                </button>
+                <button class="btn btn-outline-secondary" id="rotate-left-image-right" title="右回転">
+                    <i class="fas fa-redo-alt"></i>
+                </button>
+                <span class="mx-2">右の画像:</span>
+                <button class="btn btn-outline-secondary" id="rotate-right-image-left" title="左回転">
+                    <i class="fas fa-undo-alt"></i>
+                </button>
+                <button class="btn btn-outline-secondary" id="rotate-right-image-right" title="右回転">
+                    <i class="fas fa-redo-alt"></i>
+                </button>
             </div>
             <!-- ツールバー -->
             <div class="toolbar p-sm-2 p-md-4 py-2" id="drawing-toolbar" style="display: none;">
@@ -1579,6 +1593,45 @@
             }, { passive: false })
         }
         zoomAction()
+
+        let leftRotation = 0;
+        let rightRotation = 0;
+
+        // 左の画像：10度左回転
+        document.getElementById("rotate-left-image-left").addEventListener("click", function () {
+            leftRotation = (leftRotation - 10 + 360) % 360;
+            const leftImage = document.getElementById("left-image");
+            if (leftImage) {
+                applyRotationTransform(leftImage, leftRotation);
+            }
+        });
+
+        // 左の画像：10度右回転
+        document.getElementById("rotate-left-image-right").addEventListener("click", function () {
+            leftRotation = (leftRotation + 10) % 360;
+            const leftImage = document.getElementById("left-image");
+            if (leftImage) {
+                applyRotationTransform(leftImage, leftRotation);
+            }
+        });
+
+        // 右の画像：10度左回転
+        document.getElementById("rotate-right-image-left").addEventListener("click", function () {
+            rightRotation = (rightRotation - 10 + 360) % 360;
+            const rightImage = document.getElementById("right-image");
+            if (rightImage) {
+                applyRotationTransform(rightImage, rightRotation);
+            }
+        });
+
+        // 右の画像：10度右回転
+        document.getElementById("rotate-right-image-right").addEventListener("click", function () {
+            rightRotation = (rightRotation + 10) % 360;
+            const rightImage = document.getElementById("right-image");
+            if (rightImage) {
+                applyRotationTransform(rightImage, rightRotation);
+            }
+        });
 
         function pencilByMousemove(event) {
             var linetoX = parseInt(getPositionXOnSvg(event)); // SVG上のマウス座標(横方向)の取得
