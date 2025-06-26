@@ -46,6 +46,7 @@
         padding: 8px;
         min-width: 100px;
         min-height: 50px;
+        text-align: center;
         /* リサイズはJavaScriptで制御するため、CSSのresizeプロパティは使用しない */
     }
     
