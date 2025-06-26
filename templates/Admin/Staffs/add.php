@@ -31,6 +31,13 @@
                 <span class="text-danger"><?= $this->Form->error('email') ?></span>
             </div>
         </div>
+        <div class="form-group row">
+            <label for="" class="col-sm-2 col-form-label text-md-right">親スタッフ</label>
+            <div class="col-sm-4">
+                <?= $this->Form->control('parent', ['type' => 'select', 'options' => $parentStaffs, 'empty' => '選択してください', 'label' => false, 'class' => 'form-control']) ?>
+            <span class="text-danger"><?= $this->Form->error('parent') ?></span>
+        </div>
+    </div>
     </div>
     <!-- /.card-body -->
     <div class="card-footer">
