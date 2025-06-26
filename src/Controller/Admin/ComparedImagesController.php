@@ -358,8 +358,36 @@ class ComparedImagesController extends AppController
             $this->Flash->error(__('The compared image could not be saved. Please, try again.'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users'));
+        $param = $this->request->getQuery();
+        $this->set(compact('comparedImage', 'users', 'param'));
     }
+
+    /**
+     * EditComment method
+     *
+     * @param string|null $id Compared Image id.
+     * @return \Cake\Http\Response|null|void Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function editComment($id = null)
+    {
+        $param = $this->request->getQuery();
+        $comparedImage = $this->ComparedImages->get($id, [
+            'contain' => [],
+        ]);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
+            if ($this->ComparedImages->save($comparedImage)) {
+                $this->Flash->success(__('コメントを更新しました。'));
+
+                return $this->redirect(['action' => 'index', '?' => $param]);
+            }
+            $this->Flash->error(__('コメントを更新できませんでした。'));
+        }
+        $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
+        $this->set(compact('comparedImage', 'users', 'param'));
+    }
+    
 
     /**
      * Delete method
