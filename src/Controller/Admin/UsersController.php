@@ -132,7 +132,9 @@ class UsersController extends AppController
 
         $param = $this->request->getQuery();
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
+        $courses = Configure::read("COURSE");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
     }
 
     /**
@@ -186,7 +188,9 @@ class UsersController extends AppController
 
         $param = $this->request->getQuery();
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
+        $courses = Configure::read("COURSE");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
 
         $this->render('add');
     }
