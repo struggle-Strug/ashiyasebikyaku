@@ -41,6 +41,7 @@ class Staff extends Entity
         'email' => true,
         'users' => true,
         'messages' => true,
+        'parent' => true,
     ];
 
     /**

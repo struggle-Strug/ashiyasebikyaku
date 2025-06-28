@@ -30,7 +30,7 @@
 
 <div class="card">
     <div class="card-body">
-        <div class="table-responsive-md">
+    <div class="table-responsive-md scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh;" id="member-table-container">
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
@@ -151,3 +151,109 @@
     </div>
 </div>
 <!-- /.card -->
+
+<script>
+$(document).ready(function() {
+    // Scroll position management for index page only
+    const SCROLL_STORAGE_KEY = 'memberIndexScrollPosition';
+    const tableContainer = $('#member-table-container');
+    
+    // Function to save scroll position
+    function saveScrollPosition() {
+        const tableScrollTop = tableContainer.scrollTop();
+        const tableScrollLeft = tableContainer.scrollLeft();
+        const windowScrollTop = $(window).scrollTop();
+        
+        const scrollData = {
+            tableTop: tableScrollTop,
+            tableLeft: tableScrollLeft,
+            windowTop: windowScrollTop,
+            timestamp: Date.now()
+        };
+        
+        sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify(scrollData));
+    }
+    
+    // Function to restore scroll position
+    function restoreScrollPosition() {
+        const savedScrollData = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+        
+        if (savedScrollData) {
+            try {
+                const scrollData = JSON.parse(savedScrollData);
+                
+                // Check if data is not too old (within 30 minutes)
+                const currentTime = Date.now();
+                const maxAge = 30 * 60 * 1000; // 30 minutes
+                
+                if (currentTime - scrollData.timestamp < maxAge) {
+                    // Restore scroll positions with slight delay to ensure DOM is ready
+                    setTimeout(function() {
+                        if (scrollData.tableTop > 0) {
+                            tableContainer.scrollTop(scrollData.tableTop);
+                        }
+                        if (scrollData.tableLeft > 0) {
+                            tableContainer.scrollLeft(scrollData.tableLeft);
+                        }
+                        if (scrollData.windowTop > 0) {
+                            $(window).scrollTop(scrollData.windowTop);
+                        }
+                    }, 100);
+                } else {
+                    // Remove old data
+                    sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+                }
+            } catch (e) {
+                console.error('Error restoring scroll position:', e);
+                sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+            }
+        }
+    }
+    
+    // Restore scroll position when page loads
+    restoreScrollPosition();
+    
+    // Save scroll position when navigating to other pages
+    $('.save-scroll-link').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position when clicking "新規会員登録" button
+    $('#add-member-btn').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position when clicking pagination links
+    $('.pagination a').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position when submitting search form
+    $('form').on('submit', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position periodically while scrolling (debounced)
+    let scrollTimeout;
+    tableContainer.on('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(function() {
+            saveScrollPosition();
+        }, 200);
+    });
+    
+    // Save window scroll position
+    let windowScrollTimeout;
+    $(window).on('scroll', function() {
+        clearTimeout(windowScrollTimeout);
+        windowScrollTimeout = setTimeout(function() {
+            saveScrollPosition();
+        }, 200);
+    });
+    
+    // Save scroll position before page unload
+    $(window).on('beforeunload', function() {
+        saveScrollPosition();
+    });
+});
+</script>

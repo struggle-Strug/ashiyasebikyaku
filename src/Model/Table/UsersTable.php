@@ -167,8 +167,8 @@ class UsersTable extends Table
 
         $validator
             ->integer('staff_id')
-            ->allowEmptyString('staff_id');
-
+            ->requirePresence('staff_id', 'create')
+            ->notEmptyString('staff_id');
         $validator
             ->scalar('payment')
             ->maxLength('payment', 100)
