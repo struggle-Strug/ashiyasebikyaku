@@ -102,14 +102,13 @@ class UsersController extends AppController
      */
     public function add()
     {
-        // Get the largest member_number
-        $latestMemberNumber = $this->Users->find()
-            ->select(['member_number'])
-            ->where(['member_number IS NOT' => null])
-            ->orderDesc('CAST(member_number AS UNSIGNED)')
-            ->first();
+        // Get the user with the highest ID
+        $lastUser = $this->Users->find()
+        ->select(['id'])
+        ->orderDesc('id')
+        ->first();
 
-        $nextMemberNumber = $latestMemberNumber ? (int)$latestMemberNumber->member_number + 1 : 1;
+        $nextMemberNumber = $lastUser ? $lastUser->id + 3000000 + 1 : 1;
 
         // Set default value into the new entity
         $user = $this->Users->newEntity([
