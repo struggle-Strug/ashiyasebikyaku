@@ -14,12 +14,17 @@
                     </div>
                     <div class="col-xs-10">
                         <h5 class="card-title" style="margin:0">
-                            <?= h($lessonMovie->name) ?> <i class="fa-solid fa-key"></i>
+                        <?= h($lessonMovie->name) ?>
+                            <?php if (!empty($lessonMovie->password)): ?>
+                                <i class="fa-solid fa-key"></i>
+                            <?php endif ?>
                         </h5>
                         <p class="description"><small><?= $this->Link->linkify(h($lessonMovie->note)) ?></small></p>
-                        <button class="btn btn-wd btn-primary open-password"
+                        <button class="btn btn-wd btn-primary <?= empty($lessonMovie->password) ? 'direct-link' : 'open-password' ?>"
                             data-lesson-id="<?= h($lessonMovie->id) ?>"
-                            data-password="<?= h($lessonMovie->password) ?>">
+                            <?php if (!empty($lessonMovie->password)): ?>
+                                data-password="<?= h($lessonMovie->password) ?>"
+                            <?php endif; ?>>
                             <span class="btn-label"><i class="fa-solid fa-chevron-right"></i></span>
                             動画を見る
                         </button>
@@ -63,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedLessonId = null;
     let expectedPassword = null;
 
+    // Password-protected button
     document.querySelectorAll('.open-password').forEach(button => {
         button.addEventListener('click', function () {
             selectedLessonId = this.dataset.lessonId;
@@ -71,6 +77,15 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('lesson-password').value = '';
             document.getElementById('password-error').style.display = 'none';
             $('#passwordModal').modal('show');
+        });
+    });
+
+    // Direct access button
+    document.querySelectorAll('.direct-link').forEach(button => {
+        button.addEventListener('click', function () {
+            const id = this.dataset.lessonId;
+            const redirectUrl = '<?= $this->Url->build(['action' => 'view']) ?>/' + id;
+            window.location.href = redirectUrl;
         });
     });
 
