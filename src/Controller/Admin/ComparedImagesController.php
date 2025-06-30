@@ -275,6 +275,8 @@ class ComparedImagesController extends AppController
         $param = $this->request->getQuery();
         $targetImage = $this->Photos->find("all");
         $subjectImage = $this->Photos->find("all");
+        $targetImageDate = "";
+        $subjectImageDate = "";
         if (!empty($param["target_id"])) {
             $targetImage = $targetImage->where([
                 "id" => $param["target_id"]
@@ -288,6 +290,8 @@ class ComparedImagesController extends AppController
                 if ($weeklyReport) {
                     $comparedImage->user_id = $weeklyReport->user_id;
                     $param['user'] = $weeklyReport->user_id;
+                    debug($weeklyReport);
+                    $targetImageDate = $weeklyReport->report_date;
                 }
             }
         } else {
@@ -299,10 +303,18 @@ class ComparedImagesController extends AppController
                 "id" => $param["subject_id"]
             ])
                 ->first();
+            if ($subjectImage) {
+                $weeklyReport = $this->WeeklyReports->find()
+                    ->where(['id' => $subjectImage->weekly_report_id])
+                    ->first();
+
+                debug($weeklyReport);
+                $subjectImageDate = $weeklyReport->report_date;
+            }
         } else {
             $subjectImage = null;
         }
-        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage'));
+        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'targetImageDate', 'subjectImageDate'));
     }
 
     public function uploadComparedImage()
