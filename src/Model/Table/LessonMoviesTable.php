@@ -72,12 +72,6 @@ class LessonMoviesTable extends Table
             ->notEmptyString('movie_url');
 
         $validator
-            ->scalar('password')
-            ->maxLength('password', 100)
-            ->requirePresence('password', 'create')
-            ->notEmptyString('password');
-
-        $validator
             ->scalar('note')
             ->allowEmptyString('note');
 
