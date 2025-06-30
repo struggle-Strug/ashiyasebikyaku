@@ -1246,15 +1246,15 @@
                     ctx.textBaseline = 'top';
                     
                     // テキストの内容を取得し、改行で分割
-                    const text = comment.textContent;
+                    const text = comment.innerText;
                     const lines = text.split(/\r?\n/);
-                    
                     // 各行のテキストを描画（単純な行分割）
                     const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
                     let yPos = commentTop + 8; // パディングの分だけオフセット
                     
+                    ctx.textAlign = 'center'; // 中央寄せを設定
                     lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + 8, yPos); // パディングの分だけオフセット
+                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos); // パディングの分だけオフセット
                         yPos += lineHeight;
                     });
                 });
@@ -1369,15 +1369,16 @@
                     ctx.textBaseline = 'top';
                     
                     // テキストの内容を取得し、改行で分割
-                    const text = comment.textContent;
+                    const text = comment.innerText;
                     const lines = text.split(/\r?\n/);
                     
                     // 各行のテキストを描画（単純な行分割）
                     const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
                     let yPos = commentTop + 8; // パディングの分だけオフセット
                     
+                    ctx.textAlign = 'center'; // 中央寄せを設定
                     lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + 8, yPos); // パディングの分だけオフセット
+                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos); // パディングの分だけオフセット
                         yPos += lineHeight;
                     });
                 });
