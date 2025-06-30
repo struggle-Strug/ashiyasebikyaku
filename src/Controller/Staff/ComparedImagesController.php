@@ -191,7 +191,6 @@ class ComparedImagesController extends AppController
 
     private function base64Encode($imagePath)
     {
-        debug($imagePath);
         $imageUrl = Router::url('', true) . $imagePath;
         $imageData = file_get_contents($imageUrl);
 

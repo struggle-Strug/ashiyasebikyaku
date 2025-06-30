@@ -255,7 +255,6 @@ class ComparedImagesController extends AppController
 
     private function base64Encode($imagePath)
     {
-        debug($imagePath);
         $imageUrl = Router::url('', true) . $imagePath;
         $imageData = file_get_contents($imageUrl);
 
@@ -290,7 +289,6 @@ class ComparedImagesController extends AppController
                 if ($weeklyReport) {
                     $comparedImage->user_id = $weeklyReport->user_id;
                     $param['user'] = $weeklyReport->user_id;
-                    debug($weeklyReport);
                     $targetImageDate = $weeklyReport->report_date;
                 }
             }
@@ -307,8 +305,6 @@ class ComparedImagesController extends AppController
                 $weeklyReport = $this->WeeklyReports->find()
                     ->where(['id' => $subjectImage->weekly_report_id])
                     ->first();
-
-                debug($weeklyReport);
                 $subjectImageDate = $weeklyReport->report_date;
             }
         } else {
