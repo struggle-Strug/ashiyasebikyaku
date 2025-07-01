@@ -56,8 +56,9 @@ class StaffsController extends AppController
         ->first();
 
         $nextStaffNumber= $lastStaff ? $lastStaff->id + 3000000 + 1 : 1;
-        $staff = $this->Staffs->newEmptyEntity();
-        $staff->loginid = $nextStaffNumber;  // ← 確実に設定される
+        $staff = $this->Staffs->newEmptyEntity([
+            'loginid' => $nextStaffNumber
+        ]);
         if ($this->request->is('post')) {
             
             $staff = $this->Staffs->patchEntity($staff, $this->request->getData());
