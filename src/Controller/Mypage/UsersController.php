@@ -85,6 +85,7 @@ class UsersController extends AppController
 
         if ($result->isValid()) {
             $this->Authentication->logout();
+            $this->getResponse()->getCookieCollection()->remove('remember_me');
             return $this->redirect(['action' => 'login']);
         }
     }

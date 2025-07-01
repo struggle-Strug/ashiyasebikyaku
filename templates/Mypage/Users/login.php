@@ -22,6 +22,16 @@
                             <?= $this->Form->password('password', ['class' => 'form-control', 'required' => true]) ?>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <div class="col-md-7 col-md-offset-4">
+                            <div class="checkbox text-left" style="margin-top: 6px;">
+                                <label style="font-weight: normal;">
+                                    <?= $this->Form->checkbox('remember_me', ['hiddenField' => false]) ?>
+                                    ログイン状態を保存
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <div class="text-center">
