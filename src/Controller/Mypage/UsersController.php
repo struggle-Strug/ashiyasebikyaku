@@ -52,11 +52,22 @@ class UsersController extends AppController
             }
 
             // 利用停止（course_id = 3）
-            if ((int)$user->course_id === 3) {
-                $this->Authentication->logout();
-                $this->Flash->error(__('このコースのアカウントではログインできません。'));
-                return $this->redirect(['action' => 'login']);
+            if ($user->course_id === 3) {
+            
+                // ユーザーが利用停止期間を持っているかチェック（例: user に start_suspend, end_suspend がある）
+                if (!empty($user->pause_start) && !empty($user->pause_end)) {
+                    // 有効期限チェック
+                    $startDatetime = $user->pause_start->i18nFormat('yyyy-MM-dd HH:mm:ss');
+                    $endDatetime = $user->pause_end->i18nFormat('yyyy-MM-dd HH:mm:ss');
+                    
+                    if (time() >= strtotime($startDatetime) && time()<= strtotime($endDatetime)) {
+                        $this->Authentication->logout();
+                        $this->Flash->error(__('このコースのアカウントは現在ログインできません。'));
+                        return $this->redirect(['action' => 'login']);
+                    }
+                }
             }
+            
 
             // 有効期限チェック
             $startDatetime = $user->start_datetime->i18nFormat('yyyy-MM-dd HH:mm:ss');
