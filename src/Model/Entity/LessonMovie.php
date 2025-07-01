@@ -33,6 +33,7 @@ class LessonMovie extends Entity
         'image_url' => true,
         'movie_url' => true,
         'note' => true,
+        'password' => true,
         'created' => true,
         'modified' => true,
         'type' => true,
