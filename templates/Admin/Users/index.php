@@ -43,7 +43,12 @@
 <!-- Default box -->
 <div class="card">
     <div class="card-header">
-    <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]) ?>" class="btn btn-outline-primary" id="add-member-btn">新規会員登録</a>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]) ?>" class="btn btn-outline-primary" id="add-member-btn">新規会員登録</a>
+                <a href="<?= $this->Url->build(['action' => 'import', '?' => $param]) ?>" class="btn btn-outline-success ml-2">CSVインポート</a>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive-md scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh;" id="member-table-container">

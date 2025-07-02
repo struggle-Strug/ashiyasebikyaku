@@ -108,4 +108,6 @@ return static function (RouteBuilder $routes) {
      * });
      * ```
      */
+
+    $routes->connect('/admin/users/import', ['controller' => 'Users', 'action' => 'import', 'prefix' => 'Admin']);
 };

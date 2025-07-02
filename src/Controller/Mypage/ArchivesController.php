@@ -28,6 +28,7 @@ class ArchivesController extends AppController
         parent::initialize();
         $this->loadModel('LessonMovies');
         $this->loadModel('Courses');
+        $this->loadModel('Categories');
     }
 
     public function index()
@@ -55,11 +56,14 @@ class ArchivesController extends AppController
             ]);
         $lessonMovies = $this->paginate($query);
 
-        $this->set(compact('courses', 'lessonMovies'));
+        $categories = $this->Categories->find('all');
+
+        $this->set(compact('courses', 'lessonMovies', 'categories'));
     }
 
-    public function lessons()
+    public function lessons($category = null)
     {
+        $categoryId = $this->request->getQuery('category');
         $query = $this->LessonMovies->find('all')
             ->where([
                 'is_deleted' => 0,
@@ -67,6 +71,9 @@ class ArchivesController extends AppController
             ->order([
                 'id' => 'desc'
             ]);
+        if ($categoryId) {
+            $query->where(['category' => $categoryId]);
+        }
         $lessonMovies = $this->paginate($query);
 
         $this->set(compact('lessonMovies'));
