@@ -170,7 +170,6 @@ $(function() {
                 xhr.setRequestHeader('X-CSRF-Token', csrf);
             },
             success: function(data, dataType) {
-                console.log(data);
                 $('#btn-check-' + id).hide();
                 $('#label-checked-' + id).show();
             }
@@ -189,7 +188,6 @@ $(function() {
                 xhr.setRequestHeader('X-CSRF-Token', csrf);
             },
             success: function(data, dataType) {
-                console.log(data);
                 $('#label-checked-' + id).hide();
                 $('#btn-check-' + id).show();
             }

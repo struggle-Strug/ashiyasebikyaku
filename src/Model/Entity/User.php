@@ -85,6 +85,9 @@ class User extends Entity
         'staff' => true,
         'daily_reports' => true,
         'weekly_reports' => true,
+        'course_id' => true,
+        'pause_start' => true,
+        'pause_end' => true,
     ];
 
     /**

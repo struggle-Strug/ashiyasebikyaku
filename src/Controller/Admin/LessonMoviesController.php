@@ -23,6 +23,13 @@ class LessonMoviesController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
+
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->loadModel('Categories');
+    }
+
     public function index()
     {
         $query = $this->LessonMovies->find('all')
@@ -34,7 +41,9 @@ class LessonMoviesController extends AppController
         ]);
         $lessonMovies = $this->paginate($query);
 
-        $this->set(compact('lessonMovies'));
+        $categories = $this->Categories->find('all')->combine('id', 'name')->toArray();
+
+        $this->set(compact('lessonMovies', 'categories'));
     }
 
     /**
@@ -45,6 +54,7 @@ class LessonMoviesController extends AppController
     public function add()
     {
         $lessonMovie = $this->LessonMovies->newEmptyEntity();
+        $categories = $this->Categories->find('all')->combine('id', 'name')->toArray();
         if ($this->request->is('post')) {
             $data = $this->request->getData();
             $imageFile = $this->request->getData('image_file');
@@ -111,7 +121,9 @@ class LessonMoviesController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('lessonMovie'));
+        $categories = $this->Categories->find('all')->combine('id', 'name')->toArray();
+
+        $this->set(compact('lessonMovie', 'categories'));
     }
 
     /**
@@ -129,6 +141,8 @@ class LessonMoviesController extends AppController
             'is_deleted' => 0
         ])
         ->first();
+
+        $categories = $this->Categories->find('all')->combine('id', 'name')->toArray(); 
 
         if (!$lessonMovie) {
             return $this->redirect(['action' => 'index']);
@@ -201,7 +215,7 @@ class LessonMoviesController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('lessonMovie'));
+        $this->set(compact('lessonMovie', 'categories'));
 
         $this->render('add');
     }

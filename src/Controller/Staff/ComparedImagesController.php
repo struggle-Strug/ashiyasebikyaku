@@ -216,6 +216,16 @@ class ComparedImagesController extends AppController
                 "id" => $param["target_id"]
             ])
                 ->first();
+                if ($targetImage) {
+                    $weeklyReport = $this->WeeklyReports->find()
+                        ->where(['id' => $targetImage->weekly_report_id])
+                        ->first();
+                    
+                    if ($weeklyReport) {
+                        $comparedImage->user_id = $weeklyReport->user_id;
+                        $param['user'] = $weeklyReport->user_id;
+                    }
+                }
         } else {
             $targetImage = null;
         }
@@ -228,6 +238,7 @@ class ComparedImagesController extends AppController
         } else {
             $subjectImage = null;
         }
+
         $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'staff'));
     }
 

@@ -72,20 +72,20 @@ class LessonMoviesTable extends Table
             ->notEmptyString('movie_url');
 
         $validator
-            ->scalar('password')
-            ->maxLength('password', 100)
-            ->requirePresence('password', 'create')
-            ->notEmptyString('password');
-
-        $validator
             ->scalar('note')
             ->allowEmptyString('note');
 
         $validator
-            ->notEmptyString('type');
+            ->notEmptyString('is_deleted');
 
         $validator
-            ->notEmptyString('is_deleted');
+            ->boolean('type')
+            ->allowEmptyString('type');
+
+        $validator
+            ->scalar('category')
+            ->maxLength('category', 255)
+            ->allowEmptyString('category');
 
         return $validator;
     }

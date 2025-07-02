@@ -243,8 +243,6 @@
         let mediaRecorder;
         let recordedChunks = [];
 
-        console.log(recordedVideo)
-
         // カウントダウン開始
         const countdownInterval = setInterval(() => {
             countdownElement.textContent = countdown;
@@ -394,8 +392,6 @@
                     .then(res => res.blob())
                     .then(blob => {
                         const file = new File([blob], "captured-image.png", { type: "image/png" });
-
-                        console.log(file)
 
                         // Fileオブジェクトをinput要素に設定
                         const dataTransfer = new DataTransfer();

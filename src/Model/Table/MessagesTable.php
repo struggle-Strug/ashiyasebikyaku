@@ -77,7 +77,7 @@ class MessagesTable extends Table
         $validator
             ->scalar('message')
             ->requirePresence('message', 'create')
-            ->notEmptyString('message');
+            ->allowEmptyString('message');
 
         $validator
             ->scalar('sender')
@@ -92,6 +92,29 @@ class MessagesTable extends Table
         $validator
             ->boolean('is_deleted')
             ->notEmptyString('is_deleted');
+
+        $validator
+            ->boolean('is_admin_read')
+            ->notEmptyString('is_admin_read');
+
+        $validator
+            ->scalar('file_path')
+            ->maxLength('file_path', 500)
+            ->allowEmptyFile('file_path');
+
+        $validator
+            ->scalar('file_name')
+            ->maxLength('file_name', 255)
+            ->allowEmptyFile('file_name');
+
+        $validator
+            ->scalar('file_type')
+            ->maxLength('file_type', 50)
+            ->allowEmptyFile('file_type');
+
+        $validator
+            ->integer('file_size')
+            ->allowEmptyFile('file_size');
 
         return $validator;
     }

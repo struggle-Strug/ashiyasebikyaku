@@ -91,7 +91,11 @@
                         <?php foreach ($weeklyReports as $key => $weeklyReport): ?>
                             <tr>
                             <td nowrap style="text-align:right">
-                                    <?php echo $this->Html->link('一括ダウンロード', ['controller' => 'WeeklyReports', 'action' => 'downloadImages', $weeklyReport->id], ['class' => 'btn btn-primary']); ?>
+                            <?php if ($role_id != 1): ?>
+                                        <?php echo $this->Html->link('一括ダウンロード', ['controller' => 'WeeklyReports', 'action' => 'downloadImages', $weeklyReport->id], ['class' => 'btn btn-primary']); ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-secondary" disabled>一括ダウンロード</button>
+                                    <?php endif; ?>
                                 </td>
                                 <td nowrap><?= date('Y年n月j日', strtotime($weeklyReport->report_date)) ?></td>
                                 <td nowrap><?= h($weeklyReport->user->fullname) ?></td>
@@ -131,6 +135,7 @@
                         <tr>
                         <th nowrap>ダウンロード</th>
                             <th nowrap>測定日</th>
+                            <th nowrap>会員名</th>
                             <th nowrap>体重</th>
                             <th nowrap>体脂肪率</th>
                             <th nowrap>アンダー<br>バスト</th>
@@ -196,7 +201,6 @@ $(function() {
                 xhr.setRequestHeader('X-CSRF-Token', csrf);
             },
             success: function(data, dataType) {
-                console.log(data);
                 $('#btn-check-' + id).hide();
                 $('#label-checked-' + id).show();
             }

@@ -41,23 +41,37 @@ class UsersController extends AppController
 
         $result = $this->Authentication->getResult();
 
-        // Login successful or Already logged in
         if ($result->isValid()) {
-            $redirect = $this->request->getQuery('redirect', [
-                'controller' => 'Users',
-                'action' => 'top',
-            ]);
+            $user = $this->Authentication->getIdentity();
 
             // 削除フラグをチェック
-            if (!empty($this->Authentication->getIdentity()->is_deleted)) {
+            if (!empty($user->is_deleted)) {
                 $this->Authentication->logout();
                 $this->Flash->error(__('このアカウントは削除されています。'));
                 return $this->redirect(['action' => 'login']);
             }
 
+            // 利用停止（course_id = 3）
+            if ($user->course_id === 3) {
+            
+                // ユーザーが利用停止期間を持っているかチェック（例: user に start_suspend, end_suspend がある）
+                if (!empty($user->pause_start) && !empty($user->pause_end)) {
+                    // 有効期限チェック
+                    $startDatetime = $user->pause_start->i18nFormat('yyyy-MM-dd HH:mm:ss');
+                    $endDatetime = $user->pause_end->i18nFormat('yyyy-MM-dd HH:mm:ss');
+                    
+                    if (time() >= strtotime($startDatetime) && time()<= strtotime($endDatetime)) {
+                        $this->Authentication->logout();
+                        $this->Flash->error(__('このコースのアカウントは現在ログインできません。'));
+                        return $this->redirect(['action' => 'login']);
+                    }
+                }
+            }
+            
+
             // 有効期限チェック
-            $startDatetime = $this->Authentication->getIdentity()->start_datetime->i18nFormat('yyyy-MM-dd HH:mm:ss');
-            $endDatetime = ($this->Authentication->getIdentity()->end_datetime) ? $this->Authentication->getIdentity()->end_datetime->i18nFormat('yyyy-MM-dd HH:mm:ss') : '2999-12-31 23:59:59';
+            $startDatetime = $user->start_datetime->i18nFormat('yyyy-MM-dd HH:mm:ss');
+            $endDatetime = ($user->end_datetime) ? $user->end_datetime->i18nFormat('yyyy-MM-dd HH:mm:ss') : '2999-12-31 23:59:59';
 
             if (strtotime($startDatetime) > time() || strtotime($endDatetime) < time()) {
                 $this->Flash->error(__('このアカウントは現在ご利用いただけません。'));
@@ -65,14 +79,18 @@ class UsersController extends AppController
                 return $this->redirect(['action' => 'login']);
             }
 
+            $redirect = $this->request->getQuery('redirect', [
+                'controller' => 'Users',
+                'action' => 'top',
+            ]);
             return $this->redirect($redirect);
         }
 
-        // Login failure
         if ($this->request->is('post') && !$result->isValid()) {
             $this->Flash->error(__('メールアドレスまたはパスワードが違います。'));
         }
     }
+
 
     /**
      * Logout method

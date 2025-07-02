@@ -22,7 +22,7 @@ services:
       PMA_PASSWORD: ${MYSQL_PASSWORD}
       UPLOAD_LIMIT: 50M
     ports:
-      - "8085:80"
+      - "8087:80"
     depends_on:
       - mysql
 
