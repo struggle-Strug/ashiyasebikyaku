@@ -223,8 +223,6 @@
     $(function () {
         let csrf = $('#ajax-form').find('input[name=_csrfToken]').val();
 
-        console.log("<?= $param["user"] ?>")
-
         var start_event = 'ontouchstart' in window ? "touchstart" : "mousedown";
         var move_event = 'ontouchstart' in window ? "touchmove" : "mousemove";
         var end_event = 'ontouchstart' in window ? "touchend" : "mouseup";

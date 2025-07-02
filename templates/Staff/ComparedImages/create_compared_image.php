@@ -664,7 +664,6 @@
                             svgElm_js.appendChild(eraseRect);
                             break;
                         case 'free-draw':
-                            console.log("free-draw")
                             pencilByMousedown(event);
                             break;
                         default:
@@ -676,7 +675,6 @@
                 if (type === "imageMoveAndZoom") {
                     // moveContentByMousedown(event);
                 } else if (type === "pencil") {
-                    console.log("type")
                     // 線の移動処理
                     if (isMovingLine && selectedLine) {
                         const currentX = getPositionXOnSvg(event);
@@ -948,9 +946,6 @@
             for (let key in path_attr) {
                 pathElm.setAttribute(key, path_attr[key]);
             }
-
-            console.log("pathElm")
-            console.log(pathElm)
 
             svgElm_js.appendChild(pathElm);
 
@@ -1510,24 +1505,16 @@
             $("#drawingCanvas").on(move_event, function (event) {
                 if (!isDragging) return;
                 if (move_event !== "touchmove") {
-                    console.log("move_event")
-                    console.log(move_event)
                     var mouse_moving_x = parseInt(getPositionXOnSvg(event));
-                    var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
-                    console.log(mouse_moving_x)
-                    console.log(mouse_moving_y)
+                    var mouse_moving_y = parseInt(getPositionYOnSvg(event)); 
                     var x_length = mouse_moving_x - mouse_move_x;
                     var y_length = mouse_moving_y - mouse_move_y;
-                    console.log(x_length)
-                    console.log(y_length)
 
                     var mouse_moving_x = parseInt(getPositionXOnSvg(event));
                     var mouse_moving_y = parseInt(getPositionYOnSvg(event));
 
                     mouse_move_x = mouse_moving_x;
                     mouse_move_y = mouse_moving_y;
-                    console.log(mouse_move_x)
-                    console.log(mouse_move_y)
                     x += x_length;
                     y += y_length;
                     targetContent.setAttribute('x', x + "");
@@ -1536,25 +1523,10 @@
                     if (touchType === "move") {
                         var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
                         var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
-                        console.log("move")
-                        console.log(mouse_moving_x)
-                        console.log("move_y")
-                        console.log(mouse_moving_y)
                         var x_length = mouse_moving_x - mouse_move_x;
                         var y_length = mouse_moving_y - mouse_move_y;
-                        console.log("x_length")
-                        console.log(x_length)
-                        console.log("y_length")
-                        console.log(y_length)
                         mouse_move_x = mouse_moving_x;
                         mouse_move_y = mouse_moving_y;
-                        console.log("mouse_move_x")
-                        console.log(mouse_move_x)
-                        console.log(mouse_move_y)
-                        console.log("x")
-                        console.log(x)
-                        console.log("y")
-                        console.log(y)
                         x += x_length;
                         y += y_length;
                         targetContent.setAttribute('x', x + "");
