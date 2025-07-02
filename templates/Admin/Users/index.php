@@ -80,7 +80,10 @@
                                     <span class="right badge badge-info">継続</span>
                                 <?php else : ?>
                                     <span class="right badge badge-warning">新規</span>
-                                <?php endif ?>
+                                <?php endif; ?>
+                                <?php if ($user->course_id === 3) : ?>
+                                        <span class="right badge badge-info">休会中</span>
+                                <?php endif; ?>
                             </div>
                             <div>
                                 <?php if ($user->light_plan == "1") : ?>

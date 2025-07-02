@@ -35,7 +35,8 @@ class StaffsController extends AppController
     public function index()
     {
         $staffs = $this->Staffs->find('all')
-        ->where(['is_deleted' => 0])
+        ->contain(['ParentStaff'])
+        ->where(['Staffs.is_deleted' => 0])
         ->all();
 
         $this->set(compact('staffs'));
@@ -48,8 +49,17 @@ class StaffsController extends AppController
      */
     public function add()
     {
+        // Get the user with the highest ID
+        $lastStaff = $this->Staffs->find()
+        ->select(['id'])
+        ->orderDesc('id')
+        ->first();
+
+        $nextStaffNumber= $lastStaff ? $lastStaff->id + 3000000 + 1 : 1;
         $staff = $this->Staffs->newEmptyEntity();
+        $staff->loginid = $nextStaffNumber;
         if ($this->request->is('post')) {
+            
             $staff = $this->Staffs->patchEntity($staff, $this->request->getData());
             if ($this->Staffs->save($staff)) {
                 $this->Flash->success(__('登録しました。'));
@@ -59,7 +69,13 @@ class StaffsController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        $this->set(compact('staff'));
+        $parentStaffs = $this->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => ['is_deleted' => 0]
+        ])->toArray();
+
+        $this->set(compact('staff', 'parentStaffs'));
     }
 
     /**
@@ -98,8 +114,13 @@ class StaffsController extends AppController
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
+        $parentStaffs = $this->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => ['is_deleted' => 0]
+            ])->toArray();
 
-        $this->set(compact('staff'));
+        $this->set(compact('staff', 'parentStaffs'));
 
         $this->render('add');
     }

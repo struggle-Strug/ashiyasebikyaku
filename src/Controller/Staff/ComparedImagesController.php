@@ -210,6 +210,7 @@ class ComparedImagesController extends AppController
         $param = $this->request->getQuery();
         $targetImage = $this->Photos->find("all");
         $subjectImage = $this->Photos->find("all");
+        $staff = $this->Authentication->getIdentity()->id;
         if (!empty($param["target_id"])) {
             $targetImage = $targetImage->where([
                 "id" => $param["target_id"]
@@ -238,8 +239,7 @@ class ComparedImagesController extends AppController
             $subjectImage = null;
         }
 
-        
-        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage'));
+        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'staff'));
     }
 
     public function uploadComparedImage()
@@ -304,6 +304,33 @@ class ComparedImagesController extends AppController
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
         $this->set(compact('comparedImage', 'users'));
+    }
+
+    /**
+     * EditComment method
+     *
+     * @param string|null $id Compared Image id.
+     * @return \Cake\Http\Response|null|void Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function editComment($id = null)
+    {
+        $param = $this->request->getQuery();
+        $staff = $this->Authentication->getIdentity()->id;
+        $comparedImage = $this->ComparedImages->get($id, [
+            'contain' => [],
+        ]);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
+            if ($this->ComparedImages->save($comparedImage)) {
+                $this->Flash->success(__('コメントを更新しました。'));
+
+                return $this->redirect(['action' => 'index', '?' => $param]);
+            }
+            $this->Flash->error(__('コメントを更新できませんでした。'));
+        }
+        $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
+        $this->set(compact('comparedImage', 'users', 'param', 'staff'));
     }
 
     /**

@@ -103,7 +103,19 @@ class UsersController extends AppController
      */
     public function add()
     {
-        $user = $this->Users->newEmptyEntity();
+        // Get the user with the highest ID
+        $lastUser = $this->Users->find()
+        ->select(['id'])
+        ->orderDesc('id')
+        ->first();
+
+        $nextMemberNumber = $lastUser ? $lastUser->id + 3000000 + 1 : 1;
+
+        // Set default value into the new entity
+        $user = $this->Users->newEntity([
+            'member_number' => $nextMemberNumber
+        ]);
+
         if ($this->request->is('post')) {
             $data = $this->request->getData();
 
@@ -113,13 +125,11 @@ class UsersController extends AppController
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('登録しました。'));
-
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
-        // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
             'valueField' => 'name',
@@ -128,13 +138,14 @@ class UsersController extends AppController
             ]
         ])->toArray();
 
-        // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
-
         $param = $this->request->getQuery();
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
+        $courses = Configure::read("COURSE");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
     }
+
 
     /**
      * Edit method
@@ -187,7 +198,9 @@ class UsersController extends AppController
 
         $param = $this->request->getQuery();
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param'));
+        $courses = Configure::read("COURSE");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
 
         $this->render('add');
     }

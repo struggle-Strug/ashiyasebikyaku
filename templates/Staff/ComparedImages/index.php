@@ -50,6 +50,7 @@
                                 <div><?= $comparedImage->created->format('Y年m月d日'); ?> <?= $comparedImage->user->last_name . ' ' . $comparedImage->user->first_name ?></div>
                                 <div style="flex-grow: 0; display: flex;">
                                     <div style="margin: 4px">
+                                        <a href="<?= $this->Url->build(['action' => 'editComment', $comparedImage->id, '?' => $param]) ?>" class="btn btn-outline-primary btn-sm">コメント編集</a>
                                         <?php if ($comparedImage->active): ?>
                                             <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
                                         <?php else: ?>
@@ -64,7 +65,8 @@
                         </div>
                         <div class="card-content">
                             <div style="padding: 12px 20px 0px;font-size: 20px; margin-left: -10px">【変化ポイント解説】</div>
-                            <div style="padding: 0px 20px;font-size: 20px;"><?= $comparedImage->comment ?></div>
+                            <div style="padding: 0px 20px;font-size: 20px;">【管理者】<?= $comparedImage->admin_comment ?></div>
+                            <div style="padding: 0px 20px;font-size: 20px;">【スタッフ】<?= $comparedImage->staff_comment ?></div>
                             <a href="<?= $comparedImage->image ?>"
                                 title="<?= h($comparedImage->comment) ?> - <?= date('Y年n月j日', strtotime($comparedImage->created)) ?>"
                                 data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>"
