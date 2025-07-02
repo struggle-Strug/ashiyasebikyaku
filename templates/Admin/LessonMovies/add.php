@@ -42,6 +42,13 @@
             </div>
         </div>
         <div class="form-group row">
+            <label for="" class="col-sm-2 col-form-label text-md-right">パスワード</label>
+            <div class="col-sm-10">
+                <?= $this->Form->text('password', ['class' => 'form-control']) ?>
+                <span class="text-danger"><?= $this->Form->error('password') ?></span>
+            </div>
+        </div>
+        <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">概要説明</label>
             <div class="col-sm-10">
                 <?= $this->Form->textarea('note', ['class' => 'form-control']) ?>
