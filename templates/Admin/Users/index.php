@@ -81,8 +81,22 @@
                                 <?php else : ?>
                                     <span class="right badge badge-warning">新規</span>
                                 <?php endif; ?>
-                                <?php if ($user->course_id === 3) : ?>
-                                        <span class="right badge badge-info">休会中</span>
+                                <?php 
+                                // 今日の日付がpause_startとpause_endの間にあるかチェック
+                                $today = new DateTime();
+                                $isPaused = false;
+                                
+                                if ($user->pause_start && $user->pause_end && $user->course_id == 3) {
+                                    $pauseStart = new DateTime($user->pause_start);
+                                    $pauseEnd = new DateTime($user->pause_end);
+                                    
+                                    if ($today >= $pauseStart && $today <= $pauseEnd && $user->course_id == 3) {
+                                        $isPaused = true;
+                                    }
+                                }
+                                
+                                if ($isPaused) : ?>
+                                    <span class="right badge badge-info">休会中</span>
                                 <?php endif; ?>
                             </div>
                             <div>

@@ -48,7 +48,7 @@
             </div>
             <label for="" class="col-sm-2 col-form-label text-md-right">コース</label>
             <div class="col-sm-4">
-                <?= $this->Form->select('course_id', $courses, ['class' => 'form-control', 'placeholder' => '']) ?>
+                <?= $this->Form->select('course_id', $courses, ['class' => 'form-control', 'placeholder' => '', 'default' => 2]) ?>
                 <span class="text-danger"><?= $this->Form->error('course_id') ?></span>
             </div>
         </div>
