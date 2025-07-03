@@ -9,6 +9,10 @@ use Cake\Core\Configure;
 use Cake\Routing\Router;
 use Cake\Filesystem\Filesystem;
 use Cake\Filesystem\File;
+use App\Mailer\AppMailer;
+use Cake\Mailer\MailerAwareTrait;
+use Cake\I18n\Time;
+
 
 
 /**
@@ -19,6 +23,7 @@ use Cake\Filesystem\File;
  */
 class ComparedImagesController extends AppController
 {
+    use MailerAwareTrait;
     /**
      * Index method
      *
@@ -434,17 +439,41 @@ class ComparedImagesController extends AppController
     public function setActive($id = null)
     {
         $comparedImage = $this->ComparedImages->get($id, [
-            'contain' => [],
+            'contain' => ['Users'],
         ]);
+
         $this->request->allowMethod(['post', 'delete']);
-        $data = [];
-        $data["active"] = 1;
-        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
+
+        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, ['active' => 1]);
+
         if ($this->ComparedImages->save($comparedImage)) {
+            $host = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
+            $port = $this->request->getUri()->getPort();
+            $path = '/mypage/weekly-reports/compared-images';
+            $fullUrl = $host . ($port ? ":$port" : '') . $path;
+
+            $now = Time::now();
+            $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
+
+            // Send email using AppMailer
+            $this->getMailer('App')->send('sendGridEmail', [
+                "【ビフォーアフター】美脚セルフデザインプログラム",
+                $comparedImage->user->email,
+                "before_after",
+                [
+                    'url' => $fullUrl,
+                    'today' => $formattedDateTime
+                ]
+            ]);
+
             $this->Flash->success(__('送信完了いたしました。'));
-            return $this->redirect(['action' => 'index']);
+        } else {
+            $this->Flash->error(__('送信に失敗しました。'));
         }
+
+        return $this->redirect(['action' => 'index']);
     }
+
 
     public function setNotActive($id = null)
     {
