@@ -16,6 +16,8 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\FrozenTime|null $created
  * @property \Cake\I18n\FrozenTime|null $modified
  * @property int $is_deleted
+ * @property bool|null $type
+ * @property string|null $category
  */
 class LessonMovie extends Entity
 {
@@ -36,7 +38,8 @@ class LessonMovie extends Entity
         'password' => true,
         'created' => true,
         'modified' => true,
-        'type' => true,
         'is_deleted' => true,
+        'type' => true,
+        'category' => true,
     ];
 }

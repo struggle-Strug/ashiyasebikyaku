@@ -427,6 +427,38 @@ class UsersController extends AppController
             $data['staff_id'] = $this->Authentication->getIdentity()->id;
             $data['sender'] = '2'; // 講師
 
+            // ファイルアップロード処理
+            $uploadedFile = $this->request->getUploadedFile('attachment');
+            if ($uploadedFile && $uploadedFile->getError() === UPLOAD_ERR_OK) {
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime'];
+                $maxFileSize = 10 * 1024 * 1024 * 1024; // 100MB
+
+                if (!in_array($uploadedFile->getClientMediaType(), $allowedTypes)) {
+                    $this->Flash->error(__('対応していないファイル形式です。'));
+                    return $this->redirect(['action' => 'message', $data['user_id']]);
+                }
+
+                if ($uploadedFile->getSize() > $maxFileSize) {
+                    $this->Flash->error(__('ファイルサイズが大きすぎます（最大100MB）。'));
+                    return $this->redirect(['action' => 'message', $data['user_id']]);
+                }
+
+                // ファイル保存
+                $uploadDir = WWW_ROOT . 'uploads' . DS . 'messages';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                $fileName = time() . '_' . $uploadedFile->getClientFilename();
+                $filePath = $uploadDir . DS . $fileName;
+                $uploadedFile->moveTo($filePath);
+
+                $data['file_path'] = 'uploads/messages/' . $fileName;
+                $data['file_name'] = $uploadedFile->getClientFilename();
+                $data['file_type'] = $uploadedFile->getClientMediaType();
+                $data['file_size'] = $uploadedFile->getSize();
+            }
+
             $host = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
             $path = '/mypage/messages';
             $adminPath = '/admin/users/message/';

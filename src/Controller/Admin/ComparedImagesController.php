@@ -37,12 +37,12 @@ class ComparedImagesController extends AppController
         parent::beforeFilter($event);
 
         $user = $this->Authentication->getIdentity();
-        if($user->role_id == 1) {
+        if ($user->role_id == 1) {
             $this->Flash->error('このページへのアクセス権がありません。');
             return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
         }
     }
-    
+
     public function index()
     {
         $this->paginate = [
@@ -73,29 +73,28 @@ class ComparedImagesController extends AppController
         // 会員
         if (!empty($param['user_id'])) {
             $query->where(['ComparedImages.user_id' => $param['user_id']]);
-            $comparedImages = $query->all();
         } else {
             $param['user_id'] = '';
-            $comparedImages = $query->all();
         }
 
         if (!empty($param['user_name'])) {
             $users = $this->ComparedImages->Users->find('all')
-            ->where([
-                'OR' => [
-                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                ]
-            ])->toArray();
+                ->where([
+                    'OR' => [
+                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    ]
+                ])
+                ->extract('id')
+                ->toArray();
         } else {
             $param['user_name'] = '';
         }
 
         if (!empty($param['user_name']) && !empty($users)) {
-            $userIds = array_column($users, 'id');
-            $query->where(['ComparedImages.user_id IN' => $userIds]);
+            $query->where(['ComparedImages.user_id IN' => $users]);
         } else if (!empty($param['user_name']) && empty($users)) {
             $comparedImages = null;
         } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
@@ -103,8 +102,9 @@ class ComparedImagesController extends AppController
             $comparedImages = null;
         } else {
             $param['user_name'] = '';
-            $comparedImages = $query->all();
         }
+
+        $comparedImages = $query->all();
 
         $users = $this->ComparedImages->Users->find('list', [
             'keyField' => 'id',
@@ -205,22 +205,20 @@ class ComparedImagesController extends AppController
         // 会員
         if (!empty($param['user_id'])) {
             $query->where(['WeeklyReports.user_id' => $param['user_id']]);
-            $weeklyReports = $query->all();
         } else {
             $param['user_id'] = '';
-            $weeklyReports = null;
         }
 
         if (!empty($param['user_name'])) {
             $users = $this->WeeklyReports->Users->find('all')
-            ->where([
-                'OR' => [
-                    'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                ]
-            ])->toArray();
+                ->where([
+                    'OR' => [
+                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    ]
+                ])->toArray();
         } else {
             $param['user_name'] = '';
         }
@@ -257,7 +255,6 @@ class ComparedImagesController extends AppController
 
     private function base64Encode($imagePath)
     {
-        debug($imagePath);
         $imageUrl = Router::url('', true) . $imagePath;
         $imageData = file_get_contents($imageUrl);
 
@@ -277,11 +274,24 @@ class ComparedImagesController extends AppController
         $param = $this->request->getQuery();
         $targetImage = $this->Photos->find("all");
         $subjectImage = $this->Photos->find("all");
+        $targetImageDate = "";
+        $subjectImageDate = "";
         if (!empty($param["target_id"])) {
             $targetImage = $targetImage->where([
                 "id" => $param["target_id"]
             ])
                 ->first();
+            if ($targetImage) {
+                $weeklyReport = $this->WeeklyReports->find()
+                    ->where(['id' => $targetImage->weekly_report_id])
+                    ->first();
+
+                if ($weeklyReport) {
+                    $comparedImage->user_id = $weeklyReport->user_id;
+                    $param['user'] = $weeklyReport->user_id;
+                    $targetImageDate = $weeklyReport->report_date;
+                }
+            }
         } else {
             $targetImage = null;
         }
@@ -291,10 +301,16 @@ class ComparedImagesController extends AppController
                 "id" => $param["subject_id"]
             ])
                 ->first();
+            if ($subjectImage) {
+                $weeklyReport = $this->WeeklyReports->find()
+                    ->where(['id' => $subjectImage->weekly_report_id])
+                    ->first();
+                $subjectImageDate = $weeklyReport->report_date;
+            }
         } else {
             $subjectImage = null;
         }
-        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage'));
+        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'targetImageDate', 'subjectImageDate'));
     }
 
     public function uploadComparedImage()
@@ -415,7 +431,8 @@ class ComparedImagesController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
-    public function setActive($id = null) {
+    public function setActive($id = null)
+    {
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
@@ -429,7 +446,8 @@ class ComparedImagesController extends AppController
         }
     }
 
-    public function setNotActive($id = null) {
+    public function setNotActive($id = null)
+    {
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
@@ -441,6 +459,6 @@ class ComparedImagesController extends AppController
             $this->Flash->success(__('送信取り消し完了いたしました。'));
             return $this->redirect(['action' => 'index']);
         }
-        
+
     }
 }

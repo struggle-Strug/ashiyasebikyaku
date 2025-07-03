@@ -175,7 +175,6 @@
                             </a>
                         </li>
                         <?php } ?>
-                        <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'WeeklyReports', 'action' => 'index']); ?>"
                                 class="nav-link <?php if ($this->request->getParam('controller') == 'WeeklyReports') echo 'active'; ?>">
@@ -185,7 +184,6 @@
                                 </p>
                             </a>
                         </li>
-                        <?php } ?>
                         <?php if ($user && $user->role_id == 0) { ?>
                         <li class="nav-item">
                             <a href="<?= $this->Url->build(['controller' => 'StaffWeeklyMessages', 'action' => 'index']); ?>"
