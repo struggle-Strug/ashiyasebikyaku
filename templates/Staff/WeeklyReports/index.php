@@ -28,6 +28,18 @@
 </div>
 <?= $this->Form->end() ?>
 
+<style>
+
+.uniform-image {
+  width: 100px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+</style>
+
 
 <div class="card">
     <div class="card-body">
@@ -94,7 +106,7 @@
                                             <?php if (strstr($photo->image_url, '.mp4') !== false || strstr($photo->image_url, '.m4v') !== false || strstr($photo->image_url, '.3gp') !== false || strstr($photo->image_url, '.mov') !== false) : ?>
                                                 <video src="<?= $photo->image_url ?>" style="max-width:100%;" controls></video>
                                             <?php else : ?>
-                                                <a href="<?= $photo->image_url ?>" title="<?= h($photoName[$photo->photo_number]) ?> - <?= date('Y年n月j日', strtotime($weeklyReport->report_date)) ?>" data-lightbox="<?= $photo->photo_number ?>"><img src="<?= $photo->image_url ?>" style="max-width:100%;"></a>
+                                                <a href="<?= $photo->image_url ?>" title="<?= h($photoName[$photo->photo_number]) ?> - <?= date('Y年n月j日', strtotime($weeklyReport->report_date)) ?>" data-lightbox="<?= $photo->photo_number ?>"><img src="<?= $photo->image_url ?>" class="uniform-image"</a>
                                             <?php endif ?>
                                         <?php endif ?>
                                     </td>
