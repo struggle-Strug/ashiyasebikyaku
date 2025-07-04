@@ -62,7 +62,7 @@ class UsersController extends AppController
                     
                     if (time() >= strtotime($startDatetime) && time()<= strtotime($endDatetime)) {
                         $this->Authentication->logout();
-                        $this->Flash->error(__('このコースのアカウントは現在ログインできません。'));
+                        $this->Flash->error(__('このコースでは、休会中はログインできません。'));
                         return $this->redirect(['action' => 'login']);
                     }
                 }
