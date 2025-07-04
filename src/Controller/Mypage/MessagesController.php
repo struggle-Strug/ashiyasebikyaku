@@ -137,7 +137,7 @@ class MessagesController extends AppController
                     ->first();
                 if ($staff) {
                     if ($staff->email) {
-                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl, 'today' => $formattedDateTime]]);
                     } else {
                         $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
                     }
