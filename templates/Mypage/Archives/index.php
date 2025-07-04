@@ -2,9 +2,6 @@
 <div style="margin: 15px; font-weight: bold; font-size:24px;">
   <a href="<?= $this->Url->build(['action' => 'courses']); ?>">オンライン講座（旧バージョン）</a>
 </div>
-<div style="margin: 15px; font-weight: bold; font-size:24px;">
-  <a href="<?= $this->Url->build(['action' => 'lessons']); ?>">実践レッスン</a>
-</div>
 
 <?php foreach ($categories as $category): ?>
   <div style="margin: 15px; font-weight: bold; font-size:24px;">
