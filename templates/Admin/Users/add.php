@@ -43,8 +43,25 @@
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">講師プラン</label>
             <div class="col-sm-4">
-            <?= $this->Form->select('staff_plan', [0 => 'いいえ', 1 => 'はい'], ['class' => 'form-control']) ?>
+                <?= $this->Form->select('staff_plan', [0 => 'いいえ', 1 => 'はい'], ['class' => 'form-control']) ?>
                 <span class="text-danger"><?= $this->Form->error('staff_plan') ?></span>
+            </div>
+            <label for="" class="col-sm-2 col-form-label text-md-right">コース</label>
+            <div class="col-sm-4">
+                <?= $this->Form->select('course_id', $courses, ['class' => 'form-control', 'placeholder' => '', 'default' => 2]) ?>
+                <span class="text-danger"><?= $this->Form->error('course_id') ?></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="" class="col-sm-2 col-form-label text-md-right">利用停止開始日時</label>
+            <div class="col-sm-4">
+                <?= $this->Form->datetime('pause_start', ['class' => 'form-control', 'step' => 60]) ?>
+                <span class="text-danger"><?= $this->Form->error('pause_start') ?></span>
+            </div>
+            <label for="" class="col-sm-2 col-form-label text-md-right">利用停止終了日時</label>
+            <div class="col-sm-4">
+                <?= $this->Form->datetime('pause_end', ['class' => 'form-control', 'step' => 60]) ?>
+                <span class="text-danger"><?= $this->Form->error('pause_end') ?></span>
             </div>
         </div>
         <hr>

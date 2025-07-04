@@ -21,7 +21,7 @@ class CategoriesController extends AppController
         parent::beforeFilter($event);
 
         $user = $this->Authentication->getIdentity();
-        if($user->role_id == 1) {
+        if($user && $user->role_id == 1) {
             $this->Flash->error('このページへのアクセス権がありません。');
             return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
         }
@@ -61,6 +61,8 @@ class CategoriesController extends AppController
     public function add()
     {
         $category = $this->Categories->newEmptyEntity();
+        $param = $this->request->getQuery();
+
         if ($this->request->is('post')) {
             $data = $this->request->getData();
 
@@ -81,8 +83,6 @@ class CategoriesController extends AppController
                 $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
             }
         }
-
-        $param = $this->request->getQuery();
 
         $this->set(compact('category', 'param'));
     }

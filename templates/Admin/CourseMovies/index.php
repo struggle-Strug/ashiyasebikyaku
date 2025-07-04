@@ -118,7 +118,6 @@
                         xhr.setRequestHeader('X-CSRF-Token', csrf);
                     },
                     success: function (data, dataType) {
-                        console.log(data);
                     }
                 });
             }

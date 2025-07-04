@@ -43,7 +43,12 @@
 <!-- Default box -->
 <div class="card">
     <div class="card-header">
-    <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]) ?>" class="btn btn-outline-primary" id="add-member-btn">新規会員登録</a>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]) ?>" class="btn btn-outline-primary" id="add-member-btn">新規会員登録</a>
+                <a href="<?= $this->Url->build(['action' => 'import', '?' => $param]) ?>" class="btn btn-outline-success ml-2">CSVインポート</a>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive-md scrollbar scrollbar-thumb-rounded scrollbar-thumb-black" style="height: 50vh;" id="member-table-container">
@@ -75,7 +80,24 @@
                                     <span class="right badge badge-info">継続</span>
                                 <?php else : ?>
                                     <span class="right badge badge-warning">新規</span>
-                                <?php endif ?>
+                                <?php endif; ?>
+                                <?php 
+                                // 今日の日付がpause_startとpause_endの間にあるかチェック
+                                $today = new DateTime();
+                                $isPaused = false;
+                                
+                                if ($user->pause_start && $user->pause_end && $user->course_id == 3) {
+                                    $pauseStart = new DateTime($user->pause_start);
+                                    $pauseEnd = new DateTime($user->pause_end);
+                                    
+                                    if ($today >= $pauseStart && $today <= $pauseEnd && $user->course_id == 3) {
+                                        $isPaused = true;
+                                    }
+                                }
+                                
+                                if ($isPaused) : ?>
+                                    <span class="right badge badge-info">休会中</span>
+                                <?php endif; ?>
                             </div>
                             <div>
                                 <?php if ($user->light_plan == "1") : ?>

@@ -17,6 +17,11 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\FrozenTime|null $created
  * @property \Cake\I18n\FrozenTime|null $modified
  * @property bool $is_deleted
+ * @property bool $is_admin_read
+ * @property string|null $file_path
+ * @property string|null $file_name
+ * @property string|null $file_type
+ * @property int|null $file_size
  *
  * @property \App\Model\Entity\User $user
  * @property \App\Model\Entity\Staff $staff
@@ -38,10 +43,14 @@ class Message extends Entity
         'message' => true,
         'sender' => true,
         'is_read' => true,
-        'is_admin_read' => true,
         'created' => true,
         'modified' => true,
         'is_deleted' => true,
+        'is_admin_read' => true,
+        'file_path' => true,
+        'file_name' => true,
+        'file_type' => true,
+        'file_size' => true,
         'user' => true,
         'staff' => true,
     ];

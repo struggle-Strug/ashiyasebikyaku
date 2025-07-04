@@ -13,6 +13,7 @@
                         <th nowrap>ログインID</th>
                         <th nowrap>メールアドレス</th>
                         <th nowrap>名前</th>
+                        <th nowrap>親スタッフ</th>
                         <th style="width:100px"></th>
                     </tr>
                 </thead>
@@ -22,6 +23,7 @@
                         <td><?= h($staff->loginid) ?></td>
                         <td><?= h($staff->email) ?></td>
                         <td><?= h($staff->name) ?></td>
+                        <td><?= h($staff->parent_staff->name ?? '') ?></td>
                         <td nowrap>
                             <a href="<?= $this->Url->build(['action' => 'edit', $staff->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $staff->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('削除してよろしいですか？', $staff->id)]) ?>

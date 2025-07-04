@@ -48,6 +48,11 @@ class StaffsTable extends Table
 
         $this->addBehavior('Timestamp');
 
+        $this->belongsTo('ParentStaff', [
+            'className' => 'Staffs',
+            'foreignKey' => 'parent',
+        ]);
+
         $this->hasMany('DailyReports', [
             'foreignKey' => 'staff_id',
         ]);

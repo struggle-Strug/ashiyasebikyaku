@@ -15,7 +15,6 @@
             </div>
 
             <?php foreach ($comparedImages as $comparedImage): ?>
-                <?php if ($comparedImage->active): ?>
                     <div class="card">
                         <div class="card-header">
                             <h5><?= $comparedImage->created->format('Y年m月d日'); ?>
@@ -23,14 +22,14 @@
                         </div>
                         <div class="card-content">
                             <div style="padding: 12px 20px 0px;font-size: 20px; margin-left: -10px">【変化ポイント解説】</div>
-                            <div style="padding: 0px 20px;font-size: 20px;"><?= $comparedImage->comment ?></div>
+                            <div style="padding: 0px 20px;font-size: 20px;">【管理者】<?= $comparedImage->admin_comment ?></div>
+                            <div style="padding: 0px 20px;font-size: 20px;">【スタッフ】<?= $comparedImage->staff_comment ?></div>
                             <a href="<?= $comparedImage->image ?>"
                                 title="<?= h($comparedImage->comment) ?> - <?= date('Y年n月j日', strtotime($comparedImage->created)) ?>"
                                 data-lightbox="<?= $comparedImage->id ?>"><img src="<?= h($comparedImage->image) ?>"
                                     width="100%" /></a>
                         </div>
                     </div>
-                <?php endif ?>
             <?php endforeach ?>
 
         </div>
