@@ -1496,33 +1496,74 @@
 
                 if (!target) return;
 
-                isDragging = true;
                 var mouse_move_x = parseInt(getPositionXOnSvg(event));
                 var mouse_move_y = parseInt(getPositionYOnSvg(event));
 
-                var x = parseInt(target.getAttribute("x"));
-                var y = parseInt(target.getAttribute("y"));
-
-                let transformList = target.transform.baseVal;
-                let transform = transformList.getItem(0);
-                let matrix = transform.matrix;
+                isDragging = true;
+                id = target.id;
+                var targetContent = document.getElementById(id);
+                
+                // Get current transform matrix
+                var transformList = targetContent.transform.baseVal;
+                var currentMatrix = transformList.numberOfItems > 0 ? transformList.getItem(0).matrix : svgElm_js.createSVGMatrix();
+                
+                // Store initial position
+                var initialX = currentMatrix.e;
+                var initialY = currentMatrix.f;
+                var startMouseX = mouse_move_x;
+                var startMouseY = mouse_move_y;
 
                 $("#drawingCanvas").on(move_event, function (event) {
                     if (!isDragging) return;
+                    if (move_event !== "touchmove") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var deltaX = mouse_moving_x - startMouseX;
+                        var deltaY = mouse_moving_y - startMouseY;
 
-                    var mouse_moving_x = parseInt(getPositionXOnSvg(event));
-                    var mouse_moving_y = parseInt(getPositionYOnSvg(event));
-
-                    var dx = mouse_moving_x - mouse_move_x;
-                    var dy = mouse_moving_y - mouse_move_y;
-
-                    matrix.e += dx;
-                    matrix.f += dy;
-
-                    transform.setMatrix(matrix);
-
-                    mouse_move_x = mouse_moving_x;
-                    mouse_move_y = mouse_moving_y;
+                        // Create new transform matrix with updated position
+                        var newMatrix = svgElm_js.createSVGMatrix();
+                        newMatrix.e = initialX + deltaX;
+                        newMatrix.f = initialY + deltaY;
+                        // Copy rotation and scale from the current matrix
+                        newMatrix.a = currentMatrix.a;
+                        newMatrix.b = currentMatrix.b;
+                        newMatrix.c = currentMatrix.c;
+                        newMatrix.d = currentMatrix.d;
+                        // Apply the new transform
+                        if (transformList.numberOfItems > 0) {
+                            transformList.getItem(0).setMatrix(newMatrix);
+                        } else {
+                            var translateTransform = svgElm_js.createSVGTransform();
+                            translateTransform.setMatrix(newMatrix);
+                            transformList.appendItem(translateTransform);
+                        }
+                    } else {
+                        if (touchType === "move") {
+                            var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                            var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                            var x_length = mouse_moving_x - mouse_move_x;
+                            var y_length = mouse_moving_y - mouse_move_y;
+                            mouse_move_x = mouse_moving_x;
+                            mouse_move_y = mouse_moving_y;
+                            x += x_length;
+                            y += y_length;
+                            targetContent.setAttribute('x', x + "");
+                            targetContent.setAttribute('y', y + "");
+                        } else if (touchType === "zoom") {
+                            var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                            var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                            var x_length = mouse_moving_x - mouse_move_x;
+                            var y_length = mouse_moving_y - mouse_move_y;
+                            mouse_move_x = mouse_moving_x;
+                            mouse_move_y = mouse_moving_y;
+                            var scale = y_length < 0 ? 0.99 : 1.01
+                            if (target) {
+                                target.width.baseVal.value *= scale;
+                                target.height.baseVal.value *= scale;
+                            }
+                        }
+                    }
                 });
 
 
@@ -1600,8 +1641,10 @@
                     pointer_x = getPositionXOnSvg(e)
                     pointer_y = getPositionYOnSvg(e)
                 }
-                target.width.baseVal.value *= scale;
-                target.height.baseVal.value *= scale;
+                if (target) {
+                    target.width.baseVal.value *= scale;
+                    target.height.baseVal.value *= scale;
+                }
             }, { passive: false })
         }
         zoomAction()
