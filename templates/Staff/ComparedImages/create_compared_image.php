@@ -200,7 +200,7 @@
         </figure>
         <div class="p-sm-2 p-md-4 py-2"><button class="btn btn-outline-primary" id="preview-btn">画像プレビューON</button>
         </div>
-        <div class="p-sm-2 p-md-4 py-2"><img src="/placeholder.svg" id="preview" /></div>
+        <div class="p-sm-2 p-md-4 py-2"><img src="" id="preview" /></div>
         <div class="form-group row">
             <label for="" class="col-form-label">コメント</label>
             <div class="col-sm-10">
@@ -1770,7 +1770,7 @@
             }
 
             // rgb(r, g, b)形式から数値を抽出
-            const rgbMatch = rgb.match(/^rgb\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$$$/i);
+            const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$$$/i);
             if (rgbMatch) {
                 const r = parseInt(rgbMatch[1], 10);
                 const g = parseInt(rgbMatch[2], 10);
