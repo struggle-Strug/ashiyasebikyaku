@@ -1522,11 +1522,6 @@
 
             var x = parseInt(target.getAttribute("x"));
             var y = parseInt(target.getAttribute("y"));
-            var mouse_move_x = 0;
-            var mouse_move_y = 0;
-            var mouse_move_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
-            var mouse_move_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
-
             var dx = 0;
             var dy = 0;
             var transform = target.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
@@ -1547,27 +1542,25 @@
                     var x_length = mouse_moving_x - mouse_move_x;
                     var y_length = mouse_moving_y - mouse_move_y;
 
-                    var mouse_moving_x = parseInt(getPositionXOnSvg(event));
-                    var mouse_moving_y = parseInt(getPositionYOnSvg(event));
+                    // Matrix transformation for proper rotation handling
+                    Matrix.e += x_length;
+                    Matrix.f += y_length;
 
                     mouse_move_x = mouse_moving_x;
                     mouse_move_y = mouse_moving_y;
-                    x += x_length;
-                    y += y_length;
-                    targetContent.setAttribute('x', x + "");
-                    targetContent.setAttribute('y', y + "");
                 } else {
                     if (touchType === "move") {
                         var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
                         var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
                         var x_length = mouse_moving_x - mouse_move_x;
                         var y_length = mouse_moving_y - mouse_move_y;
+                        
+                        // Matrix transformation for proper rotation handling in touch mode
+                        Matrix.e += x_length;
+                        Matrix.f += y_length;
+                        
                         mouse_move_x = mouse_moving_x;
                         mouse_move_y = mouse_moving_y;
-                        x += x_length;
-                        y += y_length;
-                        targetContent.setAttribute('x', x + "");
-                        targetContent.setAttribute('y', y + "");
                     } else if (touchType === "zoom") {
                         var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
                         var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
