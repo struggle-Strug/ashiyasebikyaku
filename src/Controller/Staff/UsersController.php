@@ -475,7 +475,6 @@ class UsersController extends AppController
                 $this->Flash->success(__('メッセージを送信しました。'));
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $user->email, "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
                 $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
-                // $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
                 
                 return $this->redirect(['action' => 'message', $data['user_id']]);
             }
