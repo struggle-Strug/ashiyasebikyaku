@@ -5,6 +5,7 @@ namespace App\Controller\Staff;
 
 use App\Controller\AppController;
 use Cake\I18n\Time;
+use Cake\Database\Expression\QueryExpression;
 use Cake\ORM\Query;
 use Cake\Core\Configure;
 
@@ -39,7 +40,6 @@ class UsersController extends AppController
                 'Messages' => function (Query $q) {
                     return $q->where([
                         'Messages.sender' => '1',
-                        'Messages.is_read' => 0
                     ]);
                 },
                 'UserPoints' => function (Query $q) {
@@ -363,6 +363,7 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
+
     public function message($userId = null)
     {
         // ユーザー情報の確認
@@ -377,15 +378,23 @@ class UsersController extends AppController
             return $this->redirect(['action' => 'index']);
         }
 
-        // 既読にする
-        $this->Users->Messages->updateAll(
+        $staffId = (int)$this->Authentication->getIdentity()->id;
+        $staffIdJson = json_encode([$staffId]);
+
+        $connection = $this->Users->getConnection();
+
+        $expression = new QueryExpression("is_read = JSON_ARRAY_APPEND(is_read, '$', $staffId)");
+
+        $connection->execute(
+            "UPDATE messages 
+            SET is_read = JSON_ARRAY_APPEND(is_read, '$', :staffId)
+            WHERE user_id = :userId
+            AND sender = '1'
+            AND (is_read IS NULL OR NOT JSON_CONTAINS(is_read, :staffIdJson))",
             [
-                'is_read' => 1
-            ],
-            [
-                'user_id' => $user->id,
-                'sender' => '1',
-                'is_read' => 0
+                'staffId' => $staffId,
+                'userId' => $user->id,
+                'staffIdJson' => $staffIdJson
             ]
         );
 
@@ -405,6 +414,7 @@ class UsersController extends AppController
 
         $this->set(compact('messages', 'user', 'param'));
     }
+
 
 
     /**
