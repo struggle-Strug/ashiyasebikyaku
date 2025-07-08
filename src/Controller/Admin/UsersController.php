@@ -103,7 +103,19 @@ class UsersController extends AppController
      */
     public function add()
     {
-        $user = $this->Users->newEmptyEntity();
+        // Get the user with the highest ID
+        $lastUser = $this->Users->find()
+        ->select(['id'])
+        ->orderDesc('id')
+        ->first();
+
+        $nextMemberNumber = $lastUser ? $lastUser->id + 3000000 + 1 : 1;
+
+        // Set default value into the new entity
+        $user = $this->Users->newEntity([
+            'member_number' => $nextMemberNumber
+        ]);
+
         if ($this->request->is('post')) {
             $data = $this->request->getData();
 
