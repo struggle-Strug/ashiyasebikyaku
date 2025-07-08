@@ -129,7 +129,8 @@ class MessagesController extends AppController
 
             if ($this->Messages->save($message)) {
                 $this->Flash->success(__('メッセージを送信しました。'));
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                // $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_roperation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ryota0246@gmail.com", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
                 $staff = $this->Staffs->find('all')
                     ->where([
                         'id' => $this->Authentication->getIdentity()->staff_id,
