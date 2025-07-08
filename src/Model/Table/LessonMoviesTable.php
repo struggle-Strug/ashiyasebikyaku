@@ -76,10 +76,16 @@ class LessonMoviesTable extends Table
             ->allowEmptyString('note');
 
         $validator
-            ->notEmptyString('type');
+            ->notEmptyString('is_deleted');
 
         $validator
-            ->notEmptyString('is_deleted');
+            ->boolean('type')
+            ->allowEmptyString('type');
+
+        $validator
+            ->scalar('category')
+            ->maxLength('category', 255)
+            ->allowEmptyString('category');
 
         return $validator;
     }

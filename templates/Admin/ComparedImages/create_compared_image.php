@@ -11,7 +11,7 @@
             display: block;
         }
     }
-    
+
     /* ツールバー用のスタイル */
     .toolbar {
         display: flex;
@@ -19,7 +19,7 @@
         margin-left: 10px;
         align-items: center;
     }
-    
+
     .tool-button {
         width: 40px;
         height: 40px;
@@ -31,13 +31,13 @@
         cursor: pointer;
         background-color: white;
     }
-    
+
     .tool-button.active {
         background-color: #007bff;
         color: white;
         border-color: #0056b3;
     }
-    
+
     /* コメントボックスのスタイル */
     .comment-box {
         background-color: white;
@@ -46,9 +46,10 @@
         padding: 8px;
         min-width: 100px;
         min-height: 50px;
+        text-align: center;
         /* リサイズはJavaScriptで制御するため、CSSのresizeプロパティは使用しない */
     }
-    
+
     /* カラーピッカーコンテナのスタイル */
     .color-picker-container {
         display: none;
@@ -56,24 +57,26 @@
         align-items: center;
         gap: 10px;
     }
-    
+
     .color-picker-label {
         font-size: 12px;
         margin-right: 5px;
     }
-    
+
     /* リサイズハンドルのスタイル - 完全に非表示に変更 */
     .comment-resize-handle {
         position: absolute;
         width: 10px;
         height: 10px;
-        background-color: transparent; /* 無色 */
-        border: none; /* 境界線も削除 */
+        background-color: transparent;
+        /* 無色 */
+        border: none;
+        /* 境界線も削除 */
         border-radius: 50%;
         cursor: nwse-resize;
         z-index: 1001;
     }
-    
+
     /* フォントサイズ変更ツールのスタイル */
     .font-size-tools {
         display: none;
@@ -81,12 +84,12 @@
         align-items: center;
         gap: 5px;
     }
-    
+
     .font-size-label {
         font-size: 12px;
         margin-right: 5px;
     }
-    
+
     .font-size-button {
         width: 24px;
         height: 24px;
@@ -98,7 +101,7 @@
         cursor: pointer;
         background-color: white;
     }
-    
+
     .font-size-value {
         font-size: 12px;
         min-width: 20px;
@@ -110,6 +113,20 @@
         <div style="display: flex; flex-wrap: wrap; align-items: center;">
             <div class="p-sm-2 p-md-4 py-2">
                 <button class="btn btn-outline-primary" id="board-type">書き込みモードOFF</button>
+                <span class="mx-2">左の画像:</span>
+                <button class="btn btn-outline-secondary" id="rotate-left-image-left" title="左回転">
+                    <i class="fas fa-undo-alt"></i>
+                </button>
+                <button class="btn btn-outline-secondary" id="rotate-left-image-right" title="右回転">
+                    <i class="fas fa-redo-alt"></i>
+                </button>
+                <span class="mx-2">右の画像:</span>
+                <button class="btn btn-outline-secondary" id="rotate-right-image-left" title="左回転">
+                    <i class="fas fa-undo-alt"></i>
+                </button>
+                <button class="btn btn-outline-secondary" id="rotate-right-image-right" title="右回転">
+                    <i class="fas fa-redo-alt"></i>
+                </button>
             </div>
             <!-- ツールバー -->
             <div class="toolbar p-sm-2 p-md-4 py-2" id="drawing-toolbar" style="display: none;">
@@ -187,9 +204,9 @@
         <div class="form-group row">
             <label for="" class="col-form-label">コメント</label>
             <div class="col-sm-10">
-                <textarea class="form-control" rows="5" name="comment" id="comment"></textarea>
+                <textarea class="form-control" rows="5" name="admin_comment" id="admin_comment"></textarea>
                 <span class="text-danger">
-                    <?= $this->Form->error('comment') ?>
+                    <?= $this->Form->error('admin_comment') ?>
                 </span>
             </div>
         </div>
@@ -209,12 +226,12 @@
 <?php if ($targetImage["created"] === null): ?>
     <input type="hidden" value="" id="target-image-date">
 <?php else: ?>
-    <input type="hidden" value="<?= $targetImage["created"]->format('Y年m月d日') ?>" id="target-image-date">
+    <input type="hidden" value="<?= $targetImageDate->format('Y年m月d日') ?>" id="target-image-date">
 <?php endif ?>
 <?php if ($subjectImage["created"] === null): ?>
     <input type="hidden" value="" id="subject-image-date">
 <?php else: ?>
-    <input type="hidden" value="<?= $subjectImage["created"]->format('Y年m月d日') ?>" id="subject-image-date">
+    <input type="hidden" value="<?= $subjectImageDate->format('Y年m月d日') ?>" id="subject-image-date">
 <?php endif ?>
 
 <script defer>
@@ -669,7 +686,7 @@
                     }
                 }
             }).on(move_event, function (event) {
-                // event.preventDefault();
+                event.preventDefault();
                 if (type === "imageMoveAndZoom") {
                     // moveContentByMousedown(event);
                 } else if (type === "pencil") {
@@ -1005,6 +1022,27 @@
             return result
         }
 
+        // Helper functions for touch coordinate conversion
+        function getPositionXOnSvgByX(pageX) {
+            var left = svgElm.position().left
+            var svg_w = svgElm_js.clientWidth
+            var viewBox = getViewBox()
+            var pageX_aspect = viewBox[2] / svg_w
+            var viewBox_x = viewBox[0]
+            var result = (pageX - left) * pageX_aspect + viewBox_x;
+            return result
+        }
+
+        function getPositionYOnSvgByY(pageY) {
+            var top = svgElm.position().top
+            var svg_w = svgElm_js.clientWidth
+            var viewBox = getViewBox()
+            var svg_h = svgElm_js.clientHeight
+            var pageY_aspect = viewBox[3] / svg_h
+            var viewBox_y = viewBox[1]
+            var result = (pageY - top) * pageY_aspect + viewBox_y;
+            return result
+        }
 
         function createImage(cx, cy, x, y, w, h, href, id, clipPath) {
             var image_elm = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -1245,15 +1283,16 @@
                     ctx.textBaseline = 'top';
                     
                     // テキストの内容を取得し、改行で分割
-                    const text = comment.textContent;
+                    const text = comment.innerText;
                     const lines = text.split(/\r?\n/);
                     
                     // 各行のテキストを描画（単純な行分割）
                     const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
                     let yPos = commentTop + 8; // パディングの分だけオフセット
-                    
+                    ctx.textAlign = 'center'; // 中央寄せを設定
+
                     lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + 8, yPos); // パディングの分だけオフセット
+                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos); // パディングの分だけオフセット
                         yPos += lineHeight;
                     });
                 });
@@ -1368,15 +1407,16 @@
                     ctx.textBaseline = 'top';
                     
                     // テキストの内容を取得し、改行で分割
-                    const text = comment.textContent;
+                    const text = comment.innerText;
                     const lines = text.split(/\r?\n/);
                     
                     // 各行のテキストを描画（単純な行分割）
                     const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
                     let yPos = commentTop + 8; // パディングの分だけオフセット
-                    
+                    ctx.textAlign = 'center'; // 中央寄せを設定
+
                     lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + 8, yPos); // パディングの分だけオフセット
+                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos); // パディングの分だけオフセット
                         yPos += lineHeight;
                     });
                 });
@@ -1419,16 +1459,19 @@
 
         function uploadImageToServer(pngDataUrl) {
             const formData = new FormData();
-            const comment = document.getElementById("comment").value;
+            const comment = document.getElementById("admin_comment").value;
             const target_image = "<?= $param["target_id"] ?>"
             const subject_image = "<?= $param["subject_id"] ?>"
             const user = "<?= $param["user"] ?>"
+            const user_name = "<?= $param["user_name"] ?>"
             formData.append('image', pngDataUrl);
-            formData.append('comment', comment);
+            formData.append('admin_comment', comment);
             formData.append('target_image', target_image);
             formData.append('subject_image', subject_image);
             formData.append('user_id', user);
-            const nextURL = "/admin/compared-images?start_report_date=&end_report_date=&user_id=" + user;
+            formData.append('user_name', user_name);
+
+            const nextURL = "/admin/compared-images?start_report_date=&end_report_date=&user_id=" + user + "&user_name=" + user_name;
             $.ajax({
                 type: 'POST',
                 url: "<?= $this->Url->build(['action' => 'uploadComparedImage']); ?>",
@@ -1461,49 +1504,81 @@
 
             pointX = parseInt(getPositionXOnSvg(event));
             pointY = parseInt(getPositionYOnSvg(event));
-            
-            if (event.buttons === 1) {
-                if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin &&
-                    pointY > margin && pointY < clipRightRect.height.baseVal.value) {
-                    target = document.getElementById("left-image");
-                } else if (pointX > clipRightRect.width.baseVal.value + margin && 
-                        pointX < clipRightRect.width.baseVal.value * 2 + margin * 3 &&
-                        pointY > margin && pointY < clipRightRect.height.baseVal.value) {
-                    target = document.getElementById("right-image");
-                }
 
-                if (!target) return;
+            if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin &&
+                pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                target = document.getElementById("left-image");
+            } else if (pointX > clipRightRect.width.baseVal.value + margin &&
+                pointX < clipRightRect.width.baseVal.value * 2 + margin * 3 &&
+                pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                target = document.getElementById("right-image");
+            }
 
-                isDragging = true;
-                var mouse_move_x = parseInt(getPositionXOnSvg(event));
-                var mouse_move_y = parseInt(getPositionYOnSvg(event));
+            if (!target) return;
 
-                var x = parseInt(target.getAttribute("x"));
-                var y = parseInt(target.getAttribute("y"));
+            isDragging = true;
+            var mouse_move_x = parseInt(getPositionXOnSvg(event));
+            var mouse_move_y = parseInt(getPositionYOnSvg(event));
 
-                $("#drawingCanvas").on(move_event, function (event) {
-                    if (!isDragging) return;
+            var x = parseInt(target.getAttribute("x"));
+            var y = parseInt(target.getAttribute("y"));
+            var dx = 0;
+            var dy = 0;
+            var transform = target.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
+            if (!target.hasAttribute("transform")) {
+                target.transform.baseVal.appendItem(transform);
+            }
+            id = target.id;
+            var targetContent = document.getElementById(id);
+            x = parseInt(targetContent.getAttribute("x"));
+            y = parseInt(targetContent.getAttribute("y"));
+            var Matrix = target.transform.baseVal[0].matrix;
 
-                    var mouse_moving_x = parseInt(getPositionXOnSvg(event));
-                    var mouse_moving_y = parseInt(getPositionYOnSvg(event));
+            $("#drawingCanvas").on(move_event, function (event) {
+                if (!isDragging) return;
+                if (move_event !== "touchmove") {
+                    var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                    var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                    var x_length = mouse_moving_x - mouse_move_x;
+                    var y_length = mouse_moving_y - mouse_move_y;
 
-                    var dx = mouse_moving_x - mouse_move_x;
-                    var dy = mouse_moving_y - mouse_move_y;
-
-
-                    x += dx;
-                    y += dy;
-                    target.setAttribute('x', x + "");
-                    target.setAttribute('y', y + "");
+                    // Matrix transformation for proper rotation handling
+                    Matrix.e += x_length;
+                    Matrix.f += y_length;
 
                     mouse_move_x = mouse_moving_x;
                     mouse_move_y = mouse_moving_y;
-                });
-
-                $("#drawingCanvas").on(end_event, function () {
-                    isDragging = false;
-                });
-            }
+                } else {
+                    if (touchType === "move") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        
+                        // Matrix transformation for proper rotation handling in touch mode
+                        Matrix.e += x_length;
+                        Matrix.f += y_length;
+                        
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                    } else if (touchType === "zoom") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                        var scale = y_length < 0 ? 0.99 : 1.01
+                        target.width.baseVal.value *= scale;
+                        target.height.baseVal.value *= scale;
+                    }
+                }
+            });
+            $("#drawingCanvas").on(end_event, function () {
+                isDragging = false;
+                // $("#drawingCanvas").off(move_event);
+                // $("#drawingCanvas").off(end_event);
+            });
         }
 
 
@@ -1566,7 +1641,6 @@
                         } catch (error) {
                             console.error(error);
                         }
-
                     }
                 } else {
                     var dy = e.deltaY
@@ -1574,11 +1648,71 @@
                     pointer_x = getPositionXOnSvg(e)
                     pointer_y = getPositionYOnSvg(e)
                 }
-                target.width.baseVal.value *= scale;
-                target.height.baseVal.value *= scale;
+                if (target) {
+                    target.width.baseVal.value *= scale;
+                    target.height.baseVal.value *= scale;
+                }
             }, { passive: false })
         }
         zoomAction()
+
+        let leftRotation = 0;
+        let rightRotation = 0;
+
+        // 左の画像：10度左回転
+        document.getElementById("rotate-left-image-left").addEventListener("click", function () {
+            leftRotation = (leftRotation - 10 + 360) % 360;
+            const leftImage = document.getElementById("left-image");
+            if (leftImage) {
+                applyRotationTransform(leftImage, leftRotation);
+            }
+        });
+
+        // 左の画像：10度右回転
+        document.getElementById("rotate-left-image-right").addEventListener("click", function () {
+            leftRotation = (leftRotation + 10) % 360;
+            const leftImage = document.getElementById("left-image");
+            if (leftImage) {
+                applyRotationTransform(leftImage, leftRotation);
+            }
+        });
+
+        // 右の画像：10度左回転
+        document.getElementById("rotate-right-image-left").addEventListener("click", function () {
+            rightRotation = (rightRotation - 10 + 360) % 360;
+            const rightImage = document.getElementById("right-image");
+            if (rightImage) {
+                applyRotationTransform(rightImage, rightRotation);
+            }
+        });
+
+        // 右の画像：10度右回転
+        document.getElementById("rotate-right-image-right").addEventListener("click", function () {
+            rightRotation = (rightRotation + 10) % 360;
+            const rightImage = document.getElementById("right-image");
+            if (rightImage) {
+                applyRotationTransform(rightImage, rightRotation);
+            }
+        });
+
+
+        function applyRotationTransform(imageElement, angle) {
+            const bbox = imageElement.getBBox();
+            const cx = bbox.x + bbox.width / 2;
+            const cy = bbox.y + bbox.height / 2;
+            const transformList = imageElement.transform.baseVal;
+            let rotateTransform = svgElm_js.createSVGTransform();
+
+            rotateTransform.setRotate(angle, cx, cy);
+
+            // Optional: remove any previous rotate (if needed)
+            if (transformList.numberOfItems > 1) {
+            transformList.removeItem(1);
+            }
+            transformList.appendItem(rotateTransform);
+
+        }
+
 
         function pencilByMousemove(event) {
             var linetoX = parseInt(getPositionXOnSvg(event)); // SVG上のマウス座標(横方向)の取得

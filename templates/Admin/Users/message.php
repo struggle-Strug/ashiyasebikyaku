@@ -12,7 +12,31 @@
                         </div>
                         <img class="direct-chat-img" src="/img/face.png">
                         <div class="direct-chat-text">
-                            <?= $this->Link->linkify(h($message->message)) ?>
+                            <?php if ($message->file_path): ?>
+                                <?php if (strpos($message->file_type, 'image/') === 0): ?>
+                                    <div class="message-attachment">
+                                        <img src="/<?= h($message->file_path) ?>" alt="<?= h($message->file_name) ?>" style="max-width: 300px; max-height: 300px; border-radius: 8px;">
+                                        <div class="attachment-info">
+                                            <small><?= h($message->file_name) ?></small>
+                                        </div>
+                                    </div>
+                                <?php elseif (strpos($message->file_type, 'video/') === 0): ?>
+                                    <div class="message-attachment">
+                                        <video controls style="max-width: 300px; max-height: 300px; border-radius: 8px;">
+                                            <source src="/<?= h($message->file_path) ?>">
+                                            お使いのブラウザは動画再生に対応していません。
+                                        </video>
+                                        <div class="attachment-info">
+                                            <small><?= h($message->file_name) ?></small>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if ($message->message): ?>
+                                <div class="message-text">
+                                    <?= $this->Link->linkify(h($message->message)) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php elseif ($message->sender == '2') : // 講師 ?>
@@ -23,7 +47,31 @@
                         </div>
                         <img class="direct-chat-img" src="/img/face2.png">
                         <div class="direct-chat-text msg-staff">
-                            <?= $this->Link->linkify(h($message->message)) ?>
+                            <?php if ($message->file_path): ?>
+                                <?php if (strpos($message->file_type, 'image/') === 0): ?>
+                                    <div class="message-attachment">
+                                        <img src="/<?= h($message->file_path) ?>" alt="<?= h($message->file_name) ?>" style="max-width: 300px; max-height: 300px; border-radius: 8px;">
+                                        <div class="attachment-info">
+                                            <small><?= h($message->file_name) ?></small>
+                                        </div>
+                                    </div>
+                                <?php elseif (strpos($message->file_type, 'video/') === 0): ?>
+                                    <div class="message-attachment">
+                                        <video controls style="max-width: 300px; max-height: 300px; border-radius: 8px;">
+                                            <source src="/<?= h($message->file_path) ?>">
+                                            お使いのブラウザは動画再生に対応していません。
+                                        </video>
+                                        <div class="attachment-info">
+                                            <small><?= h($message->file_name) ?></small>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if ($message->message): ?>
+                                <div class="message-text">
+                                    <?= $this->Link->linkify(h($message->message)) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php elseif ($message->sender == '3') : // 管理者 ?>
@@ -35,7 +83,31 @@
                         <img class="direct-chat-img" src="/img/logo.png">
                         <div class="direct-chat-text msg-admin">
                             【運営より】<br>
-                            <?= $this->Link->linkify(h($message->message)) ?>
+                            <?php if ($message->file_path): ?>
+                                <?php if (strpos($message->file_type, 'image/') === 0): ?>
+                                    <div class="message-attachment">
+                                        <img src="/<?= h($message->file_path) ?>" alt="<?= h($message->file_name) ?>" style="max-width: 300px; max-height: 300px; border-radius: 8px;">
+                                        <div class="attachment-info">
+                                            <small><?= h($message->file_name) ?></small>
+                                        </div>
+                                    </div>
+                                <?php elseif (strpos($message->file_type, 'video/') === 0): ?>
+                                    <div class="message-attachment">
+                                        <video controls style="max-width: 300px; max-height: 300px; border-radius: 8px;">
+                                            <source src="/<?= h($message->file_path) ?>">
+                                            お使いのブラウザは動画再生に対応していません。
+                                        </video>
+                                        <div class="attachment-info">
+                                            <small><?= h($message->file_name) ?></small>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if ($message->message): ?>
+                                <div class="message-text">
+                                    <?= $this->Link->linkify(h($message->message)) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endif ?>
@@ -44,14 +116,21 @@
         </div>
     </div>
     <div class="card-footer">
-        <?= $this->Form->create(null, ['url' => ['action' => 'messageSend']]) ?>
+        <?= $this->Form->create(null, ['url' => ['action' => 'messageSend'], 'enctype' => 'multipart/form-data']) ?>
             <?= $this->Form->hidden('user_id', ['value' => $user->id]) ?>
             <?= $this->Form->hidden('staff_id', ['value' => $user->staff_id]) ?>
             <div class="input-group">
-                <textarea type="text" name="message" placeholder="" class="form-control" required="required"></textarea>
+                <textarea type="text" name="message" placeholder="メッセージを入力してください..." class="form-control"></textarea>
                 <span class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('attachment').click();">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
                     <button type="submit" class="btn btn-primary">送信</button>
                 </span>
+            </div>
+            <div class="mt-2">
+                <input type="file" id="attachment" name="attachment" accept="image/*,video/*" style="display: none;" onchange="updateFileName(this)">
+                <div id="file-info" class="text-success large" style="display: none;"></div>
             </div>
         <?= $this->Form->end() ?>
     </div>
@@ -60,6 +139,21 @@
 <div class="card-footer">
     <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index']); ?>"><i class="fas fa-arrow-circle-left"></i> 戻る</a>
 </div>
+
+<style>
+.message-attachment {
+    margin-bottom: 10px;
+}
+
+.attachment-info {
+    margin-top: 5px;
+    color: #666;
+}
+
+.message-text {
+    margin-top: 10px;
+}
+</style>
 
 <script>
     $(function() {
@@ -80,5 +174,17 @@
             $('button[type="submit"]').prop('disabled', true).text('送信中...');
         });
     });
+
+    function updateFileName(input) {
+        const fileInfo = document.getElementById('file-info');
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+            fileInfo.innerHTML = `選択されたファイル: ${file.name} (${fileSize} MB)`;
+            fileInfo.style.display = 'block';
+        } else {
+            fileInfo.style.display = 'none';
+        }
+    }
 </script>
 

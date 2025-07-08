@@ -80,6 +80,38 @@ class MessagesController extends AppController
             $data['staff_id'] = $this->Authentication->getIdentity()->staff_id;
             $data['sender'] = '1'; // 利用者
 
+            // ファイルアップロード処理
+            $uploadedFile = $this->request->getUploadedFile('attachment');
+            if ($uploadedFile && $uploadedFile->getError() === UPLOAD_ERR_OK) {
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime'];
+                $maxFileSize = 10 * 1024 * 1024 * 1024; // 100MB
+
+                if (!in_array($uploadedFile->getClientMediaType(), $allowedTypes)) {
+                    $this->Flash->error(__('対応していないファイル形式です。'));
+                    return $this->redirect(['action' => 'index']);
+                }
+
+                if ($uploadedFile->getSize() > $maxFileSize) {
+                    $this->Flash->error(__('ファイルサイズが大きすぎます（最大100MB）。'));
+                    return $this->redirect(['action' => 'index']);
+                }
+
+                // ファイル保存
+                $uploadDir = WWW_ROOT . 'uploads' . DS . 'messages';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                $fileName = time() . '_' . $uploadedFile->getClientFilename();
+                $filePath = $uploadDir . DS . $fileName;
+                $uploadedFile->moveTo($filePath);
+
+                $data['file_path'] = 'uploads/messages/' . $fileName;
+                $data['file_name'] = $uploadedFile->getClientFilename();
+                $data['file_type'] = $uploadedFile->getClientMediaType();
+                $data['file_size'] = $uploadedFile->getSize();
+            }
+
             $host = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
             $path = '/staff/users/message/';
             $adminPath = '/admin/users/message/';
@@ -87,16 +119,17 @@ class MessagesController extends AppController
             $fullUrl = $host . ($port ? ":$port" : '') . $path . $data['user_id'];
             $adminFullUrl = $host . ($port ? ":$port" : '') . $adminPath . $data['user_id'];
 
-
             $message = $this->Messages->newEmptyEntity();
             $message = $this->Messages->patchEntity($message, $data);
 
             $now = Time::now();
+
+            
             $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
 
             if ($this->Messages->save($message)) {
                 $this->Flash->success(__('メッセージを送信しました。'));
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_roperation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
                 $staff = $this->Staffs->find('all')
                     ->where([
                         'id' => $this->Authentication->getIdentity()->staff_id,
@@ -104,7 +137,7 @@ class MessagesController extends AppController
                     ->first();
                 if ($staff) {
                     if ($staff->email) {
-                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl, 'today' => $formattedDateTime]]);
                     } else {
                         $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
                     }

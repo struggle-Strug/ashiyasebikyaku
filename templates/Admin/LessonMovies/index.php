@@ -17,6 +17,7 @@
                         <th style="width:250px">動画</th>
                         <th nowrap>概要説明</th>
                         <th nowrap>新旧</th>
+                        <th nowrap>カテゴリ</th>
                         <th style="width:100px"></th>
                     </tr>
                     </tr>
@@ -58,6 +59,7 @@
                                     <span class="right badge badge-success">新動画</span>
                                 <?php endif ?>
                             </td>
+                            <td><?= h($lessonMovie->category ? $categories[$lessonMovie->category] : '') ?></td>
                             <td nowrap>
                                 <a href="<?= $this->Url->build(['action' => 'edit', $lessonMovie->id]); ?>"
                                     class="btn btn-outline-primary btn-sm">編集</a>

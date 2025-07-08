@@ -41,5 +41,8 @@ class ComparedImage extends Entity
         'comment' => true,
         'active' => true,
         'user' => true,
+        'admin_comment' => true,
+        'staff_comment' => true,
+        'staff_id' => true,
     ];
 }
