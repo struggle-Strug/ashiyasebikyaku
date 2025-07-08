@@ -49,6 +49,7 @@ class StaffsController extends AppController
      */
     public function add()
     {
+
         // Get the user with the highest ID
         $lastStaff = $this->Staffs->find()
         ->select(['id'])
@@ -58,6 +59,7 @@ class StaffsController extends AppController
         $nextStaffNumber= $lastStaff ? $lastStaff->id + 3000000 + 1 : 1;
         $staff = $this->Staffs->newEmptyEntity();
         $staff->loginid = $nextStaffNumber;
+
         if ($this->request->is('post')) {
             
             $staff = $this->Staffs->patchEntity($staff, $this->request->getData());

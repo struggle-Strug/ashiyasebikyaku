@@ -686,7 +686,7 @@
                     }
                 }
             }).on(move_event, function (event) {
-                // event.preventDefault();
+                event.preventDefault();
                 if (type === "imageMoveAndZoom") {
                     // moveContentByMousedown(event);
                 } else if (type === "pencil") {
@@ -1022,6 +1022,27 @@
             return result
         }
 
+        // Helper functions for touch coordinate conversion
+        function getPositionXOnSvgByX(pageX) {
+            var left = svgElm.position().left
+            var svg_w = svgElm_js.clientWidth
+            var viewBox = getViewBox()
+            var pageX_aspect = viewBox[2] / svg_w
+            var viewBox_x = viewBox[0]
+            var result = (pageX - left) * pageX_aspect + viewBox_x;
+            return result
+        }
+
+        function getPositionYOnSvgByY(pageY) {
+            var top = svgElm.position().top
+            var svg_w = svgElm_js.clientWidth
+            var viewBox = getViewBox()
+            var svg_h = svgElm_js.clientHeight
+            var pageY_aspect = viewBox[3] / svg_h
+            var viewBox_y = viewBox[1]
+            var result = (pageY - top) * pageY_aspect + viewBox_y;
+            return result
+        }
 
         function createImage(cx, cy, x, y, w, h, href, id, clipPath) {
             var image_elm = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -1483,53 +1504,81 @@
 
             pointX = parseInt(getPositionXOnSvg(event));
             pointY = parseInt(getPositionYOnSvg(event));
-            
-            if (event.buttons === 1) {
-                if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin &&
-                    pointY > margin && pointY < clipRightRect.height.baseVal.value) {
-                    target = document.getElementById("left-image");
-                } else if (pointX > clipRightRect.width.baseVal.value + margin && 
-                        pointX < clipRightRect.width.baseVal.value * 2 + margin * 3 &&
-                        pointY > margin && pointY < clipRightRect.height.baseVal.value) {
-                    target = document.getElementById("right-image");
-                }
 
-                if (!target) return;
+            if (pointX > margin && pointX < clipRightRect.width.baseVal.value + margin &&
+                pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                target = document.getElementById("left-image");
+            } else if (pointX > clipRightRect.width.baseVal.value + margin &&
+                pointX < clipRightRect.width.baseVal.value * 2 + margin * 3 &&
+                pointY > margin && pointY < clipRightRect.height.baseVal.value) {
+                target = document.getElementById("right-image");
+            }
 
-                isDragging = true;
-                var mouse_move_x = parseInt(getPositionXOnSvg(event));
-                var mouse_move_y = parseInt(getPositionYOnSvg(event));
+            if (!target) return;
 
-                var x = parseInt(target.getAttribute("x"));
-                var y = parseInt(target.getAttribute("y"));
+            isDragging = true;
+            var mouse_move_x = parseInt(getPositionXOnSvg(event));
+            var mouse_move_y = parseInt(getPositionYOnSvg(event));
 
-                let transformList = target.transform.baseVal;
-                let transform = transformList.getItem(0);
-                let matrix = transform.matrix;
+            var x = parseInt(target.getAttribute("x"));
+            var y = parseInt(target.getAttribute("y"));
+            var dx = 0;
+            var dy = 0;
+            var transform = target.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
+            if (!target.hasAttribute("transform")) {
+                target.transform.baseVal.appendItem(transform);
+            }
+            id = target.id;
+            var targetContent = document.getElementById(id);
+            x = parseInt(targetContent.getAttribute("x"));
+            y = parseInt(targetContent.getAttribute("y"));
+            var Matrix = target.transform.baseVal[0].matrix;
 
-                $("#drawingCanvas").on(move_event, function (event) {
-                    if (!isDragging) return;
+            $("#drawingCanvas").on(move_event, function (event) {
+                if (!isDragging) return;
+                if (move_event !== "touchmove") {
+                    var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                    var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                    var x_length = mouse_moving_x - mouse_move_x;
+                    var y_length = mouse_moving_y - mouse_move_y;
 
-                    var mouse_moving_x = parseInt(getPositionXOnSvg(event));
-                    var mouse_moving_y = parseInt(getPositionYOnSvg(event));
-
-                    var dx = mouse_moving_x - mouse_move_x;
-                    var dy = mouse_moving_y - mouse_move_y;
-
-                    matrix.e += dx;
-                    matrix.f += dy;
-
-                    transform.setMatrix(matrix);
+                    // Matrix transformation for proper rotation handling
+                    Matrix.e += x_length;
+                    Matrix.f += y_length;
 
                     mouse_move_x = mouse_moving_x;
                     mouse_move_y = mouse_moving_y;
-                });
-
-
-                $("#drawingCanvas").on(end_event, function () {
-                    isDragging = false;
-                });
-            }
+                } else {
+                    if (touchType === "move") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        
+                        // Matrix transformation for proper rotation handling in touch mode
+                        Matrix.e += x_length;
+                        Matrix.f += y_length;
+                        
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                    } else if (touchType === "zoom") {
+                        var mouse_moving_x = parseInt(getPositionXOnSvg(event)); //SVG上のマウス座標(横方向)の取得
+                        var mouse_moving_y = parseInt(getPositionYOnSvg(event)); //SVG上のマウス座標(縦方向)の取得
+                        var x_length = mouse_moving_x - mouse_move_x;
+                        var y_length = mouse_moving_y - mouse_move_y;
+                        mouse_move_x = mouse_moving_x;
+                        mouse_move_y = mouse_moving_y;
+                        var scale = y_length < 0 ? 0.99 : 1.01
+                        target.width.baseVal.value *= scale;
+                        target.height.baseVal.value *= scale;
+                    }
+                }
+            });
+            $("#drawingCanvas").on(end_event, function () {
+                isDragging = false;
+                // $("#drawingCanvas").off(move_event);
+                // $("#drawingCanvas").off(end_event);
+            });
         }
 
 
@@ -1592,7 +1641,6 @@
                         } catch (error) {
                             console.error(error);
                         }
-
                     }
                 } else {
                     var dy = e.deltaY
@@ -1600,8 +1648,10 @@
                     pointer_x = getPositionXOnSvg(e)
                     pointer_y = getPositionYOnSvg(e)
                 }
-                target.width.baseVal.value *= scale;
-                target.height.baseVal.value *= scale;
+                if (target) {
+                    target.width.baseVal.value *= scale;
+                    target.height.baseVal.value *= scale;
+                }
             }, { passive: false })
         }
         zoomAction()

@@ -125,11 +125,13 @@ class UsersController extends AppController
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('登録しました。'));
+
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
+        // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
             'valueField' => 'name',
@@ -138,14 +140,15 @@ class UsersController extends AppController
             ]
         ])->toArray();
 
+        // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
+
         $param = $this->request->getQuery();
 
         $courses = Configure::read("COURSE");
 
         $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
     }
-
 
     /**
      * Edit method
