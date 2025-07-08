@@ -69,6 +69,16 @@
                             <?php endif; ?>
                             <?php if ($message->message): ?>
                                 <div class="message-text">
+                                    <!-- 削除ボタンフォーム -->
+                                    <div style="position: absolute; top: 5px; right: 5px;">
+                                        <?= $this->Form->create(null, [
+                                            'url' => ['action' => 'deleteMessage', $message->id],
+                                            'style' => 'display:inline-block;',
+                                            'onsubmit' => 'return confirm("このメッセージを削除しますか？");'
+                                        ]) ?>
+                                            <?= $this->Form->button('削除', ['class' => 'btn btn-sm btn-outline-danger delete-button', 'style' => 'border-radius: 20px;']) ?>
+                                        <?= $this->Form->end() ?>
+                                    </div>
                                     <?= $this->Link->linkify(h($message->message)) ?>
                                 </div>
                             <?php endif; ?>
@@ -168,9 +178,14 @@
             }
         });
 
-        // Disable the send button after first click
-        $('form').on('submit', function () {
-            $('button[type="submit"]').prop('disabled', true).text('送信中...');
+         // メイン送信ボタンの送信中テキスト
+         $('form').on('submit', function () {
+            const $submitBtn = $(this).find('button[type="submit"]');
+            if ($submitBtn.hasClass('delete-button')) {
+                $submitBtn.prop('disabled', true).text('削除中...');
+            } else {
+                $submitBtn.prop('disabled', true).text('送信中...');
+            }
         });
     });
 
