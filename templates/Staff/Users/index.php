@@ -43,6 +43,7 @@
                         <th style="width:160px">コミュニケーション<br>ツール</th>
                         <th style="width:150px">日次報告</th>
                         <th style="width:150px">週次報告</th>
+                        <th style="width:150px">画像比較確認</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -155,6 +156,14 @@
                                 ?>
                             </div>
                             <?php endif ?>
+                        </td>
+                        <td nowrap>
+                            <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
+                            <div>
+                                <?php if ($user->compared_images) : ?>
+                                    <span class="right badge badge-danger">未送信</span>
+                                <?php endif ?>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>

@@ -66,6 +66,7 @@
                             <th nowrap>利用終了日時</th>
                             <th nowrap>担当講師</th>
                             <th nowrap>コミュニケーション<br>ツール</th>
+                            <th nowrap>画像比較確認</th>
                             <th style="width:150px"></th>
                         </tr>
                     </tr>
@@ -132,6 +133,14 @@
                             <div>
                                 <?php if ($user->messages) : ?>
                                     <span class="right badge badge-danger">未読</span>
+                                <?php endif ?>
+                            </div>
+                        </td>
+                        <td nowrap>
+                            <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
+                            <div>
+                                <?php if ($user->compared_images) : ?>
+                                    <span class="right badge badge-danger">未送信</span>
                                 <?php endif ?>
                             </div>
                         </td>
