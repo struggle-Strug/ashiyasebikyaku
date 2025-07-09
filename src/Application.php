@@ -122,7 +122,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         $sessionKey = 'Auth.User';
         $userModel = 'Users';
         $fields = ['username' => 'email', 'password' => 'password'];
-        $loginUrl = Router::url(['plugin' => null, 'prefix' => 'Mypage',  'controller' => 'Users', 'action' => 'login']);
+        $loginUrl = Router::url(['plugin' => null, 'prefix' => 'Mypage', 'controller' => 'Users', 'action' => 'login']);
 
         if ($prefix === 'Admin') {
             $sessionKey = 'Auth.Admin';
@@ -140,28 +140,48 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
         $authenticationService->setConfig([
             'unauthenticatedRedirect' => $loginUrl,
-            'queryParam' => 'redirect'
+            'queryParam' => 'redirect',
         ]);
 
+        // Session Auth
         $authenticationService->loadAuthenticator('Authentication.Session', [
-            'sessionKey' => $sessionKey
+            'sessionKey' => $sessionKey,
         ]);
 
+        // Form Auth
         $authenticationService->loadAuthenticator('Authentication.Form', [
+            'fields' => $fields,
             'loginUrl' => $loginUrl,
-            'fields' => $fields
         ]);
 
+        // ✅ Cookie Authenticator (only for Mypage users)
+        if ($prefix === 'Mypage' || $prefix === null) {
+            $authenticationService->loadAuthenticator('Authentication.Cookie', [
+                'rememberMeField' => 'remember_me', // ← this must match form checkbox field
+                'cookie' => [
+                    'name' => 'remember_me',
+                    'expire' => '+30 days',
+                    'httpOnly' => true,
+                    'secure' => env('HTTPS') === true, // optional
+                    'path' => '/',
+                ],
+                'fields' => $fields,
+                'loginUrl' => $loginUrl,
+            ]);
+        }
+
+        // Identifier
         $authenticationService->loadIdentifier('Authentication.Password', [
-            'resolver'=>[
+            'resolver' => [
                 'className' => 'Authentication.Orm',
-                'userModel' => $userModel
+                'userModel' => $userModel,
             ],
-            'fields' => $fields
+            'fields' => $fields,
         ]);
 
         return $authenticationService;
     }
+
 
     /**
      * Register application container services.
