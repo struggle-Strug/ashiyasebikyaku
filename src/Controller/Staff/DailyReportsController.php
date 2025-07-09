@@ -139,7 +139,7 @@ class DailyReportsController extends AppController
             $this->Flash->error(__('保存に失敗しました。もう一度お試しください。'));
         }
 
-        $staff = $this->Authentication->getIdentity()->$id;
+        $staff = $this->Authentication->getIdentity();
         $staff_comment = $dailyReport->staff_comment;
         
         $this->set(compact('dailyReport', 'staff', 'staff_comment'));

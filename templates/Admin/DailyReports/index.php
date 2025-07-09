@@ -46,6 +46,8 @@
                     <th nowrap>状態</th>
                     <th nowrap>セルフイメージ</th>
                     <th nowrap>コメント</th>
+                    <th nowrap>スタッフ名</th>
+                    <th nowrap>スタッフコメント</th>
                     <!-- <th width="150px">&nbsp;</th> -->
                 </tr>
             </thead>
@@ -92,6 +94,18 @@
                     </td>
                     <td>
                         <small><?= $this->Link->linkify(h($dailyReport->comment)) ?></small>
+                    </td>
+                    <td>
+                        <?php if ($dailyReport->comment != '' && $dailyReport->comment != null) : ?>
+                            <small><?= h($dailyReport->staff->name ?? '') ?></small>
+                        <?php endif ?>
+                    </td>
+                    <td>
+                        <?php if ($dailyReport->staff_comment != '' && $dailyReport->staff_comment != null) : ?>
+                            <small><?= $this->Link->linkify(h($dailyReport->staff_comment)) ?></small>
+                        <?php else : ?>
+                            <small><span class="text-muted">未記入</span></small>
+                        <?php endif ?>
                     </td>
                     <!-- <td>
                         <?php if (!$dailyReport->is_checked) : ?>
