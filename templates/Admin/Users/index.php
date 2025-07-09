@@ -86,11 +86,11 @@
                                 $today = new DateTime();
                                 $isPaused = false;
                                 
-                                if ($user->pause_start && $user->pause_end && $user->course_id == 3) {
+                                if ($user->pause_start && $user->pause_end) {
                                     $pauseStart = new DateTime($user->pause_start);
                                     $pauseEnd = new DateTime($user->pause_end);
                                     
-                                    if ($today >= $pauseStart && $today <= $pauseEnd && $user->course_id == 3) {
+                                    if ($today >= $pauseStart && $today <= $pauseEnd) {
                                         $isPaused = true;
                                     }
                                 }
