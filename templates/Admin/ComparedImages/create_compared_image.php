@@ -1212,17 +1212,17 @@
                 const canvas = document.createElement("canvas");
                 const board = document.getElementById('board');
 
-                // キャンバスサイズを設定
+                // キャンバスサイズを設定 - 解像度を下げる
                 const width = svg.width.baseVal.value;
                 const height = svg.height.baseVal.value;
-                const pixelRatio = window.devicePixelRatio || 1;
+                const pixelRatio = 0.5; // 解像度を半分に下げる
                 
                 canvas.width = width * pixelRatio;
                 canvas.height = height * pixelRatio;
                 canvas.style.width = width + "px";
                 canvas.style.height = height + "px";
 
-                // 2Dコンテキストを取得して高解像度対応
+                // 2Dコンテキストを取得して低解像度対応
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
@@ -1297,8 +1297,8 @@
                     });
                 });
 
-                // PNGとして出力
-                const pngDataUrl = canvas.toDataURL('image/png');
+                // PNGとして出力（品質を下げる）
+                const pngDataUrl = canvas.toDataURL('image/png', 0.7); // 品質を70%に下げる
                 document.getElementById("preview").src = pngDataUrl;
                 document.getElementById("preview").style.display = "block";
             } catch (error) {
@@ -1336,7 +1336,7 @@
                 
                 const canvas = document.createElement("canvas");
                 
-                const pixelRatio = window.devicePixelRatio || 1;
+                const pixelRatio = 0.5; // 解像度を半分に下げる
                 const viewBox = svg.viewBox.baseVal;
                 
                 canvas.width = viewBox.width * pixelRatio;
@@ -1346,7 +1346,7 @@
                 canvas.style.width = viewBox.width + "px";
                 canvas.style.height = viewBox.height + "px";
 
-                // 2Dコンテキストを取得して高解像度対応
+                // 2Dコンテキストを取得して低解像度対応
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
@@ -1422,8 +1422,8 @@
                 });
                 
 
-                // PNGとして出力
-                const pngDataUrl = canvas.toDataURL('image/png');
+                // PNGとして出力（品質を下げる）
+                const pngDataUrl = canvas.toDataURL('image/png', 0.7); // 品質を70%に下げる
 
                 uploadImageToServer(pngDataUrl);
             } catch (error) {
@@ -1770,7 +1770,7 @@
             }
             
             // rgb(r, g, b)形式から数値を抽出
-            const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+            const rgbMatch = rgb.match(/^rgb\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$$$/i);
             if (rgbMatch) {
                 const r = parseInt(rgbMatch[1], 10);
                 const g = parseInt(rgbMatch[2], 10);
