@@ -166,6 +166,7 @@
                     mask.style.width = document.getElementById(element.dataset.id).width + "px"
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
                     mask.style.backgroundColor = "rgba(255,0,0,0.3)";
+                    mask.style.display = "flex"
                     mask.textContent = "アフター"
                 }
 
