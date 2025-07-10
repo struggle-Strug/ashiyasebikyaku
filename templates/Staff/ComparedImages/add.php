@@ -165,7 +165,7 @@
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px"
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
-                    mask.style.display = "flex"
+                    mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                     mask.textContent = "アフター"
                 }
 
@@ -173,6 +173,7 @@
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px";
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
+                    mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                     mask.style.display = "flex"
                     mask.textContent = "ビフォー"
                 }
@@ -249,6 +250,7 @@
                         document.getElementById("subject_image_url").style.display = "block"
                         mask.style.width = document.getElementById(selectedImageInfo.subject.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.subject.id).height + "px";
+                        mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                         mask.style.display = "flex"
                         mask.textContent = "ビフォー";
                     } else {
@@ -261,6 +263,7 @@
                         mask.style.width = document.getElementById(selectedImageInfo.target.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.target.id).height + "px";
                         mask.style.display = "flex"
+                        mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                         mask.textContent = "アフター"
                     } else {
                         document.getElementById("target_image_url").style.display = "none"
