@@ -51,6 +51,10 @@ class DailyReportsTable extends Table
             'foreignKey' => 'user_id',
             'joinType' => 'INNER',
         ]);
+
+        $this->belongsTo('Staffs', [
+            'foreignKey' => 'staff_id',
+        ]);
     }
 
     /**

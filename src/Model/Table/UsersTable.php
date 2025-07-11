@@ -64,6 +64,9 @@ class UsersTable extends Table
         $this->hasMany('UserPoints', [
             'foreignKey' => 'user_id',
         ]);
+        $this->hasMany('ComparedImages', [
+            'foreignKey' => 'user_id',
+        ]);
     }
 
     /**
