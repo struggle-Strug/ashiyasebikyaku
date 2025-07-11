@@ -13,13 +13,15 @@
                         <li class="self">
                             <div class="msg" style="position: relative;">
                                 <!-- 削除ボタンフォーム -->
-                                <div style="position: absolute; top: 5px; right: 5px;">
+                                <div style="position: absolute; bottom: 5px; left: 10px;">
                                     <?= $this->Form->create(null, [
                                         'url' => ['action' => 'delete', $message->id],
                                         'style' => 'display:inline-block;',
                                         'onsubmit' => 'return confirm("このメッセージを削除しますか？");'
                                     ]) ?>
-                                        <?= $this->Form->button('削除', ['class' => 'btn btn-sm btn-outline-danger delete-button']) ?>
+                                        <?= $this->Form->button('削除', [
+                                            'class' => 'btn btn-sm btn-outline-danger small delete-button',
+                                        ]) ?>
                                     <?= $this->Form->end() ?>
                                 </div>
                                 <?php if ($message->file_path): ?>
@@ -168,6 +170,13 @@
 .message-text {
     margin-top: 10px;
 }
+
+.delete-button {
+    font-size: 1rem;
+    padding: 4px 6px;
+    line-height: 1.2;
+}
+
 </style>
 
 <script>
