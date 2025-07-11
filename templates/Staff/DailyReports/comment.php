@@ -4,7 +4,7 @@
     <div class="card">
         <div class="card-content p-4">
             <?= $this->Form->create($dailyReport, ['id' => 'form']) ?>
-            <?= $this->Form->hidden('staff_id', ['value' => $staff]) ?>
+            <?= $this->Form->hidden('staff_id', ['value' => $staff->id]) ?>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
