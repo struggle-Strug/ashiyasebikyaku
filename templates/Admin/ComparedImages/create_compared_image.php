@@ -41,13 +41,37 @@
     /* コメントボックスのスタイル */
     .comment-box {
         background-color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 8px;
-        min-width: 100px;
-        min-height: 50px;
+        border: 1px solid #d1d5db; /* border-gray-300 */
+        border-radius: 8px; /* rounded-lg */
+        padding: 16px; /* p-4 */
+        min-width: 100px; /* min-w-[100px] */
+        min-height: 50px; /* min-h-[50px] */
+        max-width: 100%; /* max-w-full */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        color: #374151; /* text-gray-800 */
+        font-size: 16px; /* text-base */
+        resize: none; /* resize-none */
+        overflow: hidden; /* overflow-hidden */
+        white-space: pre-wrap; /* whitespace-pre-wrap */
+        word-break: break-words; /* break-words */
+        display: flex; /* flex */
+        flex-direction: column; /* flex-col */
+        justify-content: center; /* justify-center */
+        position: absolute; /* Keep this for positioning */
+        z-index: 1000; /* Keep this for layering */
+    }
+
+    .comment-box:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 0 1px #3b82f6; /* focus:ring-2 focus:ring-blue-500 and focus:border-blue-500 */
+        border-color: #3b82f6; /* focus:border-blue-500 */
+    }
+
+    .comment-box:empty::before {
+        content: 'Start typing here...';
+        color: #9ca3af; /* text-gray-400 */
+        display: block;
         text-align: center;
-        /* リサイズはJavaScriptで制御するため、CSSのresizeプロパティは使用しない */
     }
 
     /* カラーピッカーコンテナのスタイル */
@@ -586,6 +610,7 @@
                             commentBox.style.backgroundColor = backgroundColor;
                             commentBox.style.fontSize = fontSize + 'px'; // 現在のフォントサイズを設定
                             commentBox.style.zIndex = '1000';
+                            commentBox.style.textAlign = 'left';
                             commentBox.textContent = 'コメントを入力';
                             
                             // リサイズハンドルを追加
