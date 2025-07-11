@@ -63,7 +63,8 @@ class DailyReportsController extends AppController
     {
         $query = $this->DailyReports->find('all')
             ->contain([
-                'Users'
+                'Users',
+                'Staffs'
             ])
             ->order([
                 'DailyReports.report_date' => 'desc'
@@ -131,8 +132,6 @@ class DailyReportsController extends AppController
 
 
         $dailyReports = $this->paginate($query);
-
-
 
         $this->set(compact('dailyReports', 'users', 'param'));
     }
