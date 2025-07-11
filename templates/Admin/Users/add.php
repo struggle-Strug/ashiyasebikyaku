@@ -2,7 +2,7 @@
 
 <!-- Default box -->
 <div class="card">
-    <?= $this->Form->create($user, ['class' => 'form-horizontal']) ?>
+    <?= $this->Form->create($user, ['class' => 'form-horizontal', 'id' => 'member-form']) ?>
     <div class="card-body">
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">利用開始日時 *</label>
@@ -155,13 +155,68 @@
     </div>
     <!-- /.card-body -->
     <div class="card-footer">
-        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>">
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>" id="back-btn">
             <i class="fas fa-arrow-circle-left"></i> 戻る
         </a>
         <span class="float-right">
-            <button type="submit" class="btn btn-primary">登録</button>
+            <button type="submit" class="btn btn-primary" id="register-btn">登録</button>
         </span>
     </div>
     <?= $this->Form->end() ?>
 </div>
 <!-- /.card -->
+
+<script>
+$(document).ready(function() {
+    // Scroll position management - same key as index page
+    const SCROLL_STORAGE_KEY = 'memberIndexScrollPosition';
+    
+    // Function to save scroll position (matches index page functionality)
+    function saveScrollPosition() {
+        // Get current scroll positions
+        const windowScrollTop = $(window).scrollTop();
+        
+        // Try to get table container scroll position if we came from index page
+        const scrollData = {
+            tableTop: 0, // Will be restored from existing data if available
+            tableLeft: 0, // Will be restored from existing data if available
+            windowTop: windowScrollTop,
+            timestamp: Date.now()
+        };
+        
+        // Preserve existing table scroll positions if they exist
+        const existingScrollData = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+        if (existingScrollData) {
+            try {
+                const existingData = JSON.parse(existingScrollData);
+                scrollData.tableTop = existingData.tableTop || 0;
+                scrollData.tableLeft = existingData.tableLeft || 0;
+            } catch (e) {
+                // If parsing fails, use default values
+            }
+        }
+        
+        sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify(scrollData));
+    }
+    
+    // Save scroll position when clicking back button
+    $('#back-btn').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position when form is submitted (Register button)
+    $('#member-form').on('submit', function() {
+        saveScrollPosition();
+    });
+    
+    // Alternative: Save scroll position when Register button is clicked
+    $('#register-btn').on('click', function() {
+        saveScrollPosition();
+    });
+    
+    // Save scroll position before page unload
+    $(window).on('beforeunload', function() {
+        saveScrollPosition();
+    });
+});
+</script>
