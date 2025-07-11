@@ -27,6 +27,14 @@ class UsersController extends AppController
             return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
         }
     }
+
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->loadModel('ComparedImages');
+    }
+
     
     /**
      * Index method
@@ -43,7 +51,10 @@ class UsersController extends AppController
                         'Messages.is_admin_read' => false
                     ]);
                 },
-            'Staffs'
+            'Staffs',
+            'ComparedImages' => function (Query $q) {
+                return $q->where(['ComparedImages.active' => false]);
+            },
         ])
         ->where([
             'Users.is_deleted' => 0
@@ -125,11 +136,13 @@ class UsersController extends AppController
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('登録しました。'));
+
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
 
+        // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
             'valueField' => 'name',
@@ -138,14 +151,15 @@ class UsersController extends AppController
             ]
         ])->toArray();
 
+        // 都道府県情報
         $prefectures = Configure::read("PREFECTURES");
+
         $param = $this->request->getQuery();
 
         $courses = Configure::read("COURSE");
 
         $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
     }
-
 
     /**
      * Edit method
@@ -409,6 +423,114 @@ class UsersController extends AppController
         
         $param = $this->request->getQuery();
         $this->set(compact('staffs', 'param'));
+    }
+
+    public function comparedImages($userId = null)
+    {
+        $this->loadModel('ComparedImages');
+
+        $query = $this->ComparedImages->find()
+            ->where(['user_id' => $userId]);
+
+        // ✅ Safe access: avoid undefined index warning
+        $param = $this->request->getQuery();
+        $active = $this->request->getQuery('active');
+
+        if ($active === '0') {
+            // Show only inactive (未送信) items
+            $query->where(['active' => false]);
+        }
+
+        $query->order(['created' => 'desc']);
+
+        $comparedImages = $this->paginate($query);
+
+        $this->set(compact('comparedImages', 'param'));
+    }
+
+
+    /**
+     * EditComment method
+     *
+     * @param string|null $id Compared Image id.
+     * @return \Cake\Http\Response|null|void Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function editComment($id = null)
+    {
+        $param = $this->request->getQuery();
+        $comparedImage = $this->ComparedImages->get($id, [
+            'contain' => [],
+        ]);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
+            if ($this->ComparedImages->save($comparedImage)) {
+                $this->Flash->success(__('コメントを更新しました。'));
+
+                return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
+            }
+            $this->Flash->error(__('コメントを更新できませんでした。'));
+        }
+        $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
+        $this->set(compact('comparedImage', 'users', 'param'));
+    }
+    
+
+    /**
+     * Delete method
+     *
+     * @param string|null $id Compared Image id.
+     * @return \Cake\Http\Response|null|void Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function deleteImage($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $comparedImage = $this->ComparedImages->get($id);
+        $filePath = $comparedImage->image;
+        $path = parse_url($filePath, PHP_URL_PATH);
+        $filename = basename($path);
+        if ($this->ComparedImages->delete($comparedImage)) {
+            if ($filePath) {
+                unlink(WWW_ROOT . "/uploads/" . $filename);
+                $this->Flash->success(__('画像が削除されました。'));
+            }
+            $this->Flash->success(__('比較画像が画像が削除されました。'));
+        } else {
+            $this->Flash->error(__('比較画像が削除されませんでした。'));
+        }
+        return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+    }
+
+    public function setActive($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $comparedImage = $this->ComparedImages->get($id, [
+            'contain' => [],
+        ]);
+        $data = [];
+        $data["active"] = 1;
+        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
+        if ($this->ComparedImages->save($comparedImage)) {
+            $this->Flash->success(__('送信完了いたしました。'));
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+        }
+    }
+
+    public function setNotActive($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $comparedImage = $this->ComparedImages->get($id, [
+            'contain' => [],
+        ]);
+        $data = [];
+        $data["active"] = 0;
+        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
+        if ($this->ComparedImages->save($comparedImage)) {
+            $this->Flash->success(__('送信取り消し完了いたしました。'));
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+        }
+
     }
 
     /**
