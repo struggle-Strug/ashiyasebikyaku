@@ -30,7 +30,7 @@
 
 <div class="card">
     <div class="card-header">
-        <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
+        <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
     </div>
     <div class="card-body">
         <?php if (!$comparedImages || count($comparedImages) == 0): ?>

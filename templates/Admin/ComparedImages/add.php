@@ -56,6 +56,15 @@
   --bg-opacity: 1;
   background-color: rgba(0, 0, 0, 0.5);
 }
+
+.uniform-image {
+  width: 100px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
 </style>
 <?= $this->Form->end() ?>
 <div style="font-size: 24px; font-weight: bold;">画像選択</div>
@@ -108,9 +117,10 @@
                                             <?php else: ?>
                                                 <div style="position: relative;" data-image="<?= $photo->image_url ?>"
                                                     data-date="<?= $photo->created ?>">
-                                                    <img src="<?= $photo->image_url ?>" class="selectElem image" style="max-width:100%;"
+                                                    <img src="<?= $photo->image_url ?>" class="selectElem image uniform-image"
                                                         data-image="<?= $photo->image_url ?>" data-date="<?= $photo->created ?>"
                                                         data-id="<?= $photo->id ?>" id="<?= $photo->id ?>">
+
                                                     <div id="mask_<?= $photo->id ?>" data-image="<?= $photo->image_url ?>"
                                                         data-date="<?= $photo->created ?>" data-id="<?= $photo->id ?>"
                                                         class="selectElem mask"
@@ -185,6 +195,7 @@
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px"
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
+                    mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                     mask.style.display = "flex"
                     mask.textContent = "アフター"
                 }
@@ -193,6 +204,7 @@
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px";
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
+                    mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                     mask.style.display = "flex"
                     mask.textContent = "ビフォー"
                 }
@@ -269,6 +281,7 @@
                         document.getElementById("subject_image_url").style.display = "block"
                         mask.style.width = document.getElementById(selectedImageInfo.subject.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.subject.id).height + "px";
+                        mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                         mask.style.display = "flex"
                         mask.textContent = "ビフォー";
                     } else {
@@ -280,6 +293,7 @@
                         document.getElementById("target_image_url").style.display = "block"
                         mask.style.width = document.getElementById(selectedImageInfo.target.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.target.id).height + "px";
+                        mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                         mask.style.display = "flex"
                         mask.textContent = "アフター"
                     } else {
