@@ -168,23 +168,23 @@
 
 <script>
 $(document).ready(function() {
-    // Scroll position management - same key as index page
+    // スクロール位置の管理 - インデックスページと同じキー
     const SCROLL_STORAGE_KEY = 'memberIndexScrollPosition';
     
-    // Function to save scroll position (matches index page functionality)
+    // スクロール位置の保存機能（インデックスページの機能に対応）
     function saveScrollPosition() {
-        // Get current scroll positions
+        // 現在のスクロール位置を取得する
         const windowScrollTop = $(window).scrollTop();
         
-        // Try to get table container scroll position if we came from index page
+        // インデックス・ページから来た場合、テーブル・コンテナのスクロール位置を取得する。
         const scrollData = {
-            tableTop: 0, // Will be restored from existing data if available
-            tableLeft: 0, // Will be restored from existing data if available
+            tableTop: 0, 
+            tableLeft: 0, 
             windowTop: windowScrollTop,
             timestamp: Date.now()
         };
         
-        // Preserve existing table scroll positions if they exist
+        // 既存のテーブルスクロール位置がある場合は、それを保持する
         const existingScrollData = sessionStorage.getItem(SCROLL_STORAGE_KEY);
         if (existingScrollData) {
             try {
@@ -192,29 +192,28 @@ $(document).ready(function() {
                 scrollData.tableTop = existingData.tableTop || 0;
                 scrollData.tableLeft = existingData.tableLeft || 0;
             } catch (e) {
-                // If parsing fails, use default values
             }
         }
         
         sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify(scrollData));
     }
     
-    // Save scroll position when clicking back button
+    // 戻るボタンをクリックしたときのスクロール位置を保存
     $('#back-btn').on('click', function() {
         saveScrollPosition();
     });
     
-    // Save scroll position when form is submitted (Register button)
+    // フォーム送信時のスクロール位置の保存（登録ボタン）
     $('#member-form').on('submit', function() {
         saveScrollPosition();
     });
     
-    // Alternative: Save scroll position when Register button is clicked
+    // 代替案 登録ボタンがクリックされたときのスクロール位置を保存する
     $('#register-btn').on('click', function() {
         saveScrollPosition();
     });
     
-    // Save scroll position before page unload
+    // ページがアンロードされる前にスクロール位置を保存する
     $(window).on('beforeunload', function() {
         saveScrollPosition();
     });
