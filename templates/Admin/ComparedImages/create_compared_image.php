@@ -1469,7 +1469,6 @@
             }
         }
 
-
         // 修正：両方のSVGを結合してダウンロード用画像を作成
         async function downloadBoard() {
             try {
@@ -1566,7 +1565,7 @@
                     }
                     
                     // コメントのテキストを描画
-                    const fontSize = window.getComputedStyle(comment).fontSize;
+                    const fontSize = parseInt(window.getComputedStyle(comment).fontSize);
                     const fontFamily = window.getComputedStyle(comment).fontFamily;
                     const lineHeight = fontSize * 1.2; // Approximate line height
                     
@@ -1948,7 +1947,7 @@
             }
             
             // rgb(r, g, b)形式から数値を抽出
-            const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+            const rgbMatch = rgb.match(/^rgb\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$$$/i);
             if (rgbMatch) {
                 const r = parseInt(rgbMatch[1], 10);
                 const g = parseInt(rgbMatch[2], 10);
