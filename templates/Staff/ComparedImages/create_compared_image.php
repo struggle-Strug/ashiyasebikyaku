@@ -281,15 +281,15 @@
             </span>
         </div>
     </div>
-</div>
-<div class="card-footer">
-        <a class="btn btn-outline-secondary"
-            href="<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'index', 'prefix' => 'Staff']); ?>"><i
+
+    <div class="card-footer">
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'add', '?' => $param]); ?>"><i
             class="fas fa-arrow-circle-left"></i> 戻る</a>
-    <span class="float-right">
-        <button type="submit" class="btn btn-primary" id="submit">保存</button>
-    </span>
-</div>
+        <span class="float-right">
+            <button type="submit" class="btn btn-primary" id="submit">保存</button>
+        </span>
+    </div>
+
 </div>
 <img src="<?= $targetImage["image_url"] ?>" style="display: none" id="target_image_url" crossorigin="anonymous" />
 <img src="<?= $subjectImage["image_url"] ?>" style="display: none" id="subject_image_url" crossorigin="anonymous" />

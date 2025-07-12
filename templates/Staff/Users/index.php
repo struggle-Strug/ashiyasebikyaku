@@ -122,9 +122,25 @@
                                 <a href="<?= $this->Url->build(['action' => 'message', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-xs">メッセージ確認</a>
                             </div>
                             <div>
-                                <?php if ($user->messages) : ?>
+                            <?php
+                                $hasUnread = false;
+                                $staffId = $staff->id;
+                                if (!empty($user->messages)) {
+                                    foreach ($user->messages as $msg) {
+                                        $readArray = is_array($msg->is_read) ? $msg->is_read : [];
+
+                                        if (!in_array($staffId, $readArray)) {
+                                            $hasUnread = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                ?>
+
+                                <?php if ($hasUnread): ?>
                                     <span class="right badge badge-danger">未読</span>
-                                <?php endif ?>
+                                <?php endif; ?>
+
                             </div>
                         </td>
                         <td nowrap>
