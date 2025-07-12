@@ -56,7 +56,7 @@
         word-break: break-words; /* break-words */
         display: flex; /* flex */
         flex-direction: column; /* flex-col */
-        justify-content: center; /* justify-center */
+        /* Removed justify-content: center; to allow JS to control vertical alignment */
         position: absolute; /* Keep this for positioning */
         z-index: 1000; /* Keep this for layering */
     }
@@ -610,7 +610,6 @@
                             commentBox.style.backgroundColor = backgroundColor;
                             commentBox.style.fontSize = fontSize + 'px'; // 現在のフォントサイズを設定
                             commentBox.style.zIndex = '1000';
-                            commentBox.style.textAlign = 'left';
                             commentBox.textContent = 'コメントを入力';
                             
                             // リサイズハンドルを追加
@@ -1160,7 +1159,6 @@
             Matrix.e += x;
             Matrix.f += y;
             targetSvg.appendChild(image_elm);
-            initImageLoad()
         }
 
         function SVGMatrixCreate(a, b, c, d, e, f) {
@@ -1288,12 +1286,59 @@
             });
         }
 
+        // New helper function to draw text with wrapping and vertical centering
+        function drawTextWithWrapping(ctx, text, x, y, maxWidth, lineHeight, textColor, fontSize, fontFamily, boxHeight, padding) {
+            ctx.font = `${fontSize}px ${fontFamily}`;
+            ctx.fillStyle = textColor;
+            ctx.textBaseline = 'top'; // Set baseline to top for consistent line height calculation
+
+            const words = text.split(' ');
+            let currentLine = '';
+            const lines = [];
+
+            // First pass: determine lines and their content
+            for (let i = 0; i < words.length; i++) {
+                const testLine = currentLine + words[i] + ' ';
+                const metrics = ctx.measureText(testLine);
+                const testWidth = metrics.width;
+
+                if (testWidth > maxWidth && i > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = words[i] + ' ';
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine.trim());
+
+            // Calculate total text height
+            const totalTextHeight = lines.length * lineHeight;
+
+            // Calculate vertical offset to center the text
+            const verticalOffset = (boxHeight - totalTextHeight - (2 * padding)) / 2; // Account for top/bottom padding
+
+            // Second pass: draw lines
+            let currentY = y + padding + verticalOffset; // Start Y with padding and vertical offset
+
+            lines.forEach(line => {
+                const textWidth = ctx.measureText(line).width;
+                const textX = x + padding + (maxWidth - textWidth) / 2; // Center horizontally within padded area
+                ctx.fillText(line, textX, currentY);
+                currentY += lineHeight;
+            });
+        }
+
         // 修正：両方のSVGを結合してプレビュー画像を作成
         async function previewImage() {
             try {
                 const leftSvg = document.getElementById('leftDrawingCanvas');
                 const rightSvg = document.getElementById('rightDrawingCanvas');
                 
+                await Promise.all([
+                    loadImage(document.getElementById("target_image_url").src),
+                    loadImage(document.getElementById("subject_image_url").src)
+                ]);
+
                 // 両方のSVGデータを取得
                 const leftSvgData = new XMLSerializer().serializeToString(leftSvg);
                 const rightSvgData = new XMLSerializer().serializeToString(rightSvg);
@@ -1361,6 +1406,7 @@
                     
                     const commentWidth = comment.offsetWidth;
                     const commentHeight = comment.offsetHeight;
+                    const padding = 16; // From .comment-box CSS: p-4 = 16px
                     
                     // コメントの背景を描画
                     ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
@@ -1382,25 +1428,36 @@
                     }
                     
                     // コメントのテキストを描画
-                    const fontSize = window.getComputedStyle(comment).fontSize;
+                    const fontSize = parseInt(window.getComputedStyle(comment).fontSize);
                     const fontFamily = window.getComputedStyle(comment).fontFamily;
-                    ctx.font = `${fontSize} ${fontFamily}`;
-                    ctx.fillStyle = window.getComputedStyle(comment).color;
-                    ctx.textBaseline = 'top';
+                    const lineHeight = fontSize * 1.2;
                     
-                    // テキストの内容を取得し、改行で分割
-                    const text = comment.innerText;
-                    const lines = text.split(/\r?\n/);
+                    const textContent = comment.innerText.trim();
+                    const placeholderContent = window.getComputedStyle(comment, ':empty::before').content;
                     
-                    // 各行のテキストを描画（単純な行分割）
-                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
-                    let yPos = commentTop + 8; // パディングの分だけオフセット
-                    ctx.textAlign = 'center'; // 中央寄せを設定
-
-                    lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos);
-                        yPos += lineHeight;
-                    });
+                    if (textContent === '' && placeholderContent !== 'none') {
+                        
+                        ctx.font = `${fontSize}px ${fontFamily}`;
+                        ctx.fillStyle = window.getComputedStyle(comment, ':empty::before').color;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(placeholderContent.replace(/['"]+/g, ''), commentLeft + commentWidth / 2, commentTop + commentHeight / 2);
+                    } else if (textContent !== '') {
+                        
+                        drawTextWithWrapping(
+                            ctx,
+                            textContent,
+                            commentLeft,
+                            commentTop,
+                            commentWidth - (2 * padding), // Max width for text, considering padding
+                            lineHeight,
+                            window.getComputedStyle(comment).color,
+                            fontSize,
+                            fontFamily,
+                            commentHeight,
+                            padding
+                        );
+                    }
                 });
 
                 // PNGとして出力
@@ -1412,25 +1469,6 @@
             }
         }
 
-        async function initImageLoad() {
-            // 両方のSVGを初期化
-            [leftSvgElm_js, rightSvgElm_js].forEach(async (svg) => {
-                var svgData = new XMLSerializer().serializeToString(svg);
-                var canvas = document.createElement("canvas");
-                canvas.width = svg.clientWidth;
-                canvas.height = svg.clientHeight;
-
-                const ctx = canvas.getContext("2d");
-                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-                const url = URL.createObjectURL(svgBlob);
-
-                const image = await loadImage(url);
-                ctx.drawImage(image, 0, 0);
-                URL.revokeObjectURL(url);
-
-                const pngDataUrl = canvas.toDataURL('image/png');
-            });
-        }
 
         // 修正：両方のSVGを結合してダウンロード用画像を作成
         async function downloadBoard() {
@@ -1438,13 +1476,16 @@
                 const leftSvg = document.getElementById('leftDrawingCanvas');
                 const rightSvg = document.getElementById('rightDrawingCanvas');
                 
+                // Both SVGs must be fully rendered with images before capturing
+                await Promise.all([
+                    loadImage(document.getElementById("target_image_url").src),
+                    loadImage(document.getElementById("subject_image_url").src)
+                ]);
+
                 const leftSvgData = new XMLSerializer().serializeToString(leftSvg);
                 const rightSvgData = new XMLSerializer().serializeToString(rightSvg);
                 
                 const commentBoxes = document.querySelectorAll('.comment-box');
-                if (commentBoxes.length > 0) {
-                    console.log('コメントボックスが見つかりました:', commentBoxes.length);
-                }
                 
                 const canvas = document.createElement("canvas");
                 
@@ -1503,6 +1544,7 @@
                     
                     const commentWidth = comment.offsetWidth;
                     const commentHeight = comment.offsetHeight;
+                    const padding = 16; // From .comment-box CSS: p-4 = 16px
                     
                     // コメントの背景を描画
                     ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
@@ -1516,7 +1558,7 @@
                         ctx.strokeRect(commentLeft, commentTop, commentWidth, commentHeight);
                     }
                     
-                    // 選択されたコメントの青い枠（outlineがある場合）
+                    // Draw blue outline for selected comment (if present)
                     if (comment.style.outline && comment.style.outline.includes('solid blue')) {
                         ctx.strokeStyle = 'blue';
                         ctx.lineWidth = 2;
@@ -1526,22 +1568,34 @@
                     // コメントのテキストを描画
                     const fontSize = window.getComputedStyle(comment).fontSize;
                     const fontFamily = window.getComputedStyle(comment).fontFamily;
-                    ctx.font = `${fontSize} ${fontFamily}`;
-                    ctx.fillStyle = window.getComputedStyle(comment).color;
-                    ctx.textBaseline = 'top';
+                    const lineHeight = fontSize * 1.2; // Approximate line height
                     
-                    // テキストの内容を取得し、改行で分割
-                    const text = comment.innerText;
-                    const lines = text.split(/\r?\n/);
-                    // 各行のテキストを描画（単純な行分割）            
-                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
-                    let yPos = commentTop + 8; // パディングの分だけオフセット
-                    ctx.textAlign = 'center'; // 中央寄せを設定
-
-                    lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos);
-                        yPos += lineHeight;
-                    });
+                    const textContent = comment.innerText.trim();
+                    const placeholderContent = window.getComputedStyle(comment, ':empty::before').content;
+                    
+                    if (textContent === '' && placeholderContent !== 'none') {
+                        
+                        ctx.font = `${fontSize}px ${fontFamily}`;
+                        ctx.fillStyle = window.getComputedStyle(comment, ':empty::before').color;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(placeholderContent.replace(/['"]+/g, ''), commentLeft + commentWidth / 2, commentTop + commentHeight / 2);
+                    } else if (textContent !== '') {
+                        
+                        drawTextWithWrapping(
+                            ctx,
+                            textContent,
+                            commentLeft,
+                            commentTop,
+                            commentWidth - (2 * padding), // Max width for text, considering padding
+                            lineHeight,
+                            window.getComputedStyle(comment).color,
+                            fontSize,
+                            fontFamily,
+                            commentHeight,
+                            padding
+                        );
+                    }
                 });
 
                 // PNGとして出力
@@ -1554,7 +1608,6 @@
 
         var previewFlag = false;
 
-        initImageLoad();
         document.getElementById("preview-btn").addEventListener("click", async function () {
             if (!previewFlag) {
                 await previewImage()
@@ -1903,6 +1956,14 @@
                 return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
             }
             
+            const rgbaMatch = rgb.match(/^rgba\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*$$$/i);
+            if (rgbaMatch) {
+                const r = parseInt(rgbaMatch[1], 10);
+                const g = parseInt(rgbaMatch[2], 10);
+                const b = parseInt(rgbaMatch[3], 10);
+                return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+            }
+
             // 変換できない場合はデフォルト値を返す
             return '#000000';
         }
