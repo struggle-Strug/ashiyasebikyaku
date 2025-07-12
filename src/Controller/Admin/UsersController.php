@@ -290,7 +290,6 @@ class UsersController extends AppController
             'Staffs'
         ])
         ->where([
-            'Messages.staff_id' => $user->staff_id,
             'Messages.user_id' => $user->id,
             'Messages.is_deleted' => 0
         ])

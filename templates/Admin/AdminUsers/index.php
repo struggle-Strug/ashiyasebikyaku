@@ -17,7 +17,7 @@
 
 <div class="card">
 <div class="card-header">
-        <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">管理者追加</a>
+        <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]); ?>" class="btn btn-outline-primary">管理者追加</a>
     </div>
     <div class="card-body">
         <div class="table-responsive-md">
@@ -41,7 +41,7 @@
         <td><?= h($admin->name) ?></td>
         <td><?= h($admin->loginid) ?></td>
         <td nowrap>
-        <a href="<?= $this->Url->build(['action' => 'edit', $admin->id]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
+        <a href="<?= $this->Url->build(['action' => 'edit', $admin->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm">編集</a>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $admin->id], ['class' => 'btn btn-outline-secondary btn-sm', 'confirm' => __('削除してよろしいですか？', $admin->id)]) ?>
                         </td>
     </tr>

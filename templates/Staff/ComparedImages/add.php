@@ -114,11 +114,17 @@
             </div>
         <?php endif ?>
         <?= $this->Form->create(null, ['type' => 'get', 'action' => 'createComparedImage']) ?>
+        <?php foreach ($param as $key => $value): ?>
+            <input type="hidden" name="<?= h($key) ?>" value="<?= h($value) ?>">
+        <?php endforeach; ?>
         <input type="text" name="target_id" id="target_id" style="display: none;"
             value="<?= $param['target_image_id'] ?>" />
         <input type="text" name="subject_id" id="subject_id" style="display: none;"
             value="<?= $param['subject_image_id'] ?>" />
         <input type="text" name="user" id="user" style="display: none;" value="<?= $param['user_id'] ?>" />
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>">
+            <i class="fas fa-arrow-circle-left"></i> 戻る
+        </a>
         <button type="submit" class="btn btn-primary" style="">画像作成ページへ</button>
         <?= $this->Form->end() ?>
     </div>
