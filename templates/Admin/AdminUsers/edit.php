@@ -22,6 +22,9 @@
     </div>
     <!-- /.card-body -->
     <div class="card-footer">
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>">
+            <i class="fas fa-arrow-circle-left"></i> 戻る
+        </a>
         <span class="float-right">
             <button type="submit" class="btn btn-primary">登録</button>
         </span>

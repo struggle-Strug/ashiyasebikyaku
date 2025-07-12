@@ -128,7 +128,9 @@ class AdminUsersController extends AppController
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
         $roles = Configure::read('ADMIN_ROLES');
-        $this->set(compact('adminUser', 'roles'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('adminUser', 'roles', 'param'));
     }
 
     use MailerAwareTrait;
@@ -145,7 +147,9 @@ class AdminUsersController extends AppController
             $this->Flash->error(__('管理者を追加できませんでした。'));
         }
         $roles = Configure::read('ADMIN_ROLES');
-        $this->set(compact('adminUser', 'roles'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('adminUser', 'roles', 'param'));
     }
 
     public function delete($id = null)

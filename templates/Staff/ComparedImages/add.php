@@ -36,6 +36,18 @@
     </div>
 </div>
 <?= $this->Form->end() ?>
+<style>
+
+.uniform-image {
+  width: 100px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+</style>
+
 <div style="font-size: 24px; font-weight: bold;">画像選択</div>
 <div class="card">
     <div class="card-body">
@@ -82,7 +94,7 @@
                                             <?php else: ?>
                                                 <div style="position: relative;" data-image="<?= $photo->image_url ?>"
                                                     data-date="<?= $photo->created ?>">
-                                                    <img src="<?= $photo->image_url ?>" class="selectElem image" style="max-width:100%;"
+                                                    <img src="<?= $photo->image_url ?>" class="selectElem image uniform-image" style="max-width:100%;"
                                                         data-image="<?= $photo->image_url ?>" data-date="<?= $photo->created ?>"
                                                         data-id="<?= $photo->id ?>" id="<?= $photo->id ?>">
                                                     <div id="mask_<?= $photo->id ?>" data-image="<?= $photo->image_url ?>"
@@ -102,11 +114,17 @@
             </div>
         <?php endif ?>
         <?= $this->Form->create(null, ['type' => 'get', 'action' => 'createComparedImage']) ?>
+        <?php foreach ($param as $key => $value): ?>
+            <input type="hidden" name="<?= h($key) ?>" value="<?= h($value) ?>">
+        <?php endforeach; ?>
         <input type="text" name="target_id" id="target_id" style="display: none;"
             value="<?= $param['target_image_id'] ?>" />
         <input type="text" name="subject_id" id="subject_id" style="display: none;"
             value="<?= $param['subject_image_id'] ?>" />
         <input type="text" name="user" id="user" style="display: none;" value="<?= $param['user_id'] ?>" />
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>">
+            <i class="fas fa-arrow-circle-left"></i> 戻る
+        </a>
         <button type="submit" class="btn btn-primary" style="">画像作成ページへ</button>
         <?= $this->Form->end() ?>
     </div>
@@ -153,6 +171,7 @@
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px"
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
+                    mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                     mask.style.display = "flex"
                     mask.textContent = "アフター"
                 }
@@ -161,6 +180,7 @@
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px";
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
+                    mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                     mask.style.display = "flex"
                     mask.textContent = "ビフォー"
                 }
@@ -237,6 +257,7 @@
                         document.getElementById("subject_image_url").style.display = "block"
                         mask.style.width = document.getElementById(selectedImageInfo.subject.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.subject.id).height + "px";
+                        mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                         mask.style.display = "flex"
                         mask.textContent = "ビフォー";
                     } else {
@@ -249,6 +270,7 @@
                         mask.style.width = document.getElementById(selectedImageInfo.target.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.target.id).height + "px";
                         mask.style.display = "flex"
+                        mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                         mask.textContent = "アフター"
                     } else {
                         document.getElementById("target_image_url").style.display = "none"

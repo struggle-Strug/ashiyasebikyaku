@@ -129,7 +129,7 @@ class MessagesController extends AppController
 
             if ($this->Messages->save($message)) {
                 $this->Flash->success(__('メッセージを送信しました。'));
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_roperation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
                 $staff = $this->Staffs->find('all')
                     ->where([
                         'id' => $this->Authentication->getIdentity()->staff_id,
@@ -137,7 +137,7 @@ class MessagesController extends AppController
                     ->first();
                 if ($staff) {
                     if ($staff->email) {
-                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl, 'today' => $formattedDateTime]]);
+                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】美脚セルフデザインプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl, 'today' => $formattedDateTime]]);
                     } else {
                         $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
                     }
