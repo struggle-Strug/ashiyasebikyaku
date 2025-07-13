@@ -137,9 +137,9 @@ class UsersController extends AppController
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('登録しました。'));
 
-                $page = $this->request->getQuery('page');
+                $param = $this->request->getQuery();
 
-                return $this->redirect(['action' => 'index', '?' => ['page' => $page]]);
+                return $this->redirect(['action' => 'index', '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
@@ -195,9 +195,9 @@ class UsersController extends AppController
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('更新しました。'));
 
-                $page = $this->request->getQuery('page');
+                $param = $this->request->getQuery();
 
-                return $this->redirect(['action' => 'index', '?' => ['page' => $page]]);
+                return $this->redirect(['action' => 'index', '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
