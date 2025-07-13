@@ -79,7 +79,10 @@
                                             <?= $this->Form->button('削除', ['class' => 'btn btn-sm btn-outline-danger delete-button', 'style' => 'border-radius: 20px;']) ?>
                                         <?= $this->Form->end() ?>
                                     </div>
-                                    <?= $this->Link->linkify(h($message->message)) ?>
+                                    <div style="padding-top: 14px;">
+
+                                        <?= $this->Link->linkify(h($message->message)) ?>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -162,6 +165,13 @@
 .message-text {
     margin-top: 10px;
 }
+
+.delete-button {
+    font-size: 1rem;
+    padding: 4px 6px;
+    line-height: 1.2;
+}
+
 </style>
 
 <script>
