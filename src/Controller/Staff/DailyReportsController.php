@@ -128,13 +128,16 @@ class DailyReportsController extends AppController
         $dailyReport = $this->DailyReports->get($id, [
             'contain' => ['Users'], // optional if you want user data
         ]);
+
+        $param = $this->request->getQuery();
         
         if ($this->request->is(['post', 'put', 'patch'])) {
             $dailyReport = $this->DailyReports->patchEntity($dailyReport, $this->request->getData());
             $dailyReport->comment_update = date('Y-m-d H:i:s');
             if ($this->DailyReports->save($dailyReport)) {
                 $this->Flash->success(__('スタッフコメントを保存しました。'));
-                return $this->redirect(['action' => 'index', '?' => $this->request->getQuery()]);
+
+                return $this->redirect(['action' => 'index', '?' => $param]);
             }
             $this->Flash->error(__('保存に失敗しました。もう一度お試しください。'));
         }
