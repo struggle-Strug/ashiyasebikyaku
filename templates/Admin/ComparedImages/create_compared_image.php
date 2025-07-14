@@ -745,7 +745,7 @@
                             
                             // 作成直後に選択状態にする
                             selectedComment = commentBox;
-                            commentBox.style.outline = '2px solid blue';
+                            selectedComment.style.outline = '2px solid blue';
                             commentBox.focus();
                             
                             // テキスト全選択
@@ -1051,7 +1051,7 @@
                 "fill": "none",
                 "stroke": browserDrawData.stroke,
                 "stroke-width": browserDrawData.strokeSize,
-                "stroke-linecap": "round"
+                "stroke-linecap": browserDrawData["stroke-linecap"]
             };
             
             for (let key in path_attr) {
@@ -1287,42 +1287,41 @@
         }
 
         // New helper function to draw text with wrapping and vertical centering
+        
         function drawTextWithWrapping(ctx, text, x, y, maxWidth, lineHeight, textColor, fontSize, fontFamily, boxHeight, padding) {
             ctx.font = `${fontSize}px ${fontFamily}`;
             ctx.fillStyle = textColor;
-            ctx.textBaseline = 'top'; // Set baseline to top for consistent line height calculation
+            ctx.textBaseline = 'top';
 
-            const words = text.split(' ');
-            let currentLine = '';
-            const lines = [];
+            const explicitLines = text.split('\n'); // Split by explicit newlines first
+            const wrappedLines = [];
 
-            // First pass: determine lines and their content
-            for (let i = 0; i < words.length; i++) {
-                const testLine = currentLine + words[i] + ' ';
-                const metrics = ctx.measureText(testLine);
-                const testWidth = metrics.width;
+            explicitLines.forEach(explicitLine => {
+                const words = explicitLine.split(' ');
+                let currentLine = '';
+                for (let i = 0; i < words.length; i++) {
+                    const testLine = currentLine + words[i] + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    const testWidth = metrics.width;
 
-                if (testWidth > maxWidth && i > 0) {
-                    lines.push(currentLine.trim());
-                    currentLine = words[i] + ' ';
-                } else {
-                    currentLine = testLine;
+                    if (testWidth > maxWidth && i > 0) {
+                        wrappedLines.push(currentLine.trim());
+                        currentLine = words[i] + ' ';
+                    } else {
+                        currentLine = testLine;
+                    }
                 }
-            }
-            lines.push(currentLine.trim());
+                wrappedLines.push(currentLine.trim());
+            });
 
-            // Calculate total text height
-            const totalTextHeight = lines.length * lineHeight;
+            const totalTextHeight = wrappedLines.length * lineHeight;
+            const verticalOffset = (boxHeight - totalTextHeight - (2 * padding)) / 2;
 
-            // Calculate vertical offset to center the text
-            const verticalOffset = (boxHeight - totalTextHeight - (2 * padding)) / 2; // Account for top/bottom padding
+            let currentY = y + padding + verticalOffset;
 
-            // Second pass: draw lines
-            let currentY = y + padding + verticalOffset; // Start Y with padding and vertical offset
-
-            lines.forEach(line => {
+            wrappedLines.forEach(line => {
                 const textWidth = ctx.measureText(line).width;
-                const textX = x + padding + (maxWidth - textWidth) / 2; // Center horizontally within padded area
+                const textX = x + padding + (maxWidth - textWidth) / 2;
                 ctx.fillText(line, textX, currentY);
                 currentY += lineHeight;
             });
