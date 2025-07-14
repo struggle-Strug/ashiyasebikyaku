@@ -81,7 +81,7 @@
         align-items: center;
         gap: 10px;
     }
-
+ 
     .color-picker-label {
         font-size: 12px;
         margin-right: 5px;
@@ -1557,7 +1557,7 @@
                         ctx.strokeRect(commentLeft, commentTop, commentWidth, commentHeight);
                     }
                     
-                    // Draw blue outline for selected comment (if present)
+                    // 選択されたコメントの青い枠（outlineがある場合）
                     if (comment.style.outline && comment.style.outline.includes('solid blue')) {
                         ctx.strokeStyle = 'blue';
                         ctx.lineWidth = 2;
@@ -1947,19 +1947,11 @@
             }
             
             // rgb(r, g, b)形式から数値を抽出
-            const rgbMatch = rgb.match(/^rgb\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$$$/i);
+            const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
             if (rgbMatch) {
                 const r = parseInt(rgbMatch[1], 10);
                 const g = parseInt(rgbMatch[2], 10);
                 const b = parseInt(rgbMatch[3], 10);
-                return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-            }
-            
-            const rgbaMatch = rgb.match(/^rgba\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*$$$/i);
-            if (rgbaMatch) {
-                const r = parseInt(rgbaMatch[1], 10);
-                const g = parseInt(rgbaMatch[2], 10);
-                const b = parseInt(rgbaMatch[3], 10);
                 return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
             }
 

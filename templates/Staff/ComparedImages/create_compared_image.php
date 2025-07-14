@@ -56,7 +56,7 @@
     word-break: break-words; /* break-words */
     display: flex; /* flex */
     flex-direction: column; /* flex-col */
-    justify-content: center; /* justify-center */
+    /* Removed justify-content: center; to allow JS to control vertical alignment */
     position: absolute; /* Keep this for positioning */
     z-index: 1000; /* Keep this for layering */
 }
@@ -333,10 +333,10 @@ $(function () {
     var tempLine = null;
     var textColor = "#000000";
     var backgroundColor = "#ffffff";
-        var lineColor = "#ff0000"; // 初期値
-        var lineWidth = 3; // 固定値として残す
-        var selectedComment = null; // 選択中のコメント要素
-        var fontSize = 14; // デフォルトのフォントサイズ
+    var lineColor = "#ff0000"; // 初期値
+    var lineWidth = 3; // 固定値として残す
+    var selectedComment = null; // 選択中のコメント要素
+    var fontSize = 14; // デフォルトのフォントサイズ
 
     // 直線移動のための変数を追加
     var isMovingLine = false;
@@ -417,7 +417,7 @@ $(function () {
 
         document.getElementById('background-color').addEventListener('change', function (e) {
         backgroundColor = e.target.value;
-            // 選択中のコメントがあれば、その背景色を変更
+        // 選択中のコメントがあれば、その背景色を変更
         if (selectedComment) {
             selectedComment.style.backgroundColor = backgroundColor;
         }
@@ -611,7 +611,7 @@ $(function () {
                         commentBox.style.top = (clickY - svgRect.top) + 'px';
                         commentBox.style.color = textColor;
                         commentBox.style.backgroundColor = backgroundColor;
-                            commentBox.style.fontSize = fontSize + 'px'; // 現在のフォントサイズを設定
+                        commentBox.style.fontSize = fontSize + 'px'; // 現在のフォントサイズを設定
                         commentBox.style.zIndex = '1000';
                         commentBox.textContent = 'コメントを入力';
                         
@@ -624,67 +624,67 @@ $(function () {
                         resizeHandle.style.transform = 'translate(50%, 50%)';
                         
                         // コメントボックスをクリックしたときの処理
-                            commentBox.addEventListener('click', function (e) {
-                            e.stopPropagation();
-                            
-                                // 既存の選択を解除
-                            if (selectedComment && selectedComment !== commentBox) {
-                                selectedComment.style.outline = 'none';
-                            }
-                            
-                                // このコメントを選択状態にする
-                            selectedComment = commentBox;
-                            selectedComment.style.outline = '2px solid blue';
-                            
-                                // カラーピッカーの値を更新
-                            document.getElementById('text-color').value = rgbToHex(window.getComputedStyle(commentBox).color);
-                            document.getElementById('background-color').value = rgbToHex(window.getComputedStyle(commentBox).backgroundColor);
-                            
-                                // フォントサイズの値を更新
-                            const currentFontSize = parseInt(window.getComputedStyle(commentBox).fontSize);
-                            fontSize = currentFontSize;
-                            updateFontSizeDisplay();
-                            
-                                // コメントツールを選択状態にする
-                            document.querySelectorAll('.tool-button').forEach(b => {
-                                b.classList.remove('active');
-                                b.classList.remove('btn-primary');
-                                b.classList.add('btn-outline-secondary');
-                            });
-                            const commentButton = document.getElementById('comment-add');
-                            commentButton.classList.add('active');
-                            commentButton.classList.remove('btn-outline-secondary');
-                            commentButton.classList.add('btn-primary');
-                            currentTool = 'comment-add';
-                            
-                                // カラーピッカーとフォントサイズツールを表示
-                            document.getElementById('comment-color-picker').style.display = 'flex';
-                            document.getElementById('line-color-picker').style.display = 'none';
-                            document.getElementById('font-size-tools').style.display = 'flex';
+                        commentBox.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        
+                            // 既存の選択を解除
+                        if (selectedComment && selectedComment !== commentBox) {
+                            selectedComment.style.outline = 'none';
+                        }
+                        
+                        // このコメントを選択状態にする
+                        selectedComment = commentBox;
+                        selectedComment.style.outline = '2px solid blue';
+                        
+                        // カラーピッカーの値を更新
+                        document.getElementById('text-color').value = rgbToHex(window.getComputedStyle(commentBox).color);
+                        document.getElementById('background-color').value = rgbToHex(window.getComputedStyle(commentBox).backgroundColor);
+                        
+                        // フォントサイズの値を更新
+                        const currentFontSize = parseInt(window.getComputedStyle(commentBox).fontSize);
+                        fontSize = currentFontSize;
+                        updateFontSizeDisplay();
+                        
+                        // コメントツールを選択状態にする
+                        document.querySelectorAll('.tool-button').forEach(b => {
+                            b.classList.remove('active');
+                            b.classList.remove('btn-primary');
+                            b.classList.add('btn-outline-secondary');
                         });
+                        const commentButton = document.getElementById('comment-add');
+                        commentButton.classList.add('active');
+                        commentButton.classList.remove('btn-outline-secondary');
+                        commentButton.classList.add('btn-primary');
+                        currentTool = 'comment-add';
+                        
+                        // カラーピッカーとフォントサイズツールを表示
+                        document.getElementById('comment-color-picker').style.display = 'flex';
+                        document.getElementById('line-color-picker').style.display = 'none';
+                        document.getElementById('font-size-tools').style.display = 'flex';
+                    });
                         
                         // ドラッグ機能の実装
                         let isDragging = false;
                         let startDragX, startDragY;
                         let startLeft, startTop;
                         
-                            commentBox.addEventListener('mousedown', function (e) {
-                                // リサイズハンドルでの操作時は処理しない
-                            if (e.target === resizeHandle) return;
-                            
-                            isDragging = true;
-                            startDragX = e.clientX;
-                            startDragY = e.clientY;
-                            startLeft = parseInt(commentBox.style.left) || 0;
-                            startTop = parseInt(commentBox.style.top) || 0;
-                            
-                                // ドラッグ中のイベント
-                            document.addEventListener('mousemove', dragMove);
-                            document.addEventListener('mouseup', dragEnd);
-                            
-                                // カーソルをドラッグ形式に変更
-                            commentBox.style.cursor = 'grabbing';
-                        });
+                        commentBox.addEventListener('mousedown', function (e) {
+                            // リサイズハンドルでの操作時は処理しない
+                        if (e.target === resizeHandle) return;
+                        
+                        isDragging = true;
+                        startDragX = e.clientX;
+                        startDragY = e.clientY;
+                        startLeft = parseInt(commentBox.style.left) || 0;
+                        startTop = parseInt(commentBox.style.top) || 0;
+                        
+                            // ドラッグ中のイベント
+                        document.addEventListener('mousemove', dragMove);
+                        document.addEventListener('mouseup', dragEnd);
+                        
+                            // カーソルをドラッグ形式に変更
+                        commentBox.style.cursor = 'grabbing';
+                    });
                         
                         function dragMove(e) {
                             if (!isDragging) return;
@@ -1164,7 +1164,6 @@ $(function () {
         Matrix.e += x;
         Matrix.f += y;
         targetSvg.appendChild(image_elm);
-        initImageLoad()
     }
 
     function SVGMatrixCreate(a, b, c, d, e, f) {
@@ -1292,11 +1291,58 @@ $(function () {
         });
     }
 
+    // New helper function to draw text with wrapping and vertical centering
+    function drawTextWithWrapping(ctx, text, x, y, maxWidth, lineHeight, textColor, fontSize, fontFamily, boxHeight, padding) {
+        ctx.font = `${fontSize}px ${fontFamily}`;
+        ctx.fillStyle = textColor;
+        ctx.textBaseline = 'top'; // Set baseline to top for consistent line height calculation
+
+        const words = text.split(' ');
+        let currentLine = '';
+        const lines = [];
+
+        // First pass: determine lines and their content
+        for (let i = 0; i < words.length; i++) {
+            const testLine = currentLine + words[i] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+
+            if (testWidth > maxWidth && i > 0) {
+                lines.push(currentLine.trim());
+                currentLine = words[i] + ' ';
+            } else {
+                currentLine = testLine;
+            }
+        }
+        lines.push(currentLine.trim());
+
+        // Calculate total text height
+        const totalTextHeight = lines.length * lineHeight;
+
+        // Calculate vertical offset to center the text
+        const verticalOffset = (boxHeight - totalTextHeight - (2 * padding)) / 2; // Account for top/bottom padding
+
+        // Second pass: draw lines
+        let currentY = y + padding + verticalOffset; // Start Y with padding and vertical offset
+
+        lines.forEach(line => {
+            const textWidth = ctx.measureText(line).width;
+            const textX = x + padding + (maxWidth - textWidth) / 2; // Center horizontally within padded area
+            ctx.fillText(line, textX, currentY);
+            currentY += lineHeight;
+        });
+    }
+
     // 修正：両方のSVGを結合してプレビュー画像を作成
     async function previewImage() {
         try {
             const leftSvg = document.getElementById('leftDrawingCanvas');
             const rightSvg = document.getElementById('rightDrawingCanvas');
+
+            await Promise.all([
+                loadImage(document.getElementById("target_image_url").src),
+                loadImage(document.getElementById("subject_image_url").src)
+            ]);
             
             // 両方のSVGデータを取得
             const leftSvgData = new XMLSerializer().serializeToString(leftSvg);
@@ -1365,6 +1411,7 @@ $(function () {
                 
                 const commentWidth = comment.offsetWidth;
                 const commentHeight = comment.offsetHeight;
+                const padding = 16; // From .comment-box CSS: p-4 = 16px
                 
                 // コメントの背景を描画
                 ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
@@ -1386,25 +1433,36 @@ $(function () {
                 }
                 
                 // コメントのテキストを描画
-                const fontSize = window.getComputedStyle(comment).fontSize;
+                const fontSize = parseInt(window.getComputedStyle(comment).fontSize);
                 const fontFamily = window.getComputedStyle(comment).fontFamily;
-                ctx.font = `${fontSize} ${fontFamily}`;
-                ctx.fillStyle = window.getComputedStyle(comment).color;
-                ctx.textBaseline = 'top';
+                const lineHeight = fontSize * 1.2;
                 
-                    // テキストの内容を取得し、改行で分割
-                const text = comment.innerText;
-                const lines = text.split(/\r?\n/);
+                const textContent = comment.innerText.trim();
+                const placeholderContent = window.getComputedStyle(comment, ':empty::before').content;
                 
-                    // 各行のテキストを描画（単純な行分割）
-                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
-                    let yPos = commentTop + 8; // パディングの分だけオフセット
+                if (textContent === '' && placeholderContent !== 'none') {
                     
-                    ctx.textAlign = 'center'; // 中央寄せを設定
-                lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos); // パディングの分だけオフセット
-                    yPos += lineHeight;
-                });
+                    ctx.font = `${fontSize}px ${fontFamily}`;
+                    ctx.fillStyle = window.getComputedStyle(comment, ':empty::before').color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(placeholderContent.replace(/['"]+/g, ''), commentLeft + commentWidth / 2, commentTop + commentHeight / 2);
+                } else if (textContent !== '') {
+                    
+                    drawTextWithWrapping(
+                        ctx,
+                        textContent,
+                        commentLeft,
+                        commentTop,
+                        commentWidth - (2 * padding), // Max width for text, considering padding
+                        lineHeight,
+                        window.getComputedStyle(comment).color,
+                        fontSize,
+                        fontFamily,
+                        commentHeight,
+                        padding
+                    );
+                }
             });
 
             // PNGとして出力
@@ -1416,39 +1474,22 @@ $(function () {
         }
     }
 
-    async function initImageLoad() {
-        // 両方のSVGを初期化
-        [leftSvgElm_js, rightSvgElm_js].forEach(async (svg) => {
-            var svgData = new XMLSerializer().serializeToString(svg);
-            var canvas = document.createElement("canvas");
-            canvas.width = svg.clientWidth;
-            canvas.height = svg.clientHeight;
-
-            const ctx = canvas.getContext("2d");
-            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-            const url = URL.createObjectURL(svgBlob);
-
-            const image = await loadImage(url);
-            ctx.drawImage(image, 0, 0);
-            URL.revokeObjectURL(url);
-
-            const pngDataUrl = canvas.toDataURL('image/png');
-        });
-    }
-
     // 修正：両方のSVGを結合してダウンロード用画像を作成
     async function downloadBoard() {
         try {
             const leftSvg = document.getElementById('leftDrawingCanvas');
             const rightSvg = document.getElementById('rightDrawingCanvas');
+
+            // Both SVGs must be fully rendered with images before capturing
+            await Promise.all([
+                loadImage(document.getElementById("target_image_url").src),
+                loadImage(document.getElementById("subject_image_url").src)
+            ]);
             
             const leftSvgData = new XMLSerializer().serializeToString(leftSvg);
             const rightSvgData = new XMLSerializer().serializeToString(rightSvg);
             
             const commentBoxes = document.querySelectorAll('.comment-box');
-            if (commentBoxes.length > 0) {
-                console.log('コメントボックスが見つかりました:', commentBoxes.length);
-            }
             
             const canvas = document.createElement("canvas");
             
@@ -1466,7 +1507,7 @@ $(function () {
             canvas.style.width = (leftWidth + rightWidth) + "px";
             canvas.style.height = maxHeight + "px";
 
-                // 2Dコンテキストを取得して高解像度対応
+            // 2Dコンテキストを取得して高解像度対応
             const ctx = canvas.getContext("2d");
             ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
             
@@ -1509,6 +1550,7 @@ $(function () {
                 
                 const commentWidth = comment.offsetWidth;
                 const commentHeight = comment.offsetHeight;
+                const padding = 16; // From .comment-box CSS: p-4 = 16px
                 
                 // コメントの背景を描画
                 ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
@@ -1530,26 +1572,36 @@ $(function () {
                 }
                 
                 // コメントのテキストを描画
-                const fontSize = window.getComputedStyle(comment).fontSize;
+                const fontSize = parseInt(window.getComputedStyle(comment).fontSize);
                 const fontFamily = window.getComputedStyle(comment).fontFamily;
-                ctx.font = `${fontSize} ${fontFamily}`;
-                ctx.fillStyle = window.getComputedStyle(comment).color;
-                ctx.textBaseline = 'top';
+                const lineHeight = fontSize * 1.2; // Approximate line height
                 
-                    // テキストの内容を取得し、改行で分割
-                const text = comment.innerText;
-                const lines = text.split(/\r?\n/);
+                const textContent = comment.innerText.trim();
+                const placeholderContent = window.getComputedStyle(comment, ':empty::before').content;
                 
-                    // 各行のテキストを描画（単純な行分割）
-                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
-                    let yPos = commentTop + 8; // パディングの分だけオフセット
+                if (textContent === '' && placeholderContent !== 'none') {
                     
-                    ctx.textAlign = 'center'; // 中央寄せを設定
-
-                lines.forEach(line => {
-                        ctx.fillText(line, commentLeft + commentWidth / 2, yPos); // パディングの分だけオフセット
-                    yPos += lineHeight;
-                });
+                    ctx.font = `${fontSize}px ${fontFamily}`;
+                    ctx.fillStyle = window.getComputedStyle(comment, ':empty::before').color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(placeholderContent.replace(/['"]+/g, ''), commentLeft + commentWidth / 2, commentTop + commentHeight / 2);
+                } else if (textContent !== '') {
+                    
+                    drawTextWithWrapping(
+                        ctx,
+                        textContent,
+                        commentLeft,
+                        commentTop,
+                        commentWidth - (2 * padding), // Max width for text, considering padding
+                        lineHeight,
+                        window.getComputedStyle(comment).color,
+                        fontSize,
+                        fontFamily,
+                        commentHeight,
+                        padding
+                    );
+                }
             });
 
             // PNGとして出力
@@ -1562,7 +1614,6 @@ $(function () {
 
     var previewFlag = false;
 
-    initImageLoad();
     document.getElementById("preview-btn").addEventListener("click", async function () {
         if (!previewFlag) {
             await previewImage()
@@ -1900,8 +1951,8 @@ $(function () {
             return rgb;
         }
         
-            // rgb(r, g, b)形式から数値を抽出
-            const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+        // rgb(r, g, b)形式から数値を抽出
+        const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
         if (rgbMatch) {
             const r = parseInt(rgbMatch[1], 10);
             const g = parseInt(rgbMatch[2], 10);
