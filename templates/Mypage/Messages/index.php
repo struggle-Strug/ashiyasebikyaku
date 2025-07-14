@@ -177,6 +177,10 @@
     line-height: 1.2;
 }
 
+.self .msg {
+    min-width: 180px;
+}
+
 </style>
 
 <script>
