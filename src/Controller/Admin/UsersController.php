@@ -8,6 +8,7 @@ use Cake\I18n\Time;
 use Cake\ORM\Query;
 use Cake\Core\Configure;
 use DateTime;
+use PHPUnit\TextUI\CliArguments\Configuration;
 
 /**
  * Users Controller
@@ -515,6 +516,324 @@ class UsersController extends AppController
     }
 
     /**
+     * 
+     *
+     * @param string|null $id user id.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function customerInformations($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
+    }
+
+    public function customerMain($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            $user = $this->Users->patchEntity($user, $data);
+
+            if ($this->Users->save($user)) {
+                $this->Flash->success(__('更新しました。'));
+
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+        }
+
+        // スタッフを配列で取得
+        $staffs = $this->Users->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => [
+                'is_deleted' => 0
+            ]
+        ])->toArray();
+
+        // 都道府県情報
+        $prefectures = Configure::read("PREFECTURES");
+
+        $param = $this->request->getQuery();
+
+        $courses = Configure::read("COURSE");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
+    }
+
+    public function habits($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mockUserData = [
+            'occupation' => '専業主婦 / 営業 / 販売業 / 看護師 等々',
+            'eating_habits' => '朝食抜きが多い、夜に炭水化物を多く摂る',
+            'sleep' => '平均5～6時間、入眠しにくいことがある',
+            'stress_factors' => '仕事（事務職・残業あり）、肩こり・眼精疲労',
+            'exercise_history' => '中学までバスケ、以降はほぼなし',
+            'medical_history' => '腰痛経験あり（2018年）',
+            'other_notes' => '月経前の浮腫・不調あり、冷え性、柔軟性低い'
+        ];
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'mockUserData'));
+    }
+
+    public function purpose($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mockUserData = [
+            'email' => 'aaaaaa@bbbbb.co.jp',
+            'name' => '富田敦子',
+            'current_concerns_appearance' => '反腰、ガニ股(立つと左足軸で右足休めの姿勢に無意識になる)、膝裏曲っていてO脚、猫背、巻き肩、垂尻、お腹ポッコリ、二重顎、右脚指頭(人差し指・中指・くすり指)上部にタコ、左右足裏親指と人差し指の間にタコ、左右足小指側面、タコ、左右足くすり指と小指',
+            'current_concerns_function' => '腰椎椎間板ヘルニア・変形・すべり・狭窄と頸椎狭窄による腰痛、背中痛、首・肩凝り、坐骨神経痛、脚痺れ、膝・股関節・骨盤痛、頭痛、めまい、耳鳴り、耳痛。不眠（目覚ましより先に起きる）、腰痛で仰向けで眠れない。又は無意識に膝立てて寝て眠り浅く1日中眠気ある。食い縛り(夜はマウスピース使用)、食事で座っていても、料理で立っていて、外出で歩いていても腰痛',
+            'goal_appearance' => '真直ぐな足でまっすぐ歩いている。お尻が上がっている。足指が真直ぐになってきちんと開けるようになっている。肩が下がって、姿勢が真直ぐになっている。お腹真直ぐ、顎の周りがすっきりしている。程良い筋肉がある',
+            'goal_function' => '全ての痛みが無い身体。疲れ知らずで体力有る。膝を立てなくても眠れる。食い縛り無くなってマウスピース不要になる。生き生きしてキラキラして勢いがあってとても元気。食いしばりがなく、眠れ',
+            'future_self_image' => 'ハンドメイドでブランド立ち上げ。受注が多く入り、お客様に喜んでもらって私も嬉しく笑顔が絶えず、毎日楽しくて仕方がない。時間に追われる生活ではなく、ゆっくりとした自然と共存する心豊かなのんびりとした生活。',
+            'next_two_weeks_work' => '脳バグ探し',
+            'consulting_topics' => '6月いっぱいまで休職中で、朝起きて直ぐローラーとボールでストレッチして、仙骨のワークと足首のワーク（インスタでアップされているもの）をした後、理学療法士伝授のリハビリ体操(軽い筋トレ含む)を1時間ほどしない動けない状態です。また、時間は決まっていませんが、公園に行って裸足歩きをしたり、鉄棒で股関節の刺激をしたり、うんていにぶら下がって脇伸ばしをしたりしています。あと、週一でヨガ'
+        ];
+        
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'mockUserData'));
+    }
+
+    public function bodyData($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mockUserData = [
+            [
+                'date' => '2025/05/01',
+                'ankle' => '◯',
+                'instep' => '◯',
+                'vertical_arch' => '△',
+                'horizontal_arch' => '✕',
+                'toes' => '✕',
+                'note' => ''
+            ],
+            [
+                'date' => '2025/05/20',
+                'ankle' => '◯',
+                'instep' => '△',
+                'vertical_arch' => '△',
+                'horizontal_arch' => '✕',
+                'toes' => '✕',
+                'note' => ''
+            ],
+            [
+                'date' => '2025/06/10',
+                'ankle' => '◯',
+                'instep' => '◯',
+                'vertical_arch' => '△',
+                'horizontal_arch' => '✕',
+                'toes' => '✕',
+                'note' => ''
+            ],
+            [
+                'date' => '2025/06/30',
+                'ankle' => '◯',
+                'instep' => '◯',
+                'vertical_arch' => '△',
+                'horizontal_arch' => '△',
+                'toes' => '✕',
+                'note' => ''
+            ],
+            [
+                'date' => '2025/07/20',
+                'ankle' => '◯',
+                'instep' => '◯',
+                'vertical_arch' => '△',
+                'horizontal_arch' => '△',
+                'toes' => '✕',
+                'note' => '寝指の改善が進まず'
+            ],
+            [
+                'date' => '2025/08/10',
+                'ankle' => '◎',
+                'instep' => '◎',
+                'vertical_arch' => '◯',
+                'horizontal_arch' => '◯',
+                'toes' => '△',
+                'note' => ''
+            ],
+            [
+                'date' => '2025/08/30',
+                'ankle' => '◎',
+                'instep' => '◎',
+                'vertical_arch' => '◯',
+                'horizontal_arch' => '◯',
+                'toes' => '△',
+                'note' => ''
+            ],
+        ];
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'mockUserData'));
+    }
+
+    public function addBodyData($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $param = $this->request->getQuery();
+
+        $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
+
+        $this->set(compact('user', 'param', 'bodyDataOptions'));
+    }
+
+    public function mention($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mockUserData = [
+            'personality_tendency' => '真面目、完璧主義。失敗すると落ち込みやすい',
+            'motivation_source' => '効果を数値で見るとやる気が出る。写真比較も◎',
+            'dropout_risk' => '忙しさで通えなくなったときの自己嫌悪でフェードアウト傾向あり'
+        ];
+        
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'mockUserData'));
+    }
+
+    public function consultHistory($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mockUserData = [
+            [
+                'date' => '2025/05/01',
+                'category' => '実践レッスン',
+                'theme' => '歩き方（仙骨ウォーク）',
+                'instruction' => '足の踏み方指導',
+                'note' => '親指を潰して踏むと膝が痛くなるが、足裏の正しい使い方がわかれば膝が痛くなることが体感できた',
+                'next_step' => '足の踏み方が正しくできているか確認し、膝の痛みが緩和したか本人の体感を確認する',
+                'instructor' => 'SHOCO'
+            ],
+            [
+                'date' => '2025/05/15',
+                'category' => '実践レッスン',
+                'theme' => '下半身トレーニング（基礎）',
+                'instruction' => '膝内側に入る癖あり。鏡で都度修正',
+                'note' => '',
+                'next_step' => '',
+                'instructor' => 'FUKUCHAN'
+            ],
+            [
+                'date' => '2025/06/01',
+                'category' => '実践レッスン',
+                'theme' => '食事アドバイスと振り返り面談',
+                'instruction' => '食事記録アプリ導入済、前回とほぼ様子',
+                'note' => '',
+                'next_step' => '',
+                'instructor' => 'SHOCO'
+            ],
+            [
+                'date' => '2025/06/07',
+                'category' => '脳バグレッスン',
+                'theme' => '',
+                'instruction' => '小指と美脚の関係性を学習',
+                'note' => 'しっかり理解できた。膝痛で階段できない',
+                'next_step' => '膝の関節ロックを解消',
+                'instructor' => 'YUMICO'
+            ],
+            [
+                'date' => '2025/06/16',
+                'category' => '個人コンサル',
+                'theme' => '',
+                'instruction' => '写真診断の結果、ワークの変更を討議',
+                'note' => '仮説通りの本人も成果を感じていないため、変更を合意',
+                'next_step' => '写真診断から×××→×××にワークを変更指示',
+                'instructor' => 'YUMICO'
+            ]
+        ];
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'mockUserData'));
+    }
+
+    /**
      * Import CSV data
      *
      * @param \Cake\Http\UploadedFile $file
@@ -808,4 +1127,5 @@ class UsersController extends AppController
         }
         return implode(', ', $formattedErrors);
     }
+
 }
