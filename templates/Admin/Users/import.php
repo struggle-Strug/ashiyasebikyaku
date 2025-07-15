@@ -8,20 +8,19 @@
         <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> CSVインポートについて</h5>
             <ul>
-                <li>CSVファイルの文字コードはUTF-8（BOM付き）で保存してください。</li>
                 <li>1行目はヘッダー行として扱われます。</li>
-                <li>必須項目：会員番号、メールアドレス、姓、名、利用開始日時</li>
-                <li>日付形式：YYYY-MM-DD または YYYY/MM/DD</li>
-                <li>日時形式：YYYY-MM-DD HH:MM:SS または YYYY-MM-DD HH:MM</li>
+                <li>必須項目：メールアドレス、姓、名利用</li>
+                <li>生年月日形式：YYYY/MM/DD</li>
             </ul>
         </div>
         
         <div class="alert alert-warning">
             <h5><i class="icon fas fa-exclamation-triangle"></i> 注意事項</h5>
             <ul>
-                <li>メールアドレスと会員番号は重複できません。</li>
-                <li>パスワードは「password123」で設定されます。</li>
-                <li>担当講師は講師名で指定してください。</li>
+                <li>メールアドレスは重複できません。</li>
+                <li>パスワードは「来月の年月の文字列」で設定されます。（例：202508）</li>
+                <li>担当講師は「SHOCO」さんが割り当てられます。</li>
+                <li>申し込みプログラムが空白の場合はマスターコースになります。</li>
             </ul>
         </div>
         
@@ -33,6 +32,9 @@
         
         <div class="mt-3">
             <a href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>" class="btn btn-secondary">戻る</a>
+            <a href="<?= $this->Url->build(['action' => 'downloadTemplate']) ?>" class="btn btn-success">
+                <i class="fas fa-download"></i> テンプレートダウンロード
+            </a>
             <button type="submit" class="btn btn-primary">インポート実行</button>
         </div>
         <?= $this->Form->end() ?>
@@ -43,30 +45,32 @@
                 <table class="table table-bordered table-sm">
                     <thead>
                         <tr>
-                            <th>メールアドレス</th>
-                            <th>Q1.姓</th>
-                            <th>Q2.名</th>
-                            <th>Q3.電話番号</th>
-                            <th>Q4.生年月日</th>
-                            <th>Q5.お住まい</th>
-                            <th>Q6.備考</th>
-                            <th>利用開始日時</th>
-                            <th>パスワード</th>
-                            <th>担当講師</th>
+                            <th>タイムスタンプ</th>
+                            <th>メールアドレス<span class="text-danger">（必須）</span></th>
+                            <th>姓<span class="text-danger">（必須）</span></th>
+                            <th>姓（よみがな）</th>
+                            <th>名<span class="text-danger">（必須）</span></th>
+                            <th>名（よみがな）</th>
+                            <th>携帯番号</th>
+                            <th>生年月日</th>
+                            <th>お住まい（郵便番号）</th>
+                            <th>お住まい（住所）</th>
+                            <th>申し込みプログラム</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
+                          <td>2025/06/20 11:27:40</td>
                           <td>test1@example.com</td>
                           <td>田中</td>
+                          <td>たなか</td>
                           <td>太郎</td>
+                          <td>たろう</td>
                           <td>090-1234-5678</td>
-                          <td>1990-01-01</td>
-                          <td>東京都</td>
-                          <td>サンプルデータ</td>
-                          <td>2024-01-01 10:00:00</td>
-                          <td>password123</td>
-                          <td>山田先生</td>
+                          <td>1990/01/01</td>
+                          <td>100-0000</td>
+                          <td>東京都千代田区1-1-1</td>
+                          <td>エバーコース</td>
                         </tr>
                     </tbody>
                 </table>

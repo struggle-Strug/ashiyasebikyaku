@@ -406,6 +406,31 @@ class UsersController extends AppController
         $this->set(compact('staffs', 'param'));
     }
 
+    /**
+     * Download CSV template
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function downloadTemplate()
+    {
+        $filename = 'users_import_template.csv';
+        $filepath = WWW_ROOT . 'uploads' . DS . $filename;
+        
+        // ファイルが存在するかチェック
+        if (!file_exists($filepath)) {
+            $this->Flash->error(__('テンプレートファイルが見つかりません。'));
+            return $this->redirect(['action' => 'import']);
+        }
+
+        // レスポンスを設定
+        $response = $this->response->withFile($filepath, [
+            'download' => true,
+            'name' => $filename,
+        ]);
+
+        return $response;
+    }
+
     public function comparedImages($userId = null)
     {
         $this->loadModel('ComparedImages');
@@ -683,10 +708,10 @@ class UsersController extends AppController
         $userData['first_name_kana'] = trim($rowData[5]);
         $userData['tel'] = !empty($rowData[6]) ? trim($rowData[6]) : null;
         $userData['birthday'] = $this->parseDate($rowData[7]);
-        $userData['postal_code'] = !empty($rowData[8]) ? trim($rowData[8]) : null;
+        $userData['zipcode'] = !empty($rowData[8]) ? trim($rowData[8]) : null;
         $userData['address'] = !empty($rowData[9]) ? trim($rowData[9]) : null;
-        $userData['note'] = !empty($rowData[10]) ? '申し込みプログラム: ' . trim($rowData[10]) : null;
-        
+        $userData['note'] = "";
+        $userData['course_id'] = !empty($rowData[10]) ? $this->getCourseId(trim($rowData[10])) : null;
         // 申し込み日時（タイムスタンプから）
         $userData['start_datetime'] = $this->getFirstDayOfNextMonth();
         
@@ -703,6 +728,17 @@ class UsersController extends AppController
         $userData['staff_id'] = $this->getStaffId('SHOCO');
         
         return $userData;
+    }
+
+    private function getCourseId($courseName)
+    {
+        $courses = Configure::read("COURSE");
+        foreach ($courses as $key => $value) {
+            if ($value == $courseName) {
+                return $key;
+            }
+        }
+        return 2;
     }
 
     /**
