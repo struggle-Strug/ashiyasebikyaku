@@ -1451,6 +1451,7 @@
                 canvas.style.width = (leftWidth + rightWidth + 20) + "px";
                 canvas.style.height = (maxHeight + dateAreaHeight) + "px";
 
+                // 2Dコンテキストを取得して低解像度対応
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
@@ -1602,13 +1603,15 @@
                 const rightHeight = rightSvg.clientHeight;
                 const maxHeight = Math.max(leftHeight, rightHeight);
                 
-                const pixelRatio = window.devicePixelRatio || 1;
+                const pixelRatio = 0.3; // 解像度を半分に下げる
+                const viewBox = svg.viewBox.baseVal;
                 
                 canvas.width = (leftWidth + rightWidth + 20) * pixelRatio; // 20px gap
                 canvas.height = (maxHeight + dateAreaHeight) * pixelRatio;
                 canvas.style.width = (leftWidth + rightWidth + 20) + "px";
                 canvas.style.height = (maxHeight + dateAreaHeight) + "px";
 
+                // 2Dコンテキストを取得して低解像度対応
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
