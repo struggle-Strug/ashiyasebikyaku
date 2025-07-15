@@ -1343,19 +1343,21 @@
                 const rightSvgData = new XMLSerializer().serializeToString(rightSvg);
                 
                 const canvas = document.createElement("canvas");
-                const board = document.getElementById('board');
-
-                // キャンバスサイズを設定 - 解像度を下げる
-                const width = svg.width.baseVal.value;
-                const height = svg.height.baseVal.value;
-                const pixelRatio = 0.3; // 解像度を半分に下げる
+                
+                // キャンバスサイズを設定（両方のSVGを横に並べる）
+                const leftWidth = leftSvg.clientWidth;
+                const rightWidth = rightSvg.clientWidth;
+                const leftHeight = leftSvg.clientHeight;
+                const rightHeight = rightSvg.clientHeight;
+                const maxHeight = Math.max(leftHeight, rightHeight);
+                
+                const pixelRatio = window.devicePixelRatio || 1;
                 
                 canvas.width = (leftWidth + rightWidth + 20) * pixelRatio; // 20pxの間隔
                 canvas.height = maxHeight * pixelRatio;
                 canvas.style.width = (leftWidth + rightWidth + 20) + "px";
                 canvas.style.height = maxHeight + "px";
 
-                // 2Dコンテキストを取得して低解像度対応
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
@@ -1457,8 +1459,8 @@
                     }
                 });
 
-                // PNGとして出力（品質を下げる）
-                const pngDataUrl = canvas.toDataURL('image/png', 0.3); // 品質を70%に下げる
+                // PNGとして出力
+                const pngDataUrl = canvas.toDataURL('image/png');
                 document.getElementById("preview").src = pngDataUrl;
                 document.getElementById("preview").style.display = "block";
             } catch (error) {
@@ -1491,15 +1493,13 @@
                 const rightHeight = rightSvg.clientHeight;
                 const maxHeight = Math.max(leftHeight, rightHeight);
                 
-                const pixelRatio = 0.3; // 解像度を半分に下げる
-                const viewBox = svg.viewBox.baseVal;
+                const pixelRatio = window.devicePixelRatio || 1;
                 
                 canvas.width = (leftWidth + rightWidth + 20) * pixelRatio;
                 canvas.height = maxHeight * pixelRatio;
                 canvas.style.width = (leftWidth + rightWidth + 20) + "px";
                 canvas.style.height = maxHeight + "px";
 
-                // 2Dコンテキストを取得して低解像度対応
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
@@ -1596,9 +1596,8 @@
                     }
                 });
 
-                // PNGとして出力（品質を下げる）
-                const pngDataUrl = canvas.toDataURL('image/png', 0.3); // 品質を70%に下げる
-
+                // PNGとして出力
+                const pngDataUrl = canvas.toDataURL('image/png');
                 uploadImageToServer(pngDataUrl);
             } catch (error) {
                 console.error('Error during SVG to canvas conversion:', error);
