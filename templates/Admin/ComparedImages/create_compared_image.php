@@ -318,22 +318,17 @@
         var rightSvgElm = $("#rightDrawingCanvas");
         var leftSvgElm_js = document.getElementById("leftDrawingCanvas");
         var rightSvgElm_js = document.getElementById("rightDrawingCanvas");
+        var currentSvg = null; // 現在操作中のSVG
+        var currentSvg_js = null;
         
         var type = "imageMoveAndZoom";
         var touchType = "move";
-        
-        // 1. Add new global variables for drawing state management:
-        //    Insert these lines immediately after `var touchType = "move";`
-        var currentSvg = null; // Currently active SVG jQuery object
-        var currentSvg_js = null; // Currently active SVG DOM object
-        var currentPathElement = null; // For free-draw (path element)
-        var tempLine = null; // For line-draw (line element)
-        var startX, startY; // Initial point for the current drawing segment
-        var lastSvg_js = null; // To track the SVG from the previous move event
 
         // ツール関連の変数
         var currentTool = "free-draw";
         var isDrawing = false;
+        var startX, startY;
+        var tempLine = null;
         var textColor = "#000000";
         var backgroundColor = "#ffffff";
         var lineColor = "#ff0000";
@@ -523,61 +518,46 @@
             return null;
         }
 
-        // Helper function to convert global screen coordinates to SVG local coordinates
-        function screenToSvgCoords(clientX, clientY, svgElement) {
-            const svgRect = svgElement.getBoundingClientRect();
-            const viewBox = svgElement.getAttribute('viewBox').split(' ').map(Number);
-            const viewBoxWidth = viewBox[2];
-            const viewBoxHeight = viewBox[3];
-            const viewBoxMinX = viewBox[0];
-            const viewBoxMinY = viewBox[1];
-
-            const scaleX = viewBoxWidth / svgRect.width;
-            const scaleY = viewBoxHeight / svgRect.height;
-
-            const svgX = (clientX - svgRect.left) * scaleX + viewBoxMinX;
-            const svgY = (clientY - svgRect.top) * scaleY + viewBoxMinY;
-
-            return { x: svgX, y: svgY };
-        }
-
         // 修正：両方のSVGにイベントリスナーを設定
         function setupSvgEvents(svgElm, svgElm_js) {
             svgElm.on(start_event, function (event) {
-                // Comment elements should not trigger drawing start
+                // 現在操作中のSVGを設定
+                const svgInfo = getSvgFromEvent(event);
+                if (svgInfo) {
+                    currentSvg = svgInfo.svg;
+                    currentSvg_js = svgInfo.svg_js;
+                }
+
+                // コメント要素上でのクリックは処理しない
                 if (event.target.classList && event.target.classList.contains('comment-box')) {
                     return;
                 }
                 
-                // Set the currently active SVG
-                const svgInfo = getSvgFromEvent(event);
-                if (!svgInfo) return; // Should not happen if event is on an SVG
-
-                currentSvg = svgInfo.svg;
-                currentSvg_js = svgInfo.svg_js;
-                lastSvg_js = currentSvg_js; // Initialize lastSvg_js on mousedown
-
                 event.preventDefault();
                 if (type === "imageMoveAndZoom") {
                     moveContentByMousedown(event);
                 } else if (type === "pencil") {
-                    // Straight line selection logic (existing)
+                    // 直線を選択する処理
                     if (currentTool === 'line-draw' && event.target.tagName === 'line') {
+                        // 既存の線をクリックした場合
                         selectedLine = event.target;
                         isMovingLine = true;
-                        isDrawing = false; // Not drawing a new line, but moving an existing one
+                        isDrawing = false;
                         
                         lineStartX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
                         lineStartY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
                         
+                        // 線の始点と終点を取得
                         const x1 = parseFloat(selectedLine.getAttribute('x1'));
                         const y1 = parseFloat(selectedLine.getAttribute('y1'));
                         const x2 = parseFloat(selectedLine.getAttribute('x2'));
                         const y2 = parseFloat(selectedLine.getAttribute('y2'));
                         
+                        // クリック位置と線の始点との差分を計算
                         lineOffsetX = [x1 - lineStartX, x2 - lineStartX];
                         lineOffsetY = [y1 - lineStartY, y2 - lineStartY];
                         
+                        // 選択された線を強調表示
                         selectedLine.setAttribute('stroke-width', lineWidth * 2);
                         return;
                     }
@@ -588,36 +568,39 @@
                     
                     switch (currentTool) {
                         case 'line-draw':
-                            // Deselect any previously selected line
+                            // 選択中の線があれば選択解除
                             if (selectedLine) {
                                 selectedLine.setAttribute('stroke-width', lineWidth);
                                 selectedLine = null;
                                 isMovingLine = false;
                             }
                             
-                            // Start new line drawing
+                            // 直線描画の開始
                             tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                             tempLine.setAttribute("x1", startX);
                             tempLine.setAttribute("y1", startY);
                             tempLine.setAttribute("x2", startX);
                             tempLine.setAttribute("y2", startY);
+                            // 現在設定されている線の色を使用
                             tempLine.setAttribute("stroke", lineColor);
                             tempLine.setAttribute("stroke-width", lineWidth);
                             currentSvg_js.appendChild(tempLine);
                             break;
                         case 'comment-add':
-                            // Existing comment add logic
                             const x = getPositionXOnSvg(event, currentSvg, currentSvg_js);
                             const y = getPositionYOnSvg(event, currentSvg, currentSvg_js);
                             
+                            // 既存のコメント選択を解除
                             if (selectedComment) {
                                 selectedComment.style.outline = 'none';
                             }
                             
+                            // 新しいコメントボックスを作成
                             const commentBox = document.createElement('div');
                             commentBox.className = 'comment-box';
                             commentBox.contentEditable = true;
                             commentBox.style.position = 'absolute';
+                            // クリックした位置に正確に配置するための座標計算
                             const svgRect = currentSvg_js.getBoundingClientRect();
                             const clickX = event.clientX || (event.touches && event.touches[0].clientX);
                             const clickY = event.clientY || (event.touches && event.touches[0].clientY);
@@ -625,10 +608,11 @@
                             commentBox.style.top = (clickY - svgRect.top) + 'px';
                             commentBox.style.color = textColor;
                             commentBox.style.backgroundColor = backgroundColor;
-                            commentBox.style.fontSize = fontSize + 'px';
+                            commentBox.style.fontSize = fontSize + 'px';// 現在のフォントサイズを設定
                             commentBox.style.zIndex = '1000';
                             commentBox.textContent = 'コメントを入力';
                             
+                            // リサイズハンドルを追加
                             const resizeHandle = document.createElement('div');
                             resizeHandle.className = 'comment-resize-handle';
                             resizeHandle.style.position = 'absolute';
@@ -636,18 +620,29 @@
                             resizeHandle.style.right = '0';
                             resizeHandle.style.transform = 'translate(50%, 50%)';
                             
+                            // コメントボックスをクリックしたときの処理
                             commentBox.addEventListener('click', function(e) {
                                 e.stopPropagation();
+
+                                // 既存の選択を解除
                                 if (selectedComment && selectedComment !== commentBox) {
                                     selectedComment.style.outline = 'none';
                                 }
+
+                                // このコメントを選択状態にする
                                 selectedComment = commentBox;
                                 selectedComment.style.outline = '2px solid blue';
+
+                                // カラーピッカーの値を更新
                                 document.getElementById('text-color').value = rgbToHex(window.getComputedStyle(commentBox).color);
                                 document.getElementById('background-color').value = rgbToHex(window.getComputedStyle(commentBox).backgroundColor);
+
+                                // フォントサイズの値を更新
                                 const currentFontSize = parseInt(window.getComputedStyle(commentBox).fontSize);
                                 fontSize = currentFontSize;
                                 updateFontSizeDisplay();
+
+                                // コメントツールを選択状態にする
                                 document.querySelectorAll('.tool-button').forEach(b => {
                                     b.classList.remove('active');
                                     b.classList.remove('btn-primary');
@@ -658,24 +653,32 @@
                                 commentButton.classList.remove('btn-outline-secondary');
                                 commentButton.classList.add('btn-primary');
                                 currentTool = 'comment-add';
+
+                                // カラーピッカーとフォントサイズツールを表示
                                 document.getElementById('comment-color-picker').style.display = 'flex';
                                 document.getElementById('line-color-picker').style.display = 'none';
                                 document.getElementById('font-size-tools').style.display = 'flex';
                             });
                             
+                            // ドラッグ機能の実装
                             let isDragging = false;
                             let startDragX, startDragY;
                             let startLeft, startTop;
                             
                             commentBox.addEventListener('mousedown', function(e) {
+                                // リサイズハンドルでの操作時は処理しない
                                 if (e.target === resizeHandle) return;
                                 isDragging = true;
                                 startDragX = e.clientX;
                                 startDragY = e.clientY;
                                 startLeft = parseInt(commentBox.style.left) || 0;
                                 startTop = parseInt(commentBox.style.top) || 0;
+
+                                // ドラッグ中のイベント
                                 document.addEventListener('mousemove', dragMove);
                                 document.addEventListener('mouseup', dragEnd);
+
+                                // カーソルをドラッグ形式に変更
                                 commentBox.style.cursor = 'grabbing';
                             });
                             
@@ -691,9 +694,12 @@
                                 isDragging = false;
                                 document.removeEventListener('mousemove', dragMove);
                                 document.removeEventListener('mouseup', dragEnd);
+
+                                // カーソルを元に戻す
                                 commentBox.style.cursor = 'auto';
                             }
                             
+                            // リサイズ機能の実装
                             let isResizing = false;
                             let originalWidth, originalHeight, originalX, originalY;
                             
@@ -704,6 +710,8 @@
                                 originalHeight = commentBox.offsetHeight;
                                 originalX = e.clientX;
                                 originalY = e.clientY;
+
+                                // マウス移動イベントを追加
                                 document.addEventListener('mousemove', resizeMove);
                                 document.addEventListener('mouseup', resizeEnd);
                             });
@@ -712,6 +720,8 @@
                                 if (isResizing) {
                                     const deltaX = e.clientX - originalX;
                                     const deltaY = e.clientY - originalY;
+
+                                    // 最小サイズを設定
                                     const newWidth = Math.max(100, originalWidth + deltaX);
                                     const newHeight = Math.max(50, originalHeight + deltaY);
                                     commentBox.style.width = newWidth + 'px';
@@ -725,26 +735,29 @@
                                 document.removeEventListener('mouseup', resizeEnd);
                             }
                             
+                            // SVGの親要素にコメントボックスを追加
                             currentSvg.parent().append(commentBox);
                             commentBox.appendChild(resizeHandle);
                             
+                            // 作成直後に選択状態にする
                             selectedComment = commentBox;
                             selectedComment.style.outline = '2px solid blue';
                             commentBox.focus();
                             
+                            // テキスト全選択
                             const selection = window.getSelection();
                             const range = document.createRange();
                             range.selectNodeContents(commentBox);
                             selection.removeAllRanges();
                             selection.addRange(range);
                             
-                            isDrawing = false; // Comment adding is not a continuous drawing action
+                            isDrawing = false;
                             break;
                         case 'eraser':
-                            // Existing eraser start logic
+                            // 消しゴムの範囲選択開始
                             eraseStartX = startX;
                             eraseStartY = startY;
-                            
+                            // 範囲表示用の矩形を作成
                             eraseRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                             eraseRect.setAttribute("x", startX);
                             eraseRect.setAttribute("y", startY);
@@ -756,317 +769,210 @@
                             currentSvg_js.appendChild(eraseRect);
                             break;
                         case 'free-draw':
-                            // Initialize new path for free-draw
-                            currentPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                            const path_attr = {
-                                "id": Math.random().toString(32).substring(2),
-                                "d": `M ${startX} ${startY} `,
-                                "fill": "none",
-                                "stroke": lineColor,
-                                "stroke-width": lineWidth,
-                                "stroke-linecap": "round"
-                            };
-                            for (let key in path_attr) {
-                                currentPathElement.setAttribute(key, path_attr[key]);
-                            }
-                            currentSvg_js.appendChild(currentPathElement);
-                            window.linetoStr = `M ${startX} ${startY} `; // Reset linetoStr for the new path
+                            pencilByMousedown(event);
                             break;
                         default:
-                            // Fallback to free-draw if tool is unknown
-                            currentPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                            const default_path_attr = {
-                                "id": Math.random().toString(32).substring(2),
-                                "d": `M ${startX} ${startY} `,
-                                "fill": "none",
-                                "stroke": lineColor,
-                                "stroke-width": lineWidth,
-                                "stroke-linecap": "round"
-                            };
-                            for (let key in default_path_attr) {
-                                currentPathElement.setAttribute(key, default_path_attr[key]);
-                            }
-                            currentSvg_js.appendChild(currentPathElement);
-                            window.linetoStr = `M ${startX} ${startY} `; // Reset linetoStr for the new path
+                            pencilByMousedown(event);
                             break;
                     }
                 }
+            }).on(move_event, function (event) {
+                event.preventDefault();
+                if (type === "imageMoveAndZoom") {
+                    // moveContentByMousedown(event);
+                } else if (type === "pencil") {
+                    // 線の移動処理
+                    if (isMovingLine && selectedLine) {
+                        const currentX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
+                        const currentY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
+
+                        // 線の新しい位置を設定
+                        selectedLine.setAttribute("x1", lineOffsetX[0] + currentX);
+                        selectedLine.setAttribute("y1", lineOffsetY[0] + currentY);
+                        selectedLine.setAttribute("x2", lineOffsetX[1] + currentX);
+                        selectedLine.setAttribute("y2", lineOffsetY[1] + currentY);
+                        return;
+                    }
+
+                    if (!isDrawing) return;
+
+                    const currentX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
+                    const currentY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
+
+                    switch (currentTool) {
+                        case 'line-draw':
+                            // 直線の更新
+                            if (tempLine) {
+                                tempLine.setAttribute("x2", currentX);
+                                tempLine.setAttribute("y2", currentY);
+                            }
+                            break;
+                        case 'eraser':
+                            // 消しゴムの範囲更新
+                            if (eraseRect) {
+                                const width = currentX - eraseStartX;
+                                const height = currentY - eraseStartY;
+
+                                // 範囲の開始位置を調整（負の値の場合）
+                                const x = width < 0 ? currentX : eraseStartX;
+                                const y = height < 0 ? currentY : eraseStartY;
+
+                                // 範囲の大きさを設定（絶対値を使用）
+                                eraseRect.setAttribute("x", x);
+                                eraseRect.setAttribute("y", y);
+                                eraseRect.setAttribute("width", Math.abs(width));
+                                eraseRect.setAttribute("height", Math.abs(height));
+                            }
+                            break;
+                        case 'free-draw':
+                            pencilByMousemove(event);
+                            break;
+                        default:
+                            // デフォルトは自由描画の移動処理
+                            pencilByMousemove(event);
+                            break;
+                    }
+                }
+            }).on(end_event, function (event) {
+                event.preventDefault();
+                if (type === "imageMoveAndZoom") {
+                    moveContentByMouseup(event);
+                } else if (type === "pencil") {
+                    // 線の移動終了処理
+                    if (isMovingLine && selectedLine) {
+                        isMovingLine = false;
+                        return;
+                    }
+
+                    // 直線描画完了の処理
+                    if (currentTool === 'line-draw' && tempLine) {
+                        // 短すぎる線は削除
+                        const x1 = parseFloat(tempLine.getAttribute("x1"));
+                        const y1 = parseFloat(tempLine.getAttribute("y1"));
+                        const x2 = parseFloat(tempLine.getAttribute("x2"));
+                        const y2 = parseFloat(tempLine.getAttribute("y2"));
+                        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        if (length < 5) {
+                            tempLine.remove();
+                        }
+                        tempLine = null;
+                    }
+
+                    // 消しゴムの処理
+                    if (currentTool === 'eraser' && eraseRect) {
+                        // 選択範囲の座標を取得
+                        const eraseX = parseFloat(eraseRect.getAttribute("x"));
+                        const eraseY = parseFloat(eraseRect.getAttribute("y"));
+                        const eraseWidth = parseFloat(eraseRect.getAttribute("width"));
+                        const eraseHeight = parseFloat(eraseRect.getAttribute("height"));
+                        // SVG内の全要素をチェック
+                        const elements = Array.from(currentSvg_js.children);
+                        for (let i = 0; i < elements.length; i++) {
+                            const element = elements[i];
+                            // 消去対象の要素かチェック（eraseRect自体は除外）
+                            if (element !== eraseRect && (element.tagName === 'path' || 
+                                element.tagName === 'line')) {
+
+                                let isIntersecting = false;
+
+                                if (element.tagName === 'path') {
+                                    // パスの場合、全ての点をチェック
+                                    const points = element.getAttribute('d').split(' ');
+                                    for (let j = 0; j < points.length; j++) {
+                                        if (points[j] === 'M' || points[j] === 'L') {
+                                            if (j + 2 < points.length) {
+                                                const pointX = parseFloat(points[j + 1]);
+                                                const pointY = parseFloat(points[j + 2]);
+                                                if (pointX >= eraseX && pointX <= eraseX + eraseWidth &&
+                                                    pointY >= eraseY && pointY <= eraseY + eraseHeight) {
+                                                    isIntersecting = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else if (element.tagName === 'line') {
+                                    // 直線の場合、始点と終点をチェック
+                                    const x1 = parseFloat(element.getAttribute('x1'));
+                                    const y1 = parseFloat(element.getAttribute('y1'));
+                                    const x2 = parseFloat(element.getAttribute('x2'));
+                                    const y2 = parseFloat(element.getAttribute('y2'));
+
+                                    if ((x1 >= eraseX && x1 <= eraseX + eraseWidth &&
+                                         y1 >= eraseY && y1 <= eraseY + eraseHeight) ||
+                                        (x2 >= eraseX && x2 <= eraseX + eraseWidth &&
+                                         y2 >= eraseY && y2 <= eraseY + eraseHeight)) {
+                                        isIntersecting = true;
+                                    }
+                                }
+
+                                // 交差している要素を削除
+                                if (isIntersecting) {
+                                    element.remove();
+
+                                    // 選択中の線が削除された場合、参照をクリア
+                                    if (selectedLine === element) {
+                                        selectedLine = null;
+                                        isMovingLine = false;
+                                    }
+                                }
+                            }
+                        }
+
+                        // コメントボックスも削除
+                        const commentBoxes = document.querySelectorAll('.comment-box');
+                        const svgRect = currentSvg_js.getBoundingClientRect();
+
+                        commentBoxes.forEach(box => {
+                            const boxRect = box.getBoundingClientRect();
+                        // SVG座標系に変換    
+                            const boxX = (boxRect.left - svgRect.left) * (parseFloat(currentSvg_js.getAttribute('viewBox').split(' ')[2]) / svgRect.width);
+                            const boxY = (boxRect.top - svgRect.top) * (parseFloat(currentSvg_js.getAttribute('viewBox').split(' ')[3]) / svgRect.height);
+
+                            // ボックスの中心が選択範囲内にあるかチェック
+                            if (boxX >= eraseX && boxX <= eraseX + eraseWidth &&
+                                boxY >= eraseY && boxY <= eraseY + eraseHeight) {
+                                box.remove();
+
+                                // 選択中のコメントが削除された場合、参照をクリア
+                                if (selectedComment === box) {
+                                    selectedComment = null;
+                                }
+                            }
+                        });
+
+                        // 消しゴムの範囲表示を削除
+                        eraseRect.remove();
+                        eraseRect = null;
+                    }
+
+                    isDrawing = false;
+                    if (currentTool === 'free-draw') {
+                        pencilByMouseup(event);
+                    }
+                    tempLine = null;
+                }
             });
-            // REMOVE the existing .on(move_event, ...) and .on(end_event, ...) from here.
-            // They will be replaced by global document.body listeners.
         }
 
         // 両方のSVGにイベントリスナーを設定
         setupSvgEvents(leftSvgElm, leftSvgElm_js);
         setupSvgEvents(rightSvgElm, rightSvgElm_js);
 
-        // Global move event listener for continuous drawing across SVGs
-        document.body.addEventListener(move_event, function (event) {
-            // Only handle drawing/erasing if in "pencil" mode
-            if (type !== "pencil") {
-                return;
+        // タッチタイプの切り替え（スマートフォン用）
+        document.getElementById("touch-type").addEventListener("click", function (e) {
+            if (touchType === "move") {
+                touchType = "zoom"
+                this.classList.add("btn-primary");
+                this.classList.remove("btn-outline-primary")
+                this.textContent = "ズームモード";
+            } else {
+                touchType = "move"
+                this.classList.remove("btn-primary");
+                this.classList.add("btn-outline-primary")
+                this.textContent = "ムーブモード";
             }
-
-            if (!isDrawing) return; // Only proceed if a drawing action has started
-            event.preventDefault(); // Prevent default browser behavior (e.g., scrolling on touch)
-
-            const newSvgInfo = getSvgFromEvent(event); // Determine which SVG the mouse is currently over
-            const mouseXGlobal = event.clientX || (event.touches && event.touches[0].clientX);
-            const mouseYGlobal = event.clientY || (event.touches && event.touches[0].clientY);
-
-            // If the mouse has moved to a different SVG than the one currently being drawn on
-            if (newSvgInfo && newSvgInfo.svg_js !== currentSvg_js) {
-                // Mouse has crossed into a new SVG
-
-                let intersectionXGlobal;
-                const leavingSvgRect = currentSvg_js.getBoundingClientRect();
-                const enteringSvgRect = newSvgInfo.svg_js.getBoundingClientRect();
-
-                // Determine the exact global X coordinate of the border being crossed
-                if (leavingSvgRect.right < enteringSvgRect.left) { // Moving from left to right
-                    intersectionXGlobal = leavingSvgRect.right;
-                } else if (leavingSvgRect.left > enteringSvgRect.right) { // Moving from right to left
-                    intersectionXGlobal = leavingSvgRect.left;
-                } else {
-                    // Fallback if SVGs are overlapping or directly adjacent without a clear "gap"
-                    intersectionXGlobal = mouseXGlobal;
-                }
-                const intersectionYGlobal = mouseYGlobal; // Y coordinate is continuous
-
-                // 1. Finalize the drawing element on the *leaving* SVG
-                const leavingSvgCoords = screenToSvgCoords(intersectionXGlobal, intersectionYGlobal, currentSvg_js);
-
-                if (currentTool === 'free-draw' && currentPathElement && currentPathElement.ownerSVGElement === currentSvg_js) {
-                    window.linetoStr = window.linetoStr + " L " + leavingSvgCoords.x + " " + leavingSvgCoords.y;
-                    currentPathElement.setAttribute("d", window.linetoStr);
-                    currentPathElement = null; // Mark as finished on this SVG
-                    window.linetoStr = ''; // Reset for next path
-                } else if (currentTool === 'line-draw' && tempLine && tempLine.ownerSVGElement === currentSvg_js) {
-                    tempLine.setAttribute("x2", leavingSvgCoords.x);
-                    tempLine.setAttribute("y2", leavingSvgCoords.y);
-                    tempLine = null; // Mark as finished on this SVG
-                }
-
-                // 2. Switch the active SVG context
-                currentSvg = newSvgInfo.svg;
-                currentSvg_js = newSvgInfo.svg_js;
-                lastSvg_js = currentSvg_js;
-
-                // 3. Start a new drawing element on the *entering* SVG from the intersection point
-                const enteringSvgCoords = screenToSvgCoords(intersectionXGlobal, intersectionYGlobal, currentSvg_js);
-
-                startX = enteringSvgCoords.x;
-                startY = enteringSvgCoords.y;
-
-                if (currentTool === 'free-draw') {
-                    currentPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    const path_attr = {
-                        "id": Math.random().toString(32).substring(2),
-                        "d": `M ${startX} ${startY} `,
-                        "fill": "none",
-                        "stroke": lineColor,
-                        "stroke-width": lineWidth,
-                        "stroke-linecap": "round"
-                    };
-                    for (let key in path_attr) {
-                        currentPathElement.setAttribute(key, path_attr[key]);
-                    }
-                    currentSvg_js.appendChild(currentPathElement);
-                    window.linetoStr = `M ${startX} ${startY} `;
-                } else if (currentTool === 'line-draw') {
-                    tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    tempLine.setAttribute("x1", startX);
-                    tempLine.setAttribute("y1", startY);
-                    tempLine.setAttribute("x2", startX); // Will be updated in the next move event
-                    tempLine.setAttribute("y2", startY);
-                    tempLine.setAttribute("stroke", lineColor);
-                    tempLine.setAttribute("stroke-width", lineWidth);
-                    currentSvg_js.appendChild(tempLine);
-                }
-            } else if (!newSvgInfo && (currentPathElement || tempLine || eraseRect)) {
-                // Mouse moved outside both SVGs while drawing/erasing.
-                // Finalize the current drawing element on the last active SVG.
-                const currentX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
-                const currentY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
-
-                if (currentTool === 'line-draw' && tempLine) {
-                    tempLine.setAttribute("x2", currentX);
-                    tempLine.setAttribute("y2", currentY);
-                    tempLine = null;
-                } else if (currentTool === 'free-draw' && currentPathElement) {
-                    currentPathElement = null;
-                    window.linetoStr = '';
-                }
-                // Eraser logic will be handled on mouseup
-                isDrawing = false; // Stop drawing
-                return;
-            }
-
-            // Continue drawing on the current (or newly switched) SVG
-            const currentX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
-            const currentY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
-
-            if (currentTool === 'free-draw' && currentPathElement) {
-                window.linetoStr = window.linetoStr + " L " + currentX + " " + currentY;
-                currentPathElement.setAttribute("d", window.linetoStr);
-            } else if (currentTool === 'line-draw' && tempLine) {
-                tempLine.setAttribute("x2", currentX);
-                tempLine.setAttribute("y2", currentY);
-            } else if (currentTool === 'eraser' && eraseRect) {
-                // Update eraser range
-                const width = currentX - eraseStartX;
-                const height = currentY - eraseStartY;
-                
-                const x = width < 0 ? currentX : eraseStartX;
-                const y = height < 0 ? currentY : eraseStartY;
-                
-                eraseRect.setAttribute("x", x);
-                eraseRect.setAttribute("y", y);
-                eraseRect.setAttribute("width", Math.abs(width));
-                eraseRect.setAttribute("height", Math.abs(height));
-            }
-        });
-
-        // Global end event listener for drawing actions
-        document.body.addEventListener(end_event, function (event) {
-            // If in imageMoveAndZoom mode, let its specific mouseup handler manage it.
-            if (type === "imageMoveAndZoom") {
-                moveContentByMouseup(event);
-                return;
-            }
-
-            if (!isDrawing && !isMovingLine) return; // Only proceed if a drawing/moving action was active
-            event.preventDefault();
-
-            // Finalize drawing based on the current tool
-            if (currentTool === 'line-draw' && tempLine) {
-                // Remove very short lines
-                const x1 = parseFloat(tempLine.getAttribute("x1"));
-                const y1 = parseFloat(tempLine.getAttribute("y1"));
-                const x2 = parseFloat(tempLine.getAttribute("x2"));
-                const y2 = parseFloat(tempLine.getAttribute("y2"));
-                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                if (length < 5) {
-                    tempLine.remove();
-                }
-                tempLine = null; // Clear tempLine reference
-            } else if (currentTool === 'eraser' && eraseRect) {
-                // Get the bounding client rect of the current SVG (where eraseRect was drawn)
-                const currentSvgBounds = currentSvg_js.getBoundingClientRect();
-
-                // Calculate erase rectangle in global screen coordinates
-                const globalEraseRect = {
-                    left: currentSvgBounds.left + parseFloat(eraseRect.getAttribute("x")),
-                    top: currentSvgBounds.top + parseFloat(eraseRect.getAttribute("y")),
-                    right: currentSvgBounds.left + parseFloat(eraseRect.getAttribute("x")) + parseFloat(eraseRect.getAttribute("width")),
-                    bottom: currentSvgBounds.top + parseFloat(eraseRect.getAttribute("y")) + parseFloat(eraseRect.getAttribute("height"))
-                };
-
-                // Collect all drawable SVG elements from both SVGs
-                const allSvgElements = Array.from(leftSvgElm_js.querySelectorAll('path, line')).concat(Array.from(rightSvgElm_js.querySelectorAll('path, line')));
-
-                allSvgElements.forEach(element => {
-                    // Skip the eraseRect itself
-                    if (element === eraseRect) return;
-
-                    const ownerSvgElm_js = element.ownerSVGElement;
-                    const ownerSvgBounds = ownerSvgElm_js.getBoundingClientRect();
-
-                    // Get the bounding box of the SVG element in its own SVG coordinate system
-                    const bbox = element.getBBox();
-
-                    // Convert element's bbox to global screen coordinates
-                    const elementGlobalRect = {
-                        left: ownerSvgBounds.left + (bbox.x - parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[0])) * (ownerSvgBounds.width / parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[2])),
-                        top: ownerSvgBounds.top + (bbox.y - parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[1])) * (ownerSvgBounds.height / parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[3])),
-                        right: ownerSvgBounds.left + (bbox.x + bbox.width - parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[0])) * (ownerSvgBounds.width / parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[2])),
-                        bottom: ownerSvgBounds.top + (bbox.y + bbox.height - parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[1])) * (ownerSvgBounds.height / parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[3]))
-                    };
-
-                    // Check for intersection
-                    if (!(elementGlobalRect.right < globalEraseRect.left ||
-                          elementGlobalRect.left > globalEraseRect.right ||
-                          elementGlobalRect.bottom < globalEraseRect.top ||
-                          elementGlobalRect.top > globalEraseRect.bottom)) {
-                        element.remove();
-                        if (selectedLine === element) {
-                            selectedLine = null;
-                            isMovingLine = false;
-                        }
-                        if (currentPathElement === element) { // If the currently drawing path is erased
-                            currentPathElement = null;
-                            window.linetoStr = '';
-                        }
-                    }
-                });
-
-                // Comment boxes are already HTML elements, so their getBoundingClientRect is directly in global coords
-                const commentBoxes = document.querySelectorAll('.comment-box');
-                commentBoxes.forEach(box => {
-                    const boxRect = box.getBoundingClientRect();
-                    if (!(boxRect.right < globalEraseRect.left ||
-                          boxRect.left > globalEraseRect.right ||
-                          boxRect.bottom < globalEraseRect.top ||
-                          boxRect.top > globalEraseRect.bottom)) {
-                        box.remove();
-                        if (selectedComment === box) {
-                            selectedComment = null;
-                        }
-                    }
-                });
-
-                eraseRect.remove();
-                eraseRect = null; // Clear eraseRect reference
-            }
-
-            // Reset drawing states
-            isDrawing = false;
-            isMovingLine = false;
-            selectedLine = null; // Deselect any line that was being moved
-            currentPathElement = null; // Clear path element reference
-            tempLine = null; // Clear tempLine reference
-            lastSvg_js = null; // Reset last SVG on mouseup
-        });
-
-        // 4. Modify `pencilByMousedown` and `pencilByMousemove` to be empty or simplified, as their logic is now handled by the global event listeners.
-        //    Find `function pencilByMousedown(event) {` and replace its content with:
-        function pencilByMousedown(event) {
-            // Logic moved to global event listener and setupSvgEvents
-        }
-        //    Find `function pencilByMouseup(event) {` and replace its content with:
-        function pencilByMouseup(event) {
-            // Logic moved to global event listener
-        }
-        //    Find `function pencilByMousemove(event) {` and replace its content with:
-        function pencilByMousemove(event) {
-            // Logic moved to global event listener
-        }
-
-        // 5. Modify the `moveContentByMousedown` function to ensure it correctly attaches its own `move_event` and `end_event` listeners to the specific SVG element when in "imageMoveAndZoom" mode. This is crucial to prevent interference with the global drawing listeners.
-        //    Find `function moveContentByMousedown(event) {` and ensure its internal `svgInfo.svg.on(move_event, ...)` and `svgInfo.svg.on(end_event, ...)` blocks are present and correctly scoped. The existing code already does this, so no change is needed here, just a confirmation that it remains as is.
-
-        // 6. Modify the `zoomAction` function to ensure it correctly attaches its `wheel_event` listener to the specific SVG element.
-        //    Find `function zoomAction() {` and ensure its internal `svgElm_js.addEventListener(wheel_event, ...)` block is present and correctly scoped. The existing code already does this, so no change is needed here, just a confirmation that it remains as is.
-
-        // 7. Modify the SVG click event to deselect comments.
-        //    Find `[leftSvgElm, rightSvgElm].forEach(svgElm => { svgElm.on('click', function(event) { ... }); });`
-        //    Ensure it remains as is, as it correctly handles comment deselection.
-        // SVGのクリックイベントを修正して、コメント選択を解除する
-        [leftSvgElm, rightSvgElm].forEach(svgElm => {
-            svgElm.on('click', function(event) {
-                // If the click target is a comment box or its resize handle, do not deselect
-                if (event.target.classList && (event.target.classList.contains('comment-box') || 
-                                              event.target.classList.contains('comment-resize-handle'))) {
-                    return;
-                }
-                
-            // コメント選択を解除
-                if (selectedComment) {
-                    selectedComment.style.outline = 'none';
-                    selectedComment = null;
-                }
-            });
-        });
+        })
 
         var browserDrawingData = {};
         var browserDrawData = {};
@@ -1979,6 +1885,20 @@
             transformList.appendItem(rotateTransform);
         }
 
+        function pencilByMousemove(event) {
+            var linetoX = parseInt(getPositionXOnSvg(event, currentSvg, currentSvg_js));
+            var linetoY = parseInt(getPositionYOnSvg(event, currentSvg, currentSvg_js));
+            window.linetoStr = window.linetoStr + " L " + linetoX + " " + linetoY;
+
+
+            var pathElm = currentSvg_js.querySelector("path:last-child");
+            if (pathElm) {
+                pathElm.setAttribute("d", window.linetoStr);
+            } else {
+                console.error("最後のパス要素が見つかりません");
+            }
+        }
+
         // 点と線分の最短距離を計算する関数
         function distanceToLine(x, y, x1, y1, x2, y2) {
             const A = x - x1;
@@ -2021,7 +1941,7 @@
             }
             
             // rgb(r, g, b)形式から数値を抽出
-            const rgbMatch = rgb.match(/^rgb\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$$$/i);
+            const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
             if (rgbMatch) {
                 const r = parseInt(rgbMatch[1], 10);
                 const g = parseInt(rgbMatch[2], 10);
@@ -2036,7 +1956,6 @@
         // SVGのクリックイベントを修正して、コメント選択を解除する
         [leftSvgElm, rightSvgElm].forEach(svgElm => {
             svgElm.on('click', function(event) {
-                // If the click target is a comment box or its resize handle, do not deselect
                 if (event.target.classList && (event.target.classList.contains('comment-box') || 
                                               event.target.classList.contains('comment-resize-handle'))) {
                     return;
