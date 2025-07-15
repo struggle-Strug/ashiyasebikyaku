@@ -111,8 +111,8 @@
     /* 新しいスタイル：個別のfigure要素用 */
     .image-container {
         display: flex;
-        gap: 0; /* Remove gap between images */
-        flex-wrap: nowrap; /* Prevent wrapping to keep images on same line */
+        gap: 0; /* 画像間のギャップを削除 */
+        flex-wrap: nowrap; /* 画像が同じ行に留まるように折り返しを防止 */
         align-items: flex-start;
     }
 
@@ -122,25 +122,31 @@
         position: relative;
         border: solid 1px rgba(0,0,0,0.1);
         background-color: white;
-        padding-bottom: 30px; /* Add space for date text */
+        padding-bottom: 30px; /* 日付テキスト用のスペースを追加 */
     }
 
     @media only screen and (max-width: 767px) {
         .image-container {
-            gap: 0; /* Remove gap between images on mobile */
+            gap: 0; /* モバイルでの画像間のギャップを削除 */
         }
         
         .image-figure {
-            min-width: 50%; /* Make each image take up exactly half the width */
+            min-width: 50%; /* 各画像が正確に半分の幅を占めるようにする */
             max-width: 50%;
             flex: 1;
-            padding-bottom: 40px; /* Add more space for date text on mobile */
+            padding-bottom: 40px; /* モバイルでの日付テキスト用のスペースを増やす */
         }
         
-        /* Reduce SVG height on mobile for better fit */
+        /* モバイルでのフィット感を高めるためにSVGの高さを縮小 */
         .image-figure svg {
-            height: 300px !important; /* Reduce from 400px to 300px on mobile */
+            height: 300px !important; /* モバイルで400pxから300pxに縮小 */
         }
+    }
+
+    /* 新しいスタイル：個別のfigure要素用 */
+    .date-text {
+        font-weight: bold;
+        white-space: nowrap;
     }
 </style>
 <div class="card">
@@ -284,48 +290,67 @@
     $(function () {
         let csrf = $('#ajax-form').find('input[name=_csrfToken]').val();
 
+        // イベントタイプを定義 (タッチデバイスとマウスデバイスで切り替え)
         var start_event = 'ontouchstart' in window ? "touchstart" : "mousedown";
         var move_event = 'ontouchstart' in window ? "touchmove" : "mousemove";
         var end_event = 'ontouchstart' in window ? "touchend" : "mouseup";
         var out_event = "mouseleave";
         
-        // 修正：両方のSVG要素を取得
+        // 両方のSVG要素を取得
         var leftSvgElm = $("#leftDrawingCanvas");
         var rightSvgElm = $("#rightDrawingCanvas");
         var leftSvgElm_js = document.getElementById("leftDrawingCanvas");
         var rightSvgElm_js = document.getElementById("rightDrawingCanvas");
         
-        var type = "imageMoveAndZoom";
-        var touchType = "move";
+        var type = "imageMoveAndZoom"; // 現在のモード: "imageMoveAndZoom" (画像移動・ズーム) または "pencil" (描画)
+        var touchType = "move"; // タッチデバイスでのサブモード: "move" (移動) または "zoom" (ズーム)
         
-        // 1. Add new global variables for drawing state management:
-        //    Insert these lines immediately after `var touchType = "move";`
-        var currentSvg = null; // Currently active SVG jQuery object
-        var currentSvg_js = null; // Currently active SVG DOM object
-        var currentPathElement = null; // For free-draw (path element)
-        var tempLine = null; // For line-draw (line element)
-        var startX, startY; // Initial point for the current drawing segment
-        var lastSvg_js = null; // To track the SVG from the previous move event
+        // 描画状態管理のためのグローバル変数
+        var currentSvg = null; // 現在アクティブなSVGのjQueryオブジェクト
+        var currentSvg_js = null; // 現在アクティブなSVGのDOMオブジェクト
+        var currentPathElement = null; // 自由描画 (path要素)
+        var tempLine = null; // 直線描画 (line要素)
+        var startX, startY; // 現在の描画セグメントの開始点
+        var lastSvg_js = null; // 前回の移動イベントからのSVGを追跡
 
         // ツール関連の変数
-        var currentTool = "free-draw";
-        var isDrawing = false;
-        var textColor = "#000000";
-        var backgroundColor = "#ffffff";
-        var lineColor = "#ff0000";
-        var lineWidth = 3;
-        var selectedComment = null;
-        var fontSize = 14;
+        var currentTool = "free-draw"; // 現在選択されているツール
+        var isDrawing = false; // 描画中かどうか
+        var textColor = "#000000"; // テキストの色
+        var backgroundColor = "#ffffff"; // 背景色
+        var lineColor = "#ff0000"; // 線の色
+        var lineWidth = 3; // 線の太さ
+        var selectedComment = null; // 選択中のコメントボックス
+        var fontSize = 14; // フォントサイズ
 
-        // 直線移動のための変数を追加
-        var isMovingLine = false;
-        var selectedLine = null;
-        var lineStartX, lineStartY;
-        var lineOffsetX, lineOffsetY;
+        // 直線移動のための変数
+        var isMovingLine = false; // 直線移動中かどうか
+        var selectedLine = null; // 選択中の直線
+        var lineStartX, lineStartY; // 直線移動の開始点
+        var lineOffsetX, lineOffsetY; // 直線移動のオフセット
 
-        // 消しゴム機能用のグローバル変数を追加
-        var eraseRect = null;
-        var eraseStartX, eraseStartY;
+        // 消しゴム機能用のグローバル変数
+        var eraseRect = null; // 消しゴムの範囲を示す矩形
+        var eraseStartX, eraseStartY; // 消しゴムの開始点
+
+        // 画像移動・ズームのためのグローバル変数
+        var isDraggingImage = false; // 画像ドラッグ中かどうか
+        var imageDragTarget = null; // ドラッグ中の画像要素
+        var imageDragStartX, imageDragStartY; // 画像ドラッグ開始時のポインタ位置
+        var imageDragMatrix; // ドラッグ開始時の画像変換行列
+
+        // ピンチズームのためのグローバル変数 (マウスホイールとタッチズームで共有)
+        var baseDistance = 0; // 前回のtouchmoveイベントでの2本の指間の距離
+        var pointX = 0; // ズームの中心X座標 (SVG座標)
+        var pointY = 0; // ズームの中心Y座標 (SVG座標)
+        var isSingleFingerZooming = false; // 1本指ズーム中かどうか
+        var singleFingerZoomStartY = 0; // 1本指ズーム開始時のY座標
+
+        // Global variables for image dimensions and heights
+        let finalSvgHeight = 400; // Default or initial height for SVGs
+        let calculatedLeftImageHeight = 0;
+        let calculatedRightImageHeight = 0;
+        const dateAreaHeight = 40; // Height reserved for date text below the SVG
 
         // 初期化時にカラーピッカーの値を設定
         $(document).ready(function() {
@@ -336,6 +361,9 @@
                 lineColor = localStorage.getItem('lineColor');
                 document.getElementById('line-color').value = lineColor;
             }
+
+            // Initial load and display of images
+            loadAndDisplayImages();
         });
 
         // ツールボタンのクリックイベント
@@ -485,7 +513,22 @@
             document.getElementById('font-size-value').textContent = fontSize;
         }
 
-        // 修正：どちらのSVGがクリックされたかを判定する関数
+        // タッチモード切り替え (モバイル用: 移動/ズーム)
+        document.getElementById("touch-type").addEventListener("click", function () {
+            if (touchType === "move") {
+                touchType = "zoom";
+                this.textContent = "ズームモード";
+                this.classList.add("btn-primary");
+                this.classList.remove("btn-outline-primary");
+            } else {
+                touchType = "move";
+                this.textContent = "ムーブモード";
+                this.classList.remove("btn-primary");
+                this.classList.add("btn-outline-primary");
+            }
+        });
+
+        // どちらのSVGがクリックされたかを判定する関数
         function getSvgFromEvent(event) {
             const target = event.target;
             const leftSvg = document.getElementById('leftDrawingCanvas');
@@ -499,7 +542,7 @@
             return null;
         }
 
-        // Helper function to convert global screen coordinates to SVG local coordinates
+        // グローバルスクリーン座標をSVGローカル座標に変換するヘルパー関数
         function screenToSvgCoords(clientX, clientY, svgElement) {
             const svgRect = svgElement.getBoundingClientRect();
             const viewBox = svgElement.getAttribute('viewBox').split(' ').map(Number);
@@ -517,31 +560,99 @@
             return { x: svgX, y: svgY };
         }
 
-        // 修正：両方のSVGにイベントリスナーを設定
+        // 両方のSVGにイベントリスナーを設定
         function setupSvgEvents(svgElm, svgElm_js) {
             svgElm.on(start_event, function (event) {
-                // Comment elements should not trigger drawing start
+                // コメント要素が描画開始をトリガーしないようにする
                 if (event.target.classList && event.target.classList.contains('comment-box')) {
                     return;
                 }
                 
-                // Set the currently active SVG
+                // 現在アクティブなSVGを設定
                 const svgInfo = getSvgFromEvent(event);
-                if (!svgInfo) return; // Should not happen if event is on an SVG
+                if (!svgInfo) return; // イベントがSVG上で発生している場合は発生しないはず
 
                 currentSvg = svgInfo.svg;
                 currentSvg_js = svgInfo.svg_js;
-                lastSvg_js = currentSvg_js; // Initialize lastSvg_js on mousedown
+                lastSvg_js = currentSvg_js; // mousedown時にlastSvg_jsを初期化
 
                 event.preventDefault();
+                // Ensure global listeners are attached for all image manipulation starts (mouse or touch)
                 if (type === "imageMoveAndZoom") {
-                    moveContentByMousedown(event);
+                    if (event.touches) {
+                        if (event.touches.length === 2) { // 2本指ピンチズーム
+                            isDraggingImage = false; // 移動のためのドラッグではない
+                            isSingleFingerZooming = false; // 1本指ズームではない
+                            baseDistance = Math.sqrt(
+                                Math.pow(event.touches[1].pageX - event.touches[0].pageX, 2) +
+                                Math.pow(event.touches[1].pageY - event.touches[0].pageY, 2)
+                            );
+                            const x1 = getPositionXOnSvgByX(event.touches[0].pageX, svgInfo.svg, svgInfo.svg_js);
+                            const y1 = getPositionYOnSvgByY(event.touches[0].pageY, svgInfo.svg, svgInfo.svg_js);
+                            const x2 = getPositionXOnSvgByX(event.touches[1].pageX, svgInfo.svg, svgInfo.svg_js);
+                            const y2 = getPositionYOnSvgByY(event.touches[1].pageY, svgInfo.svg, svgInfo.svg_js);
+                            pointX = (x1 + x2) / 2;
+                            pointY = (y1 + y2) / 2;
+
+                            const currentPointerX = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+                            const currentPointerY = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+                            const margin = 20;
+                            const svgWidth = svgInfo.svg_js.clientWidth;
+                            const svgHeight = svgInfo.svg_js.clientHeight;
+                            if (currentPointerX > margin && currentPointerX < svgWidth - margin &&
+                                currentPointerY > margin && currentPointerY < svgHeight - margin) {
+                                if (svgInfo.side === 'left') {
+                                    imageDragTarget = document.getElementById("left-image");
+                                } else {
+                                    imageDragTarget = document.getElementById("right-image");
+                                }
+                            }
+                        } else if (event.touches.length === 1) { // 1本指タッチ
+                            if (touchType === "move") {
+                                moveContentByMousedown(event); // This sets isDraggingImage = true
+                            } else if (touchType === "zoom") {
+                                isDraggingImage = false; // Not dragging for move
+                                isSingleFingerZooming = true;
+                                singleFingerZoomStartY = getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js);
+                                const currentPointerX = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+                                const currentPointerY = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+                                const margin = 20;
+                                const svgWidth = svgInfo.svg_js.clientWidth;
+                                const svgHeight = svgInfo.svg_js.clientHeight;
+                                if (currentPointerX > margin && currentPointerX < svgWidth - margin &&
+                                    currentPointerY > margin && currentPointerY < svgHeight - margin) {
+                                    if (svgInfo.side === 'left') {
+                                        imageDragTarget = document.getElementById("left-image");
+                                    } else {
+                                        imageDragTarget = document.getElementById("right-image");
+                                    }
+                                }
+                                // Set reference point to the top-left of the image
+                                if (imageDragTarget) {
+                                    pointX = parseFloat(imageDragTarget.getAttribute("x"));
+                                    pointY = parseFloat(imageDragTarget.getAttribute("y"));
+                                } else {
+                                    // Fallback if imageDragTarget is not found (shouldn't happen if logic is correct)
+                                    pointX = currentPointerX;
+                                    pointY = currentPointerY;
+                                }
+                            }
+                        }
+                    } else { // マウスイベント
+                        moveContentByMousedown(event); // This sets isDraggingImage = true
+                    }
+
+                    // Always attach global listeners if any image manipulation mode is active
+                    if (isDraggingImage || (event.touches && event.touches.length === 2) || isSingleFingerZooming) {
+                        document.body.addEventListener(move_event, handleImageMoveAndZoomMove, { passive: false });
+                        document.body.addEventListener(end_event, handleImageMoveAndZoomEnd);
+                    }
                 } else if (type === "pencil") {
-                    // Straight line selection logic (existing)
+                    // 直線選択ロジック (既存)
                     if (currentTool === 'line-draw' && event.target.tagName === 'line') {
                         selectedLine = event.target;
                         isMovingLine = true;
-                        isDrawing = false; // Not drawing a new line, but moving an existing one
+                        isDrawing = false; // 新しい線を描画するのではなく、既存の線を移動する
                         
                         lineStartX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
                         lineStartY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
@@ -564,14 +675,14 @@
                     
                     switch (currentTool) {
                         case 'line-draw':
-                            // Deselect any previously selected line
+                            // 以前に選択された線を非選択にする
                             if (selectedLine) {
                                 selectedLine.setAttribute('stroke-width', lineWidth);
                                 selectedLine = null;
                                 isMovingLine = false;
                             }
                             
-                            // Start new line drawing
+                            // 新しい直線の描画を開始
                             tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                             tempLine.setAttribute("x1", startX);
                             tempLine.setAttribute("y1", startY);
@@ -582,7 +693,7 @@
                             currentSvg_js.appendChild(tempLine);
                             break;
                         case 'comment-add':
-                            // Existing comment add logic
+                            // 既存のコメント追加ロジック
                             const x = getPositionXOnSvg(event, currentSvg, currentSvg_js);
                             const y = getPositionYOnSvg(event, currentSvg, currentSvg_js);
                             
@@ -639,13 +750,13 @@
                                 document.getElementById('font-size-tools').style.display = 'flex';
                             });
                             
-                            let isDragging = false;
+                            let isDraggingComment = false; // コメントドラッグ中フラグ
                             let startDragX, startDragY;
                             let startLeft, startTop;
                             
                             commentBox.addEventListener('mousedown', function(e) {
                                 if (e.target === resizeHandle) return;
-                                isDragging = true;
+                                isDraggingComment = true;
                                 startDragX = e.clientX;
                                 startDragY = e.clientY;
                                 startLeft = parseInt(commentBox.style.left) || 0;
@@ -656,7 +767,7 @@
                             });
                             
                             function dragMove(e) {
-                                if (!isDragging) return;
+                                if (!isDraggingComment) return;
                                 const dx = e.clientX - startDragX;
                                 const dy = e.clientY - startDragY;
                                 commentBox.style.left = (startLeft + dx) + 'px';
@@ -664,13 +775,13 @@
                             }
                             
                             function dragEnd() {
-                                isDragging = false;
+                                isDraggingComment = false;
                                 document.removeEventListener('mousemove', dragMove);
                                 document.removeEventListener('mouseup', dragEnd);
                                 commentBox.style.cursor = 'auto';
                             }
                             
-                            let isResizing = false;
+                            let isResizing = false; // リサイズ中フラグ
                             let originalWidth, originalHeight, originalX, originalY;
                             
                             resizeHandle.addEventListener('mousedown', function(e) {
@@ -714,10 +825,10 @@
                             selection.removeAllRanges();
                             selection.addRange(range);
                             
-                            isDrawing = false; // Comment adding is not a continuous drawing action
+                            isDrawing = false; // コメント追加は連続的な描画アクションではない
                             break;
                         case 'eraser':
-                            // Existing eraser start logic
+                            // 既存の消しゴム開始ロジック
                             eraseStartX = startX;
                             eraseStartY = startY;
                             
@@ -732,7 +843,7 @@
                             currentSvg_js.appendChild(eraseRect);
                             break;
                         case 'free-draw':
-                            // Initialize new path for free-draw
+                            // 自由描画のための新しいパスを初期化
                             currentPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
                             const path_attr = {
                                 "id": Math.random().toString(32).substring(2),
@@ -746,10 +857,10 @@
                                 currentPathElement.setAttribute(key, path_attr[key]);
                             }
                             currentSvg_js.appendChild(currentPathElement);
-                            window.linetoStr = `M ${startX} ${startY} `; // Reset linetoStr for the new path
+                            window.linetoStr = `M ${startX} ${startY} `; // 新しいパスのためにlinetoStrをリセット
                             break;
                         default:
-                            // Fallback to free-draw if tool is unknown
+                            // ツールが不明な場合の自由描画へのフォールバック
                             currentPathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
                             const default_path_attr = {
                                 "id": Math.random().toString(32).substring(2),
@@ -763,73 +874,86 @@
                                 currentPathElement.setAttribute(key, default_path_attr[key]);
                             }
                             currentSvg_js.appendChild(currentPathElement);
-                            window.linetoStr = `M ${startX} ${startY} `; // Reset linetoStr for the new path
+                            window.linetoStr = `M ${startX} ${startY} `; // 新しいパスのためにlinetoStrをリセット
                             break;
                     }
                 }
             });
-            // REMOVE the existing .on(move_event, ...) and .on(end_event, ...) from here.
-            // They will be replaced by global document.body listeners.
         }
 
         // 両方のSVGにイベントリスナーを設定
         setupSvgEvents(leftSvgElm, leftSvgElm_js);
         setupSvgEvents(rightSvgElm, rightSvgElm_js);
 
-        // Global move event listener for continuous drawing across SVGs
+        // SVGをまたぐ連続描画のためのグローバル移動イベントリスナー
+        var svgCrossings = []; // SVG間の交差点を記録するための変数
         document.body.addEventListener(move_event, function (event) {
-            // Only handle drawing/erasing if in "pencil" mode
+            // "pencil"モードの場合のみ描画/消去を処理
             if (type !== "pencil") {
                 return;
             }
 
-            if (!isDrawing) return; // Only proceed if a drawing action has started
-            event.preventDefault(); // Prevent default browser behavior (e.g., scrolling on touch)
+            if (!isDrawing) return; // 描画アクションが開始されている場合のみ続行
+            event.preventDefault(); // デフォルトのブラウザ動作 (例: タッチでのスクロール) を防止
 
-            const newSvgInfo = getSvgFromEvent(event); // Determine which SVG the mouse is currently over
+            const newSvgInfo = getSvgFromEvent(event); // 現在マウスがどのSVG上にあるかを判断
             const mouseXGlobal = event.clientX || (event.touches && event.touches[0].clientX);
             const mouseYGlobal = event.clientY || (event.touches && event.touches[0].clientY);
 
-            // If the mouse has moved to a different SVG than the one currently being drawn on
+            // マウスが現在描画中のSVGとは異なるSVGに移動した場合
             if (newSvgInfo && newSvgInfo.svg_js !== currentSvg_js) {
-                // Mouse has crossed into a new SVG
+                // マウスが新しいSVGに交差した
 
                 let intersectionXGlobal;
                 const leavingSvgRect = currentSvg_js.getBoundingClientRect();
                 const enteringSvgRect = newSvgInfo.svg_js.getBoundingClientRect();
 
-                // Determine the exact global X coordinate of the border being crossed
-                if (leavingSvgRect.right < enteringSvgRect.left) { // Moving from left to right
+                // 交差している境界線の正確なグローバルX座標を決定
+                if (leavingSvgRect.right < enteringSvgRect.left) { // 左から右へ移動
                     intersectionXGlobal = leavingSvgRect.right;
-                } else if (leavingSvgRect.left > enteringSvgRect.right) { // Moving from right to left
+                } else if (leavingSvgRect.left > enteringSvgRect.right) { // 右から左へ移動
                     intersectionXGlobal = leavingSvgRect.left;
                 } else {
-                    // Fallback if SVGs are overlapping or directly adjacent without a clear "gap"
+                    // SVGが重なっているか、明確な「ギャップ」なしで直接隣接している場合のフォールバック
                     intersectionXGlobal = mouseXGlobal;
                 }
-                const intersectionYGlobal = mouseYGlobal; // Y coordinate is continuous
+                const intersectionYGlobal = mouseYGlobal; // Y座標は連続
 
-                // 1. Finalize the drawing element on the *leaving* SVG
+                // 1. *離れる*SVG上の描画要素を確定
                 const leavingSvgCoords = screenToSvgCoords(intersectionXGlobal, intersectionYGlobal, currentSvg_js);
+                // プレビューのための交差点を記録
+                if (currentTool === 'free-draw' || currentTool === 'line-draw') {
+                    svgCrossings.push({
+                        from: currentSvg_js === leftSvgElm_js ? 'left' : 'right',
+                        to: newSvgInfo.svg_js === leftSvgElm_js ? 'left' : 'right',
+                        leaving: { x: leavingSvgCoords.x, y: leavingSvgCoords.y, svg: currentSvg_js },
+                        entering: null, // 後で埋める
+                        global: { x: intersectionXGlobal, y: intersectionYGlobal }
+                    });
+                }
 
                 if (currentTool === 'free-draw' && currentPathElement && currentPathElement.ownerSVGElement === currentSvg_js) {
                     window.linetoStr = window.linetoStr + " L " + leavingSvgCoords.x + " " + leavingSvgCoords.y;
                     currentPathElement.setAttribute("d", window.linetoStr);
-                    currentPathElement = null; // Mark as finished on this SVG
-                    window.linetoStr = ''; // Reset for next path
+                    currentPathElement = null; // このSVG上での描画を終了としてマーク
+                    window.linetoStr = ''; // 次のパスのためにリセット
                 } else if (currentTool === 'line-draw' && tempLine && tempLine.ownerSVGElement === currentSvg_js) {
                     tempLine.setAttribute("x2", leavingSvgCoords.x);
                     tempLine.setAttribute("y2", leavingSvgCoords.y);
-                    tempLine = null; // Mark as finished on this SVG
+                    tempLine = null; // このSVG上での描画を終了としてマーク
                 }
 
-                // 2. Switch the active SVG context
+                // 2. アクティブなSVGコンテキストを切り替える
                 currentSvg = newSvgInfo.svg;
                 currentSvg_js = newSvgInfo.svg_js;
                 lastSvg_js = currentSvg_js;
 
-                // 3. Start a new drawing element on the *entering* SVG from the intersection point
+                // 3. 交差点から*入る*SVG上で新しい描画要素を開始
                 const enteringSvgCoords = screenToSvgCoords(intersectionXGlobal, intersectionYGlobal, currentSvg_js);
+                // 交差記録を完了
+                if (svgCrossings.length > 0 && svgCrossings[svgCrossings.length-1].entering === null) {
+                    svgCrossings[svgCrossings.length-1].entering = { x: enteringSvgCoords.x, y: enteringSvgCoords.y, svg: currentSvg_js };
+                }
 
                 startX = enteringSvgCoords.x;
                 startY = enteringSvgCoords.y;
@@ -853,15 +977,15 @@
                     tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                     tempLine.setAttribute("x1", startX);
                     tempLine.setAttribute("y1", startY);
-                    tempLine.setAttribute("x2", startX); // Will be updated in the next move event
+                    tempLine.setAttribute("x2", startX); // 次の移動イベントで更新される
                     tempLine.setAttribute("y2", startY);
                     tempLine.setAttribute("stroke", lineColor);
                     tempLine.setAttribute("stroke-width", lineWidth);
                     currentSvg_js.appendChild(tempLine);
                 }
             } else if (!newSvgInfo && (currentPathElement || tempLine || eraseRect)) {
-                // Mouse moved outside both SVGs while drawing/erasing.
-                // Finalize the current drawing element on the last active SVG.
+                // 描画/消去中にマウスが両方のSVGの外に移動した。
+                // 最後にアクティブだったSVG上の現在の描画要素を確定する。
                 const currentX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
                 const currentY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
 
@@ -873,12 +997,12 @@
                     currentPathElement = null;
                     window.linetoStr = '';
                 }
-                // Eraser logic will be handled on mouseup
-                isDrawing = false; // Stop drawing
+                // 消しゴムロジックはmouseupで処理される
+                isDrawing = false; // 描画を停止
                 return;
             }
 
-            // Continue drawing on the current (or newly switched) SVG
+            // 現在の (または新しく切り替わった) SVG上で描画を続行
             const currentX = getPositionXOnSvg(event, currentSvg, currentSvg_js);
             const currentY = getPositionYOnSvg(event, currentSvg, currentSvg_js);
 
@@ -889,7 +1013,7 @@
                 tempLine.setAttribute("x2", currentX);
                 tempLine.setAttribute("y2", currentY);
             } else if (currentTool === 'eraser' && eraseRect) {
-                // Update eraser range
+                // 消しゴム範囲を更新
                 const width = currentX - eraseStartX;
                 const height = currentY - eraseStartY;
                 
@@ -903,20 +1027,20 @@
             }
         });
 
-        // Global end event listener for drawing actions
+        // 描画アクションのためのグローバル終了イベントリスナー
         document.body.addEventListener(end_event, function (event) {
-            // If in imageMoveAndZoom mode, let its specific mouseup handler manage it.
+            // imageMoveAndZoomモードの場合、その特定のmouseupハンドラーに管理させる。
             if (type === "imageMoveAndZoom") {
-                moveContentByMouseup(event);
+                handleImageMoveAndZoomEnd(); // 画像移動・ズームの終了を処理
                 return;
             }
 
-            if (!isDrawing && !isMovingLine) return; // Only proceed if a drawing/moving action was active
+            if (!isDrawing && !isMovingLine) return; // 描画/移動アクションがアクティブだった場合のみ続行
             event.preventDefault();
 
-            // Finalize drawing based on the current tool
+            // 現在のツールに基づいて描画を確定
             if (currentTool === 'line-draw' && tempLine) {
-                // Remove very short lines
+                // 非常に短い線を削除
                 const x1 = parseFloat(tempLine.getAttribute("x1"));
                 const y1 = parseFloat(tempLine.getAttribute("y1"));
                 const x2 = parseFloat(tempLine.getAttribute("x2"));
@@ -925,12 +1049,12 @@
                 if (length < 5) {
                     tempLine.remove();
                 }
-                tempLine = null; // Clear tempLine reference
+                tempLine = null; // tempLine参照をクリア
             } else if (currentTool === 'eraser' && eraseRect) {
-                // Get the bounding client rect of the current SVG (where eraseRect was drawn)
+                // 現在のSVGのバウンディングクライアント矩形を取得 (eraseRectが描画された場所)
                 const currentSvgBounds = currentSvg_js.getBoundingClientRect();
 
-                // Calculate erase rectangle in global screen coordinates
+                // グローバルスクリーン座標で消去矩形を計算
                 const globalEraseRect = {
                     left: currentSvgBounds.left + parseFloat(eraseRect.getAttribute("x")),
                     top: currentSvgBounds.top + parseFloat(eraseRect.getAttribute("y")),
@@ -938,20 +1062,20 @@
                     bottom: currentSvgBounds.top + parseFloat(eraseRect.getAttribute("y")) + parseFloat(eraseRect.getAttribute("height"))
                 };
 
-                // Collect all drawable SVG elements from both SVGs
+                // 両方のSVGから描画可能なSVG要素をすべて収集
                 const allSvgElements = Array.from(leftSvgElm_js.querySelectorAll('path, line')).concat(Array.from(rightSvgElm_js.querySelectorAll('path, line')));
 
                 allSvgElements.forEach(element => {
-                    // Skip the eraseRect itself
+                    // eraseRect自体はスキップ
                     if (element === eraseRect) return;
 
                     const ownerSvgElm_js = element.ownerSVGElement;
                     const ownerSvgBounds = ownerSvgElm_js.getBoundingClientRect();
 
-                    // Get the bounding box of the SVG element in its own SVG coordinate system
+                    // SVG要素のバウンディングボックスを自身のSVG座標系で取得
                     const bbox = element.getBBox();
 
-                    // Convert element's bbox to global screen coordinates
+                    // 要素のbboxをグローバルスクリーン座標に変換
                     const elementGlobalRect = {
                         left: ownerSvgBounds.left + (bbox.x - parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[0])) * (ownerSvgBounds.width / parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[2])),
                         top: ownerSvgBounds.top + (bbox.y - parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[1])) * (ownerSvgBounds.height / parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[3])),
@@ -959,7 +1083,7 @@
                         bottom: ownerSvgBounds.top + (bbox.y + bbox.height - parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[1])) * (ownerSvgBounds.height / parseFloat(ownerSvgElm_js.getAttribute('viewBox').split(' ')[3]))
                     };
 
-                    // Check for intersection
+                    // 交差をチェック
                     if (!(elementGlobalRect.right < globalEraseRect.left ||
                           elementGlobalRect.left > globalEraseRect.right ||
                           elementGlobalRect.bottom < globalEraseRect.top ||
@@ -969,14 +1093,14 @@
                             selectedLine = null;
                             isMovingLine = false;
                         }
-                        if (currentPathElement === element) { // If the currently drawing path is erased
+                        if (currentPathElement === element) { // 現在描画中のパスが消去された場合
                             currentPathElement = null;
                             window.linetoStr = '';
                         }
                     }
                 });
 
-                // Comment boxes are already HTML elements, so their getBoundingClientRect is directly in global coords
+                // コメントボックスはすでにHTML要素なので、getBoundingClientRectは直接グローバル座標で取得できる
                 const commentBoxes = document.querySelectorAll('.comment-box');
                 commentBoxes.forEach(box => {
                     const boxRect = box.getBoundingClientRect();
@@ -992,51 +1116,28 @@
                 });
 
                 eraseRect.remove();
-                eraseRect = null; // Clear eraseRect reference
+                eraseRect = null; // eraseRect参照をクリア
             }
 
-            // Reset drawing states
+            // 描画状態をリセット
             isDrawing = false;
             isMovingLine = false;
-            selectedLine = null; // Deselect any line that was being moved
-            currentPathElement = null; // Clear path element reference
-            tempLine = null; // Clear tempLine reference
-            lastSvg_js = null; // Reset last SVG on mouseup
+            selectedLine = null; // 移動中の線を非選択にする
+            currentPathElement = null; // パス要素参照をクリア
+            tempLine = null; // tempLine参照をクリア
+            lastSvg_js = null; // mouseup時に最後のSVGをリセット
         });
 
-        // 4. Modify `pencilByMousedown` and `pencilByMousemove` to be empty or simplified, as their logic is now handled by the global event listeners.
-        //    Find `function pencilByMousedown(event) {` and replace its content with:
-        function pencilByMousedown(event) {
-            // Logic moved to global event listener and setupSvgEvents
-        }
-        //    Find `function pencilByMouseup(event) {` and replace its content with:
-        function pencilByMouseup(event) {
-            // Logic moved to global event listener
-        }
-        //    Find `function pencilByMousemove(event) {` and replace its content with:
-        function pencilByMousemove(event) {
-            // Logic moved to global event listener
-        }
-
-        // 5. Modify the `moveContentByMousedown` function to ensure it correctly attaches its own `move_event` and `end_event` listeners to the specific SVG element when in "imageMoveAndZoom" mode. This is crucial to prevent interference with the global drawing listeners.
-        //    Find `function moveContentByMousedown(event) {` and ensure its internal `svgInfo.svg.on(move_event, ...)` and `svgInfo.svg.on(end_event, ...)` blocks are present and correctly scoped. The existing code already does this, so no change is needed here, just a confirmation that it remains as is.
-
-        // 6. Modify the `zoomAction` function to ensure it correctly attaches its `wheel_event` listener to the specific SVG element.
-        //    Find `function zoomAction() {` and ensure its internal `svgElm_js.addEventListener(wheel_event, ...)` block is present and correctly scoped. The existing code already does this, so no change is needed here, just a confirmation that it remains as is.
-
-        // 7. Modify the SVG click event to deselect comments.
-        //    Find `[leftSvgElm, rightSvgElm].forEach(svgElm => { svgElm.on('click', function(event) { ... }); });`
-        //    Ensure it remains as is, as it correctly handles comment deselection.
         // SVGのクリックイベントを修正して、コメント選択を解除する
         [leftSvgElm, rightSvgElm].forEach(svgElm => {
             svgElm.on('click', function(event) {
-                // If the click target is a comment box or its resize handle, do not deselect
+                // クリックターゲットがコメントボックスまたはそのリサイズハンドルである場合、非選択にしない
                 if (event.target.classList && (event.target.classList.contains('comment-box') || 
                                               event.target.classList.contains('comment-resize-handle'))) {
                     return;
                 }
                 
-            // コメント選択を解除
+                // コメント選択を解除
                 if (selectedComment) {
                     selectedComment.style.outline = 'none';
                     selectedComment = null;
@@ -1047,7 +1148,7 @@
         var browserDrawingData = {};
         var browserDrawData = {};
 
-        // 修正：両方のSVGを初期化
+        // 両方のSVGを初期化
         function initializeSvg(svgElm_js) {
             var svgElm_js_height = svgElm_js.clientHeight
             var svgElm_js_width = svgElm_js.clientWidth
@@ -1055,41 +1156,9 @@
             svgElm_js.setAttribute("viewBox", init_viewBox)
         }
 
+        // Initial SVG initialization (before images are loaded)
         initializeSvg(leftSvgElm_js);
         initializeSvg(rightSvgElm_js);
-
-        function resizeWindow() {
-            [leftSvgElm_js, rightSvgElm_js].forEach(svgElm_js => {
-                var svgElm_js_height = svgElm_js.clientHeight
-                var svgElm_js_width = svgElm_js.clientWidth
-                var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox').split(' ')
-                    .map(s => parseFloat(s));
-                var init_viewBox = String(minX) + " " + String(minY) + " " + String(svgElm_js_width) + " " + String(svgElm_js_height)
-                svgElm_js.setAttribute("viewBox", init_viewBox)
-            });
-        }
-        window.onresize = resizeWindow;
-
-        const clipRightRect = document.getElementById("clip-right-rect")
-        const clipLeftRect = document.getElementById("clip-left-rect")
-
-        function init() {
-            // 修正：個別のSVGに合わせてクリップ領域を調整
-            const leftSvgWidth = leftSvgElm_js.clientWidth;
-            const rightSvgWidth = rightSvgElm_js.clientWidth;
-            const margin = 20;
-            
-            clipLeftRect.width.baseVal.value = leftSvgWidth - margin * 2;
-            clipRightRect.width.baseVal.value = rightSvgWidth - margin * 2;
-            clipLeftRect.x.baseVal.value = margin;
-            clipRightRect.x.baseVal.value = margin;
-            clipLeftRect.y.baseVal.value = margin;
-            clipRightRect.y.baseVal.value = margin;
-            clipLeftRect.height.baseVal.value = 360;
-            clipRightRect.height.baseVal.value = 360;
-        }
-
-        init();
 
         function getViewBox(svgElm_js) {
             var [minX, minY, width, height] = svgElm_js.getAttribute('viewBox')
@@ -1108,7 +1177,7 @@
             return pageX;
         }
 
-        // 修正：SVGを指定できるように変更
+        // SVGを指定できるように変更
         function getPositionXOnSvg(e, svgElm, svgElm_js) {
             var x = getPageX(e)
             var left = svgElm.position().left
@@ -1130,7 +1199,7 @@
             return pageY;
         }
 
-        // 修正：SVGを指定できるように変更
+        // SVGを指定できるように変更
         function getPositionYOnSvg(e, svgElm, svgElm_js) {
             var y = getPageY(e)
             var top = svgElm.position().top
@@ -1143,7 +1212,7 @@
             return result
         }
 
-        // Helper functions for touch coordinate conversion
+        // タッチ座標変換のためのヘルパー関数
         function getPositionXOnSvgByX(pageX, svgElm, svgElm_js) {
             var left = svgElm.position().left
             var svg_w = svgElm_js.clientWidth
@@ -1183,7 +1252,7 @@
             Matrix.e += x;
             Matrix.f += y;
             targetSvg.appendChild(image_elm);
-            initImageLoad()
+            // No need to call initImageLoad here, it's part of the main flow now
         }
 
         function SVGMatrixCreate(a, b, c, d, e, f) {
@@ -1198,107 +1267,49 @@
             return mtx;
         }
 
-        // 修正：右の画像を右のSVGに表示
-        function rightDisplay(aspectRatio, image) {
-            const rightWidth = rightSvgElm_js.clientWidth;
-            const imageWidth = rightWidth - 40; // マージンを考慮
-            const imageHeight = imageWidth / aspectRatio;
-            const x = 20; // マージン
-            const y = 20;
+        // Unified function to display an image in an SVG
+        function displayImageInSvg(imgElement, svgElm, svgElm_js, imageId, clipPathId, aspectRatio, dateTextContent, side, actualImageHeight) {
+            const svgWidth = svgElm_js.clientWidth;
+            const imageWidth = svgWidth - 40; // 20px left + 20px right margin
             
-            // SVGの高さを調整
-            rightSvgElm_js.style.height = (imageHeight + 40) + 'px';
-            clipRightRect.height.baseVal.value = imageHeight;
-            
-            var init_viewBox = "0 0 " + String(rightWidth) + " " + String(imageHeight + 40);
-            rightSvgElm_js.setAttribute("viewBox", init_viewBox);
-            
-            createImage(x, y, 0, 0, imageWidth, imageHeight, image, "right-image", "url(#clipright)", rightSvgElm_js);
-            createTextBox(x, y + imageHeight + 20, 0, 0, "right-date", document.getElementById("subject-image-date").value, 16, "black", rightSvgElm_js);
-        }
+            const x = 20; // Left margin for the image within SVG
+            const y = 20; // Top margin for the image within SVG
 
-        // 修正：左の画像を左のSVGに表示
-        function leftDisplay(aspectRatio, image) {
-            const leftWidth = leftSvgElm_js.clientWidth;
-            const imageWidth = leftWidth - 40; // マージンを考慮
-            const imageHeight = imageWidth / aspectRatio;
-            const x = 20; // マージン
-            const y = 20;
-            
-            // SVGの高さを調整
-            leftSvgElm_js.style.height = (imageHeight + 40) + 'px';
-            clipLeftRect.height.baseVal.value = imageHeight;
-            
-            var init_viewBox = "0 0 " + String(leftWidth) + " " + String(imageHeight + 40);
-            leftSvgElm_js.setAttribute("viewBox", init_viewBox);
-            
-            createImage(x, y, 0, 0, imageWidth, imageHeight, image, "left-image", "url(#clipleft)", leftSvgElm_js);
-            createTextBox(x, y + imageHeight + 20, 0, 0, "left-date", document.getElementById("target-image-date").value, 16, "black", leftSvgElm_js);
-        }
+            // Update viewBox to match the new SVG height
+            svgElm_js.setAttribute("viewBox", `0 0 ${svgWidth} ${finalSvgHeight}`);
 
-        var aspectRatio;
-        var maxHeight = 0;
+            // Convert image to base64 for SVG embedding
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = imgElement.naturalWidth;
+            canvas.height = imgElement.naturalHeight;
+            ctx.drawImage(imgElement, 0, 0);
+            const base64ImageData = canvas.toDataURL('image/png');
 
-        function createImageAspectTarget(image) {
-            const imageUrl = image;
-            const img = new Image();
-            img.onload = function (result) {
-                aspectRatio = img.naturalWidth / img.naturalHeight;
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                const base64ImageData = canvas.toDataURL('image/png');
-                leftDisplay(aspectRatio, base64ImageData);
-            };
-            img.onerror = function () {
-                console.error('画像を読み込めませんでした。');
-            };
-            img.crossOrigin = 'Anonymous';
-            img.src = imageUrl;
-        }
-
-        function createImageAspectSubject(image) {
-            const imageUrl = image;
-            const img = new Image();
-            img.onload = function () {
-                const aspectRatio = img.naturalWidth / img.naturalHeight;
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                const base64ImageData = canvas.toDataURL('image/png');
-                rightDisplay(aspectRatio, base64ImageData);
-                createImageAspectTarget(document.getElementById("target_image_url").src);
-            };
-            img.onerror = function () {
-                console.error('画像を読み込めませんでした。');
-            };
-            img.crossOrigin = 'Anonymous';
-            img.src = imageUrl;
-        }
-
-        createImageAspectSubject(document.getElementById("subject_image_url").src);
-
-        function createTextBox(cx, cy, x, y, id, text, size, color, targetSvg) {
-            var text_box = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            text_box.setAttribute("x", cx);
-            text_box.setAttribute("y", cy);
-            text_box.setAttribute("font-size", size);
-            text_box.setAttribute("fill", color);
-            text_box.setAttribute("id", id);
-            text_box.textContent = text;
-            var transform = text_box.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
-            if (!text_box.hasAttribute("transform")) {
-                text_box.transform.baseVal.appendItem(transform);
+            // Remove existing image if any
+            const existingImage = document.getElementById(imageId);
+            if (existingImage) {
+                existingImage.remove();
             }
-            var Matrix = text_box.transform.baseVal[0].matrix;
-            Matrix.e += x;
-            Matrix.f += y;
 
-            targetSvg.appendChild(text_box);
+            createImage(x, y, 0, 0, imageWidth, actualImageHeight, base64ImageData, imageId, clipPathId, svgElm_js);
+
+            // Update or create date text
+            let dateTextDiv = document.getElementById(`${side}-date-text`);
+            if (!dateTextDiv) {
+                dateTextDiv = document.createElement('div');
+                dateTextDiv.className = 'date-text';
+                dateTextDiv.id = `${side}-date-text`;
+                dateTextDiv.style.position = 'absolute';
+                dateTextDiv.style.left = '50%';
+                dateTextDiv.style.transform = 'translateX(-50%)';
+                dateTextDiv.style.font = "bold 18px sans-serif"; // Keep original font styles
+                dateTextDiv.style.fontSize = '16px'; // Keep original font size
+                dateTextDiv.style.color = 'black'; // Keep original color
+                svgElm.parent().append(dateTextDiv);
+            }
+            dateTextDiv.textContent = dateTextContent;
+            dateTextDiv.style.bottom = '10px'; // Position relative to the bottom of the figure
         }
 
         function loadImage(url) {
@@ -1311,7 +1322,110 @@
             });
         }
 
-        // 修正：両方のSVGを結合してプレビュー画像を作成
+        async function loadAndDisplayImages() {
+            const targetImageUrl = document.getElementById("target_image_url").src;
+            const subjectImageUrl = document.getElementById("subject_image_url").src;
+
+            try {
+                const [targetImage, subjectImage] = await Promise.all([
+                    loadImage(targetImageUrl),
+                    loadImage(subjectImageUrl)
+                ]);
+
+                // Calculate aspect ratios
+                const aspectRatioLeft = targetImage.naturalWidth / targetImage.naturalHeight;
+                const aspectRatioRight = subjectImage.naturalWidth / subjectImage.naturalHeight;
+
+                // Calculate potential heights for each image based on current container width
+                const leftWidth = leftSvgElm_js.clientWidth;
+                const rightWidth = rightSvgElm_js.clientWidth;
+
+                calculatedLeftImageHeight = (leftWidth - 40) / aspectRatioLeft; // 40 for margins
+                calculatedRightImageHeight = (rightWidth - 40) / aspectRatioRight; // 40 for margins
+
+                // Determine the maximum required height for the SVG content area (image + 20px top + 20px bottom margin)
+                const requiredLeftSvgContentHeight = calculatedLeftImageHeight + 40;
+                const requiredRightSvgContentHeight = calculatedRightImageHeight + 40;
+                
+                finalSvgHeight = Math.max(requiredLeftSvgContentHeight, requiredRightSvgContentHeight);
+                
+                // Ensure minimum height if images are very small (e.g., 400px as per initial style)
+                finalSvgHeight = Math.max(finalSvgHeight, 400); 
+
+                // Apply the determined height to both SVGs and their parent figures
+                leftSvgElm_js.style.height = finalSvgHeight + 'px';
+                rightSvgElm_js.style.height = finalSvgHeight + 'px';
+                document.getElementById('left-board').style.height = (finalSvgHeight + dateAreaHeight) + 'px'; 
+                document.getElementById('right-board').style.height = (finalSvgHeight + dateAreaHeight) + 'px'; 
+
+                // Now display the images using the calculated heights and aspect ratios
+                displayImageInSvg(targetImage, leftSvgElm, leftSvgElm_js, "left-image", "url(#clipleft)", aspectRatioLeft, document.getElementById("target-image-date").value, 'left', calculatedLeftImageHeight);
+                displayImageInSvg(subjectImage, rightSvgElm, rightSvgElm_js, "right-image", "url(#clipright)", aspectRatioRight, document.getElementById("subject-image-date").value, 'right', calculatedRightImageHeight);
+
+                // Re-initialize clip paths based on the final SVG dimensions
+                initClipPaths();
+
+            } catch (error) {
+                console.error('Error loading or displaying images:', error);
+            }
+        }
+
+        const clipRightRect = document.getElementById("clip-right-rect")
+        const clipLeftRect = document.getElementById("clip-left-rect")
+
+        function initClipPaths() {
+            const leftSvgWidth = leftSvgElm_js.clientWidth;
+            const rightSvgWidth = rightSvgElm_js.clientWidth;
+            const margin = 20;
+            
+            clipLeftRect.width.baseVal.value = leftSvgWidth - margin * 2;
+            clipRightRect.width.baseVal.value = rightSvgWidth - margin * 2; 
+            clipLeftRect.x.baseVal.value = margin;
+            clipRightRect.x.baseVal.value = margin;
+            clipLeftRect.y.baseVal.value = margin;
+            clipRightRect.y.baseVal.value = margin;
+            // Clip path height should match the calculated image height, not the full SVG height
+            clipLeftRect.height.baseVal.value = calculatedLeftImageHeight;
+            clipRightRect.height.baseVal.value = calculatedRightImageHeight;
+        }
+
+        function resizeWindow() {
+            // Re-evaluate finalSvgHeight based on new clientWidths and re-display
+            loadAndDisplayImages(); 
+        }
+        window.onresize = resizeWindow;
+
+        var previewFlag = false;
+
+        // initImageLoad is now integrated into loadAndDisplayImages, so this call is removed.
+        // document.getElementById("preview-btn").addEventListener("click", async function () { ... });
+
+        document.getElementById("preview-btn").addEventListener("click", async function () {
+            if (!previewFlag) {
+                await previewImage()
+                this.classList.add("btn-primary");
+                this.classList.remove("btn-outline-primary")
+                this.textContent = "画像プレビューOFF";
+            } else {
+                document.getElementById("preview").style.display = "none";
+                this.classList.remove("btn-primary");
+                this.classList.add("btn-outline-primary")
+                this.textContent = "画像プレव्यूON";
+            }
+            previewFlag = !previewFlag;
+        })
+
+        document.getElementById("submit").addEventListener("click", async function () {
+            await downloadBoard()
+        })
+
+        // Both previewImage and downloadBoard functions are already correctly using clientWidth/clientHeight
+        // of the SVGs, which will now be consistent due to the changes above.
+        // No changes needed here unless further issues arise.
+
+        // Both previewImage and downloadBoard functions are already correctly using clientWidth/clientHeight
+        // of the SVGs, which will now be consistent due to the changes above.
+        // No changes needed here unless further issues arise.
         async function previewImage() {
             try {
                 const leftSvg = document.getElementById('leftDrawingCanvas');
@@ -1329,20 +1443,20 @@
                 const leftHeight = leftSvg.clientHeight;
                 const rightHeight = rightSvg.clientHeight;
                 const maxHeight = Math.max(leftHeight, rightHeight);
-                
+
                 const pixelRatio = window.devicePixelRatio || 1;
                 
-                canvas.width = (leftWidth + rightWidth + 20) * pixelRatio; // 20pxの間隔
-                canvas.height = maxHeight * pixelRatio;
+                canvas.width = (leftWidth + rightWidth + 20) * pixelRatio;
+                canvas.height = (maxHeight + dateAreaHeight) * pixelRatio;
                 canvas.style.width = (leftWidth + rightWidth + 20) + "px";
-                canvas.style.height = maxHeight + "px";
+                canvas.style.height = (maxHeight + dateAreaHeight) + "px";
 
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
                 // 背景を白で塗りつぶす
                 ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, leftWidth + rightWidth + 20, maxHeight);
+                ctx.fillRect(0, 0, leftWidth + rightWidth + 20, maxHeight + dateAreaHeight);
                 
                 // 左のSVGを描画
                 const leftSvgBlob = new Blob([leftSvgData], { type: "image/svg+xml;charset=utf-8" });
@@ -1351,45 +1465,50 @@
                 ctx.drawImage(leftImage, 0, 0, leftWidth, leftHeight);
                 URL.revokeObjectURL(leftUrl);
                 
-                // 右のSVGを描画
                 const rightSvgBlob = new Blob([rightSvgData], { type: "image/svg+xml;charset=utf-8" });
                 const rightUrl = URL.createObjectURL(rightSvgBlob);
                 const rightImage = await loadImage(rightUrl);
                 ctx.drawImage(rightImage, leftWidth + 20, 0, rightWidth, rightHeight);
                 URL.revokeObjectURL(rightUrl);
 
-                // コメント要素を描画
+                // Each image's date text
+                const leftDate = document.getElementById("target-image-date").value;
+                const rightDate = document.getElementById("subject-image-date").value;
+                ctx.font = "bold 18px sans-serif";
+                ctx.fillStyle = "black";
+                ctx.textAlign = "center";
+                const dateY = maxHeight + 25; // Position below the SVG content
+                ctx.fillText(leftDate, leftWidth / 2, dateY);
+                ctx.fillText(rightDate, leftWidth + 20 + rightWidth / 2, dateY);
+
+                // Comment drawing code (existing logic)
                 const commentBoxes = document.querySelectorAll('.comment-box');
-                
+                const leftSvgRect = leftSvg.getBoundingClientRect();
+                const rightSvgRect = rightSvg.getBoundingClientRect();
+
                 commentBoxes.forEach(comment => {
                     const commentRect = comment.getBoundingClientRect();
-                    
-                    // どちらのSVGに属するかを判定
-                    const leftSvgRect = leftSvg.getBoundingClientRect();
-                    const rightSvgRect = rightSvg.getBoundingClientRect();
                     
                     let commentLeft, commentTop;
                     
                     if (commentRect.left >= leftSvgRect.left && commentRect.left <= leftSvgRect.right) {
-                        // 左のSVGに属する
                         commentLeft = commentRect.left - leftSvgRect.left;
                         commentTop = commentRect.top - leftSvgRect.top;
                     } else if (commentRect.left >= rightSvgRect.left && commentRect.left <= rightSvgRect.right) {
-                        // 右のSVGに属する
                         commentLeft = (commentRect.left - rightSvgRect.left) + leftWidth + 20;
                         commentTop = commentRect.top - rightSvgRect.top;
                     } else {
-                        return; // どちらにも属さない場合はスキップ
+                        return;
                     }
                     
                     const commentWidth = comment.offsetWidth;
                     const commentHeight = comment.offsetHeight;
                     
-                    // コメントの背景を描画
+                    // Draw comment background
                     ctx.fillStyle = window.getComputedStyle(comment).backgroundColor;
                     ctx.fillRect(commentLeft, commentTop, commentWidth, commentHeight);
                     
-                    // コメントの境界線（あれば）
+                    // Draw comment border if any
                     const borderWidth = parseInt(window.getComputedStyle(comment).borderWidth) || 0;
                     if (borderWidth > 0) {
                         ctx.strokeStyle = window.getComputedStyle(comment).borderColor;
@@ -1397,62 +1516,71 @@
                         ctx.strokeRect(commentLeft, commentTop, commentWidth, commentHeight);
                     }
                     
-                    // 選択されたコメントの青い枠（outlineがある場合）
+                    // Draw blue outline for selected comment
                     if (comment.style.outline && comment.style.outline.includes('solid blue')) {
                         ctx.strokeStyle = 'blue';
                         ctx.lineWidth = 2;
                         ctx.strokeRect(commentLeft - 1, commentTop - 1, commentWidth + 2, commentHeight + 2);
                     }
                     
-                    // コメントのテキストを描画
-                    const fontSize = window.getComputedStyle(comment).fontSize;
-                    const fontFamily = window.getComputedStyle(comment).fontFamily;
+                    // Draw comment text
+                    const computedStyle = window.getComputedStyle(comment);
+                    const fontSize = computedStyle.fontSize;
+                    const fontFamily = computedStyle.fontFamily;
+                    const actualLineHeight = parseFloat(computedStyle.lineHeight); 
+                    const paddingTop = parseFloat(computedStyle.paddingTop); 
+
                     ctx.font = `${fontSize} ${fontFamily}`;
-                    ctx.fillStyle = window.getComputedStyle(comment).color;
+                    ctx.fillStyle = computedStyle.color;
                     ctx.textBaseline = 'top';
                     
-                    // テキストの内容を取得し、改行で分割
                     const text = comment.innerText;
                     const lines = text.split(/\r?\n/);
-                    
-                    // 各行のテキストを描画（単純な行分割）
-                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
-                    let yPos = commentTop + 8; // パディングの分だけオフセット
-                    ctx.textAlign = 'center'; // 中央寄せを設定
+                    let yPos = commentTop + paddingTop; 
+                    ctx.textAlign = 'center';
 
                     lines.forEach(line => {
                         ctx.fillText(line, commentLeft + commentWidth / 2, yPos);
-                        yPos += lineHeight;
+                        yPos += actualLineHeight; 
                     });
                 });
 
-                // PNGとして出力
+                // Draw connecting lines for SVG crossings
+                ctx.save();
+                ctx.strokeStyle = lineColor;
+                ctx.lineWidth = lineWidth;
+                svgCrossings.forEach(cross => {
+                    if (cross.leaving && cross.entering) {
+                        let fromX, fromY, toX, toY;
+                        if (cross.from === 'left') {
+                            fromX = cross.leaving.x * (leftWidth / leftSvgElm_js.viewBox.baseVal.width);
+                            fromY = cross.leaving.y * (leftHeight / leftSvgElm_js.viewBox.baseVal.height);
+                        } else {
+                            fromX = leftWidth + 20 + cross.leaving.x * (rightWidth / rightSvgElm_js.viewBox.baseVal.width);
+                            fromY = cross.leaving.y * (rightHeight / rightSvgElm_js.viewBox.baseVal.height);
+                        }
+                        if (cross.to === 'left') {
+                            toX = cross.entering.x * (leftWidth / leftSvgElm_js.viewBox.baseVal.width);
+                            toY = cross.entering.y * (leftHeight / leftSvgElm_js.viewBox.baseVal.height);
+                        } else {
+                            toX = leftWidth + 20 + cross.entering.x * (rightWidth / rightSvgElm_js.viewBox.baseVal.width);
+                            toY = cross.entering.y * (rightHeight / rightSvgElm_js.viewBox.baseVal.height);
+                        }
+                        ctx.beginPath();
+                        ctx.moveTo(fromX, fromY);
+                        ctx.lineTo(toX, toY);
+                        ctx.stroke();
+                    }
+                });
+                ctx.restore();
+
+                // Output as PNG
                 const pngDataUrl = canvas.toDataURL('image/png');
                 document.getElementById("preview").src = pngDataUrl;
                 document.getElementById("preview").style.display = "block";
             } catch (error) {
-                console.error('Error during SVG to canvas conversion:', error);
+                console.error('Error converting SVG to canvas for preview:', error);
             }
-        }
-
-        async function initImageLoad() {
-            // 両方のSVGを初期化
-            [leftSvgElm_js, rightSvgElm_js].forEach(async (svg) => {
-                var svgData = new XMLSerializer().serializeToString(svg);
-                var canvas = document.createElement("canvas");
-                canvas.width = svg.clientWidth;
-                canvas.height = svg.clientHeight;
-
-                const ctx = canvas.getContext("2d");
-                const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-                const url = URL.createObjectURL(svgBlob);
-
-                const image = await loadImage(url);
-                ctx.drawImage(image, 0, 0);
-                URL.revokeObjectURL(url);
-
-                const pngDataUrl = canvas.toDataURL('image/png');
-            });
         }
 
         // 修正：両方のSVGを結合してダウンロード用画像を作成
@@ -1465,9 +1593,6 @@
                 const rightSvgData = new XMLSerializer().serializeToString(rightSvg);
                 
                 const commentBoxes = document.querySelectorAll('.comment-box');
-                if (commentBoxes.length > 0) {
-                    console.log('コメントボックスが見つかりました:', commentBoxes.length);
-                }
                 
                 const canvas = document.createElement("canvas");
                 
@@ -1479,17 +1604,17 @@
                 
                 const pixelRatio = window.devicePixelRatio || 1;
                 
-                canvas.width = (leftWidth + rightWidth + 20) * pixelRatio;
-                canvas.height = maxHeight * pixelRatio;
+                canvas.width = (leftWidth + rightWidth + 20) * pixelRatio; // 20px gap
+                canvas.height = (maxHeight + dateAreaHeight) * pixelRatio;
                 canvas.style.width = (leftWidth + rightWidth + 20) + "px";
-                canvas.style.height = maxHeight + "px";
+                canvas.style.height = (maxHeight + dateAreaHeight) + "px";
 
                 const ctx = canvas.getContext("2d");
                 ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
                 
                 // 背景を白で塗りつぶす
                 ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, leftWidth + rightWidth + 20, maxHeight);
+                ctx.fillRect(0, 0, leftWidth + rightWidth + 20, maxHeight + dateAreaHeight);
                 
                 // 左のSVGを描画
                 const leftSvgBlob = new Blob([leftSvgData], { type: "image/svg+xml;charset=utf-8" });
@@ -1509,7 +1634,7 @@
                 const leftSvgRect = leftSvg.getBoundingClientRect();
                 const rightSvgRect = rightSvg.getBoundingClientRect();
                 
-                commentBoxes.forEach((comment, index) => {
+                commentBoxes.forEach((comment) => {
                     const commentRect = comment.getBoundingClientRect();
                     
                     let commentLeft, commentTop;
@@ -1539,63 +1664,111 @@
                         ctx.strokeRect(commentLeft, commentTop, commentWidth, commentHeight);
                     }
                     
-                    // 選択されたコメントの青い枠（outlineがある場合）
+                    // Draw blue outline for selected comment (if outline exists)
                     if (comment.style.outline && comment.style.outline.includes('solid blue')) {
                         ctx.strokeStyle = 'blue';
                         ctx.lineWidth = 2;
                         ctx.strokeRect(commentLeft - 1, commentTop - 1, commentWidth + 2, commentHeight + 2);
                     }
                     
-                    // コメントのテキストを描画
-                    const fontSize = window.getComputedStyle(comment).fontSize;
-                    const fontFamily = window.getComputedStyle(comment).fontFamily;
+                    // Draw comment text
+                    const computedStyle = window.getComputedStyle(comment);
+                    const fontSize = computedStyle.fontSize;
+                    const fontFamily = computedStyle.fontFamily;
+                    const actualLineHeight = parseFloat(computedStyle.lineHeight); 
+                    const paddingTop = parseFloat(computedStyle.paddingTop); 
+
                     ctx.font = `${fontSize} ${fontFamily}`;
-                    ctx.fillStyle = window.getComputedStyle(comment).color;
+                    ctx.fillStyle = computedStyle.color;
                     ctx.textBaseline = 'top';
                     
                     // テキストの内容を取得し、改行で分割
                     const text = comment.innerText;
                     const lines = text.split(/\r?\n/);
-                    // 各行のテキストを描画（単純な行分割）            
-                    const lineHeight = parseInt(fontSize) * 1.2; // おおよその行の高さ
-                    let yPos = commentTop + 8; // パディングの分だけオフセット
-                    ctx.textAlign = 'center'; // 中央寄せを設定
+                    let yPos = commentTop + paddingTop; 
+                    ctx.textAlign = 'center'; 
 
                     lines.forEach(line => {
                         ctx.fillText(line, commentLeft + commentWidth / 2, yPos);
+                        yPos += actualLineHeight; 
+                    });
+                });
+                const dateTexts = document.querySelectorAll('.date-text');
+                dateTexts.forEach(dateDiv => {
+                    const dateRect = dateDiv.getBoundingClientRect();
+                    
+                    let dateLeft, dateTop;
+                    
+                    if (dateRect.left >= leftSvgRect.left && dateRect.left <= leftSvgRect.right) {
+                        dateLeft = dateRect.left - leftSvgRect.left;
+                        dateTop = dateRect.top - leftSvgRect.top;
+                    } else if (dateRect.left >= rightSvgRect.left && dateRect.left <= rightSvgRect.right) {
+                        dateLeft = (dateRect.left - rightSvgRect.left) + leftWidth + 20;
+                        dateTop = dateRect.top - rightSvgRect.top;
+                    } else {
+                        return;
+                    }
+                    
+                    const dateWidth = dateDiv.offsetWidth;
+                    const dateHeight = dateDiv.offsetHeight;
+                    
+                    ctx.fillStyle = window.getComputedStyle(dateDiv).backgroundColor;
+                    ctx.fillRect(dateLeft, dateTop, dateWidth, dateHeight);
+                    
+                    const fontSize = window.getComputedStyle(dateDiv).fontSize;
+                    const fontFamily = window.getComputedStyle(dateDiv).fontFamily;
+                    ctx.font = `${fontSize} ${fontFamily}`;
+                    ctx.fillStyle = window.getComputedStyle(dateDiv).color;
+                    ctx.textBaseline = 'top';
+                    ctx.textAlign = 'center';
+                    
+                    const text = dateDiv.innerText;
+                    const lines = text.split(/\r?\n/);
+                    const lineHeight = parseInt(fontSize) * 1.2;
+                    let yPos = dateTop + 8; 
+                    
+                    lines.forEach(line => {
+                        ctx.fillText(line, dateLeft + dateWidth / 2, yPos);
                         yPos += lineHeight;
                     });
                 });
 
-                // PNGとして出力
+                // Draw connecting lines for SVG crossings (to match preview)
+                ctx.save();
+                ctx.strokeStyle = lineColor;
+                ctx.lineWidth = lineWidth;
+                svgCrossings.forEach(cross => {
+                    if (cross.leaving && cross.entering) {
+                        let fromX, fromY, toX, toY;
+                        if (cross.from === 'left') {
+                            fromX = cross.leaving.x * (leftWidth / leftSvgElm_js.viewBox.baseVal.width);
+                            fromY = cross.leaving.y * (leftHeight / leftSvgElm_js.viewBox.baseVal.height);
+                        } else {
+                            fromX = leftWidth + 20 + cross.leaving.x * (rightWidth / rightSvgElm_js.viewBox.baseVal.width);
+                            fromY = cross.leaving.y * (rightHeight / rightSvgElm_js.viewBox.baseVal.height);
+                        }
+                        if (cross.to === 'left') {
+                            toX = cross.entering.x * (leftWidth / leftSvgElm_js.viewBox.baseVal.width);
+                            toY = cross.entering.y * (leftHeight / leftSvgElm_js.viewBox.baseVal.height);
+                        } else {
+                            toX = leftWidth + 20 + cross.entering.x * (rightWidth / rightSvgElm_js.viewBox.baseVal.width);
+                            toY = cross.entering.y * (rightHeight / rightSvgElm_js.viewBox.baseVal.height);
+                        }
+                        ctx.beginPath();
+                        ctx.moveTo(fromX, fromY);
+                        ctx.lineTo(toX, toY);
+                        ctx.stroke();
+                    }
+                });
+                ctx.restore();
+
+                // Output as PNG
                 const pngDataUrl = canvas.toDataURL('image/png');
                 uploadImageToServer(pngDataUrl);
             } catch (error) {
-                console.error('Error during SVG to canvas conversion:', error);
+                console.error('Error converting SVG to canvas for download:', error);
             }
         }
-
-        var previewFlag = false;
-
-        initImageLoad();
-        document.getElementById("preview-btn").addEventListener("click", async function () {
-            if (!previewFlag) {
-                await previewImage()
-                this.classList.add("btn-primary");
-                this.classList.remove("btn-outline-primary")
-                this.textContent = "画像プレビューOFF";
-            } else {
-                document.getElementById("preview").style.display = "none";
-                this.classList.remove("btn-primary");
-                this.classList.add("btn-outline-primary")
-                this.textContent = "画像プレビューON";
-            }
-            previewFlag = !previewFlag;
-        })
-
-        document.getElementById("submit").addEventListener("click", async function () {
-            await downloadBoard()
-        })
 
         function uploadImageToServer(pngDataUrl) {
             const formData = new FormData();
@@ -1632,178 +1805,177 @@
             });
         }
 
-        var id;
-        var x;
-        var y;
-        var pointX;
-        var pointY;
-
-        // 修正：画像の移動処理を両方のSVGに対応
+        // 画像の移動処理を両方のSVGに対応
         function moveContentByMousedown(event) {
-            var target = null;
-            let isDragging = false;
-
             const svgInfo = getSvgFromEvent(event);
             if (!svgInfo) return;
 
-            pointX = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-            pointY = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+            const currentPointerX = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+            const currentPointerY = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
 
             const margin = 20;
             const svgWidth = svgInfo.svg_js.clientWidth;
             const svgHeight = svgInfo.svg_js.clientHeight;
 
+            let targetImage = null;
             // SVG内の画像領域をクリックしたかチェック
-            if (pointX > margin && pointX < svgWidth - margin &&
-                pointY > margin && pointY < svgHeight - margin) {
+            if (currentPointerX > margin && currentPointerX < svgWidth - margin &&
+                currentPointerY > margin && currentPointerY < svgHeight - margin) {
                 
                 if (svgInfo.side === 'left') {
-                    target = document.getElementById("left-image");
+                    targetImage = document.getElementById("left-image");
                 } else {
-                    target = document.getElementById("right-image");
+                    targetImage = document.getElementById("right-image"); 
                 }
             }
 
-            if (!target) return;
+            if (!targetImage) return;
 
-            isDragging = true;
-            var mouse_move_x = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-            var mouse_move_y = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+            isDraggingImage = true;
+            imageDragTarget = targetImage;
+            imageDragStartX = currentPointerX;
+            imageDragStartY = currentPointerY;
+            imageDragMatrix = imageDragTarget.transform.baseVal.getItem(0).matrix;
 
-            var x = parseInt(target.getAttribute("x"));
-            var y = parseInt(target.getAttribute("y"));
-            var dx = 0;
-            var dy = 0;
-            var transform = target.transform.baseVal.createSVGTransformFromMatrix(SVGMatrixCreate())
-            if (!target.hasAttribute("transform")) {
-                target.transform.baseVal.appendItem(transform);
-            }
-            id = target.id;
-            var targetContent = document.getElementById(id);
-            x = parseInt(targetContent.getAttribute("x"));
-            y = parseInt(targetContent.getAttribute("y"));
-            var Matrix = target.transform.baseVal[0].matrix;
-
-            svgInfo.svg.on(move_event, function (event) {
-                if (!isDragging) return;
-                if (move_event !== "touchmove") {
-                    var mouse_moving_x = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-                    var mouse_moving_y = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-                    var x_length = mouse_moving_x - mouse_move_x;
-                    var y_length = mouse_moving_y - mouse_move_y;
-
-                    Matrix.e += x_length;
-                    Matrix.f += y_length;
-
-                    mouse_move_x = mouse_moving_x;
-                    mouse_move_y = mouse_moving_y;
-                } else {
-                    if (touchType === "move") {
-                        var mouse_moving_x = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-                        var mouse_moving_y = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-                        var x_length = mouse_moving_x - mouse_move_x;
-                        var y_length = mouse_moving_y - mouse_move_y;
-                        
-                        Matrix.e += x_length;
-                        Matrix.f += y_length;
-                        
-                        mouse_move_x = mouse_moving_x;
-                        mouse_move_y = mouse_moving_y;
-                    } else if (touchType === "zoom") {
-                        var mouse_moving_x = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-                        var mouse_moving_y = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
-                        var x_length = mouse_moving_x - mouse_move_x;
-                        var y_length = mouse_moving_y - mouse_move_y;
-                        mouse_move_x = mouse_moving_x;
-                        mouse_move_y = mouse_moving_y;
-                        var scale = y_length < 0 ? 0.99 : 1.01
-                        target.width.baseVal.value *= scale;
-                        target.height.baseVal.value *= scale;
-                    }
-                }
-            });
-            svgInfo.svg.on(end_event, function () {
-                isDragging = false;
-            });
+            svgInfo.svg.css('cursor', 'grabbing'); 
         }
 
-        function moveContentByMouseup() {
-            leftSvgElm.css('cursor', 'default');
-            rightSvgElm.css('cursor', 'default');
-            isDragging = false;
+        // 画像移動・ズーム中のmoveイベントハンドラー
+        function handleImageMoveAndZoomMove(event) {
+            if (!isDraggingImage && !isSingleFingerZooming && !(event.touches && event.touches.length === 2)) return;
+            event.preventDefault(); 
+
+            const svgInfo = getSvgFromEvent(event);
+            if (!svgInfo || (imageDragTarget && svgInfo.svg_js !== imageDragTarget.ownerSVGElement)) {
+                return;
+            }
+
+            const currentPointerX = parseInt(getPositionXOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+            const currentPointerY = parseInt(getPositionYOnSvg(event, svgInfo.svg, svgInfo.svg_js));
+
+            if (event.type !== "touchmove") { // Mouse move (always move mode)
+                const x_length = currentPointerX - imageDragStartX;
+                const y_length = currentPointerY - imageDragStartY;
+
+                imageDragMatrix.e += x_length;
+                imageDragMatrix.f += y_length;
+                imageDragTarget.transform.baseVal.getItem(0).setMatrix(imageDragMatrix);
+
+                imageDragStartX = currentPointerX;
+                imageDragStartY = currentPointerY;
+            } else { // Touch move
+                if (event.touches.length === 2) { // 2-finger pinch
+                    const page_x1 = event.touches[0].pageX;
+                    const page_y1 = event.touches[0].pageY;
+                    const page_x2 = event.touches[1].pageX;
+                    const page_y2 = event.touches[1].pageY;
+                    const distance = Math.sqrt(Math.pow(page_x2 - page_x1, 2) + Math.pow(page_y2 - page_y1, 2));
+                    if (baseDistance !== 0) {
+                        const scale = distance / baseDistance;
+                        let matrix = imageDragTarget.transform.baseVal.getItem(0).matrix;
+                        matrix = matrix.translate(-pointX, -pointY);
+                        matrix = matrix.scale(scale);
+                        matrix = matrix.translate(pointX, pointY);
+                        imageDragTarget.transform.baseVal.getItem(0).setMatrix(matrix);
+                    }
+                    baseDistance = distance;
+                } else if (event.touches.length === 1 && touchType === "move") { // 1-finger move (pan)
+                    const x_length = currentPointerX - imageDragStartX;
+                    const y_length = currentPointerY - imageDragStartY;
+                    
+                    imageDragMatrix.e += x_length;
+                    imageDragMatrix.f += y_length;
+                    imageDragTarget.transform.baseVal.getItem(0).setMatrix(imageDragMatrix);
+                    
+                    imageDragStartX = currentPointerX;
+                    imageDragStartY = currentPointerY;
+                } else if (event.touches.length === 1 && touchType === "zoom" && isSingleFingerZooming) { // 1-finger vertical drag zoom
+                    const y_length = currentPointerY - singleFingerZoomStartY;
+                    // Scale based on vertical movement (up to zoom out, down to zoom in)
+                    const scale = y_length < 0 ? 0.99 : 1.01; 
+
+                    let matrix = imageDragTarget.transform.baseVal.getItem(0).matrix;
+
+                    // Zoom around the initial touch point (pointX, pointY)
+                    matrix = matrix.translate(-pointX, -pointY);
+                    matrix = matrix.scale(scale);
+                    matrix = matrix.translate(pointX, pointY);
+
+                    imageDragTarget.transform.baseVal.getItem(0).setMatrix(matrix);
+                    
+                    // Update singleFingerZoomStartY for continuous zooming
+                    singleFingerZoomStartY = currentPointerY;
+                }
+            }
+        }
+
+        // 画像移動・ズームの終了イベントハンドラー
+        function handleImageMoveAndZoomEnd() {
+            isDraggingImage = false;
+            isSingleFingerZooming = false; 
+            baseDistance = 0; 
+            if (imageDragTarget) {
+                $(imageDragTarget.ownerSVGElement).css('cursor', 'default'); 
+            }
+            imageDragTarget = null;
+            // Remove global listeners
+            document.body.removeEventListener(move_event, handleImageMoveAndZoomMove);
+            document.body.removeEventListener(end_event, handleImageMoveAndZoomEnd);
         }
 
         var wheel_event = 'ontouchstart' in window ? "touchmove" : "wheel";
-        var baseDistance = 0;
-        var pointX = 0;
-        var pointY = 0;
-
+        
         // 修正：ズーム機能を両方のSVGに対応
         function zoomAction() {
             [leftSvgElm_js, rightSvgElm_js].forEach((svgElm_js, index) => {
                 svgElm_js.addEventListener(wheel_event, function (e) {
-                    if (type === "pencil" && type !== "move") return;
+                    // Do not allow zoom in "pencil" mode
+                    if (type === "pencil") return;
                     
-                    const svgElm = index === 0 ? leftSvgElm : rightSvgElm;
-                    var target;
-                    pointX = parseInt(getPositionXOnSvg(event, svgElm, svgElm_js));
-                    pointY = parseInt(getPositionYOnSvg(event, svgElm, svgElm_js));
-                    
-                    const margin = 20;
-                    const svgWidth = svgElm_js.clientWidth;
-                    const svgHeight = svgElm_js.clientHeight;
-                    
-                    if (pointX > margin && pointX < svgWidth - margin &&
-                        pointY > margin && pointY < svgHeight - margin) {
-                        if (index === 0) {
-                            target = document.getElementById("left-image");
-                        } else {
-                            target = document.getElementById("right-image");
-                        }
+                    // If it's a touch event, it's handled by handleImageMoveAndZoomMove, so do nothing here
+                    if (e.touches && e.touches.length > 0) {
+                        return;
                     }
-                    
-                    var scale = 1
-                    e.preventDefault()
-                    var pointer_x = 0
-                    var pointer_y = 0
-                    if (wheel_event == "touchmove") {
-                        var touches = e.changedTouches;
-                        if (touches.length > 1) {
-                            try {
-                                var page_x1 = touches[0].pageX;
-                                var page_y1 = touches[0].pageY;
-                                // 座標2 (2本目の指)
-                                var page_x2 = touches[1].pageX
-                                var page_y2 = touches[1].pageY
 
-                                var x1 = getPositionXOnSvgByX(touches[0].pageX, svgElm, svgElm_js);
-                                var y1 = getPositionYOnSvgByY(touches[0].pageY, svgElm, svgElm_js);
-                                // 座標2 (2本目の指)
-                                var x2 = getPositionXOnSvgByX(touches[1].pageX, svgElm, svgElm_js);
-                                var y2 = getPositionYOnSvgByY(touches[1].pageY, svgElm, svgElm_js);
-                                // 2点間の距離
-                                var distance = Math.sqrt(Math.pow(page_x2 - page_x1, 2) + Math.pow(page_y2 - page_y1, 2));
-                                if (baseDistance != 0) {
-                                    scale = baseDistance / distance;
-                                }
-                                pointer_x = (x1 + x2) / 2;
-                                pointer_y = (y1 + y2) / 2;
-                                baseDistance = distance
-                            } catch (error) {
-                                console.error(error);
+                    // Only process for mouse wheel
+                    if (e.type === "wheel") {
+                        e.preventDefault(); // Prevent default scroll
+
+                        const dy = e.deltaY;
+                        const scale = dy < 0 ? 1.05 : 0.95; // Adjust mouse wheel sensitivity
+                        
+                        const svgElm = index === 0 ? leftSvgElm : rightSvgElm;
+                        let target = null;
+                        const margin = 20;
+                        const svgWidth = svgElm_js.clientWidth;
+                        const svgHeight = svgElm_js.clientHeight;
+
+                        // Get mouse position in SVG coordinates
+                        const pointer_x = getPositionXOnSvg(e, svgElm, svgElm_js);
+                        const pointer_y = getPositionYOnSvg(e, svgElm, svgElm_js);
+
+                        if (pointer_x > margin && pointer_x < svgWidth - margin &&
+                            pointer_y > margin && pointer_y < svgHeight - margin) {
+                            if (index === 0) {
+                                target = document.getElementById("left-image");
+                            } else {
+                                target = document.getElementById("right-image");
                             }
                         }
-                    } else {
-                        var dy = e.deltaY
-                        scale = dy < 0 ? 0.99 : 1.01
-                        pointer_x = getPositionXOnSvg(e, svgElm, svgElm_js)
-                        pointer_y = getPositionYOnSvg(e, svgElm, svgElm_js)
+
+                        if (target) {
+                            let imageTransform = target.transform.baseVal.getItem(0);
+                            let matrix = imageTransform.matrix;
+
+                            // Translate to origin, scale, then translate back
+                            matrix = matrix.translate(-pointer_x, -pointer_y);
+                            matrix = matrix.scale(scale);
+                            matrix = matrix.translate(pointer_x, pointer_y);
+
+                            imageTransform.setMatrix(matrix);
+                        }
                     }
-                    if (target) {
-                        target.width.baseVal.value *= scale;
-                        target.height.baseVal.value *= scale;
-                    }
-                }, { passive: false })
+                }, { passive: false }); // Ensure passive: false for preventDefault
             });
         }
         zoomAction()
@@ -1904,7 +2076,7 @@
             }
             
             // rgb(r, g, b)形式から数値を抽出
-            const rgbMatch = rgb.match(/^rgb\s*$$\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$$$/i);
+            const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
             if (rgbMatch) {
                 const r = parseInt(rgbMatch[1], 10);
                 const g = parseInt(rgbMatch[2], 10);
@@ -1912,26 +2084,8 @@
                 return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
             }
             
-            // 変換できない場合はデフォルト値を返す
+            // Return default if conversion fails
             return '#000000';
         }
-
-        // SVGのクリックイベントを修正して、コメント選択を解除する
-        [leftSvgElm, rightSvgElm].forEach(svgElm => {
-            svgElm.on('click', function(event) {
-                // If the click target is a comment box or its resize handle, do not deselect
-                if (event.target.classList && (event.target.classList.contains('comment-box') || 
-                                              event.target.classList.contains('comment-resize-handle'))) {
-                    return;
-                }
-                
-            // コメント選択を解除
-                if (selectedComment) {
-                    selectedComment.style.outline = 'none';
-                    selectedComment = null;
-                }
-            });
-        });
-
     });
 </script>
