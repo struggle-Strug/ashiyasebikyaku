@@ -487,8 +487,9 @@ class UsersController extends AppController
             $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
             if ($this->Users->Messages->save($message)) {
                 $this->Flash->success(__('メッセージを送信しました。'));
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $user->email, "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】美脚セルフデザインプログラム", $user->email, "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $fullUrl , 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
+                // $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "messages", ["name" => $this->Authentication->getIdentity()->name, "url" => $adminFullUrl , 'today' => $formattedDateTime]]);
                 
                 return $this->redirect(['action' => 'message', $data['user_id']]);
             }
@@ -604,4 +605,27 @@ class UsersController extends AppController
         }
 
     }
+
+     /**
+     * Delete method
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function deleteMessage($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+
+        $this->loadModel('Messages');
+
+        $message = $this->Messages->get($id);
+
+        if ($this->Messages->delete($message)) {
+            $this->Flash->success('メッセージを削除しました。');
+        } else {
+            $this->Flash->error('削除に失敗しました。');
+        }
+
+        return $this->redirect(['action' => 'message', $message['user_id']]);
+    }
 }
+

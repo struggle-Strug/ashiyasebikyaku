@@ -137,7 +137,9 @@ class UsersController extends AppController
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('登録しました。'));
 
-                return $this->redirect(['action' => 'index']);
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'index', '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
@@ -193,7 +195,9 @@ class UsersController extends AppController
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('更新しました。'));
 
-                return $this->redirect(['action' => 'index']);
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'index', '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
@@ -347,6 +351,28 @@ class UsersController extends AppController
             }
             $this->Flash->error(__('データを送信できませんでした。'));
         }
+    }
+
+    /**
+     * Delete method
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function deleteMessage($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+
+        $this->loadModel('Messages');
+
+        $message = $this->Messages->get($id);
+
+        if ($this->Messages->delete($message)) {
+            $this->Flash->success('メッセージを削除しました。');
+        } else {
+            $this->Flash->error('削除に失敗しました。');
+        }
+
+        return $this->redirect(['action' => 'message', $message['user_id']]);
     }
 
     /**
