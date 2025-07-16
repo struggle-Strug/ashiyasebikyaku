@@ -21,7 +21,7 @@
     <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <!-- <a href="<?= $this->Url->build(['action' => 'add_consult_hitory', '?' => $param, $user -> id]) ?>" class="btn btn-outline-primary" id="add-bodydata-btn">新規登録</a> -->
+                <a href="<?= $this->Url->build(['action' => 'add_consult_history', '?' => $param, $user -> id]) ?>" class="btn btn-outline-primary" id="add-bodydata-btn">新規登録</a>
             </div>
         </div>
     </div>

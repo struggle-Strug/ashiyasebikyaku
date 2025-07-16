@@ -855,6 +855,32 @@ class UsersController extends AppController
         $this->set(compact('user', 'param', 'mockUserData'));
     }
 
+    public function addConsultHistory($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        // スタッフを配列で取得
+        $staffs = $this->Users->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => [
+                'is_deleted' => 0
+            ]
+        ])->toArray();
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'staffs'));
+    }
+
     /**
      * Import CSV data
      *
