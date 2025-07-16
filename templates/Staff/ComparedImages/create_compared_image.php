@@ -1325,7 +1325,7 @@ $(function () {
 
         wrappedLines.forEach(line => {
             const textWidth = ctx.measureText(line).width;
-            const textX = x + padding + (maxWidth - textWidth) / 2;
+            const textX = x + padding;
             ctx.fillText(line, textX, currentY);
             currentY += lineHeight;
         });
