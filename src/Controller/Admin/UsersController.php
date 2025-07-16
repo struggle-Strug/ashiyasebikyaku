@@ -929,6 +929,86 @@ class UsersController extends AppController
         $this->set(compact('user', 'param'));
     }
 
+    public function difference($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mockUserData = [
+            [
+                'milestone' => '1か月目',
+                'category' => '姿勢改善・習慣化',
+                'target1' => '①呼吸の安定化',
+                'target2' => '②足指・内転筋の感覚獲得',
+                'evaluation1' => '◎/◯/△',
+                'evaluation2' => '◯',
+                'comment1' => '呼吸浅目め、横隔膜の動きに左右差あり',
+                'comment2' => ''
+            ],
+            [
+                'milestone' => '2か月目',
+                'category' => '下半身の引き締まり兆候',
+                'target1' => '①太もも周囲 -1.5cm',
+                'target2' => '②歩き方の安定化',
+                'evaluation1' => '△',
+                'evaluation2' => '△',
+                'comment1' => '',
+                'comment2' => ''
+            ],
+            [
+                'milestone' => '3か月目',
+                'category' => '体形と筋バランスの変化',
+                'target1' => '①ふくらはぎ・膝回りの見た目変化',
+                'target2' => '②脚のライン意識',
+                'evaluation1' => '△',
+                'evaluation2' => '◯',
+                'comment1' => '',
+                'comment2' => ''
+            ],
+            [
+                'milestone' => '4か月目',
+                'category' => '仕上げと維持戦略',
+                'target1' => '①太もも-2〜3cm',
+                'target2' => '②全身バランスとリバウンド防止法習得',
+                'evaluation1' => '△',
+                'evaluation2' => '',
+                'comment1' => '',
+                'comment2' => ''
+            ]
+        ];
+        
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'mockUserData'));
+    }
+
+    public function addDifference($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+        
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
+    }
+
+
     /**
      * Import CSV data
      *

@@ -23,7 +23,7 @@
         <a href="<?= $this->Url->build(['action' => 'selfUnderstand', $user->id, '?' => $param]); ?>">課題の自己認識結果</a>
         </div>
         <div style="margin: 15px; font-weight: bold; font-size:24px;">
-        <a href="<?= $this->Url->build(['action' => 'courses', $user->id, '?' => $param]); ?>">標準モデルとの差異結果</a>
+        <a href="<?= $this->Url->build(['action' => 'difference', $user->id, '?' => $param]); ?>">標準モデルとの差異結果</a>
         </div>
     </div>
 </div>
