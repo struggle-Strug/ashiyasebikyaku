@@ -881,6 +881,54 @@ class UsersController extends AppController
         $this->set(compact('user', 'param', 'staffs'));
     }
 
+    public function selfUnderstand($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mockUserData = [
+            [
+                'id' => 1,
+                'date' => '2025/07/20',
+                'good_changes' => '足の指が柔らかくなったように感じる。足裏の感覚持ててよし◎',
+                'work_review' => '毎日は取り組めなかった実践レッスンに参加する',
+                'no_change_parts' => 'X脚、ヒラメ筋のポコリ、足首のくびれの感覚変わらず。小指は使えていない。アーチが崩れている。内転筋が使えていない。小指側に頼りすぎ。立方骨',
+                'current_state' => '疲労は個、アレルギーで目や鼻、だるさ。少し心も疲れ気味、やる気元気ない。生活リズムに変化なし。ストレス多',
+                'next_two_weeks_work' => 'とにかく毎日ワークをする。日々の宿題がちょっとでもきちんと着いていく。ちょっと一休みの前に一回',
+                'consult_topics' => '上半身の最終的な形はありますか？やや猫背、首顔など右ガチガチで使いやすいの改善したいです！ガチガチなまま下半身だけニョ〜んとのびても意味ない気がしていますが中間層は伸ばせる気がしないです。舌押しで出っ歯が動かせてきてるのであっていますか？このまま続けたら良いですか？今までやってきた腹圧、上肢の補強の宿題の優先順位も確認していきたいです。',
+                'consult_content' => ''
+            ]
+        ];
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param', 'mockUserData'));
+    }
+
+    public function addConsultContent($id = null){
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
+    }
+
     /**
      * Import CSV data
      *
