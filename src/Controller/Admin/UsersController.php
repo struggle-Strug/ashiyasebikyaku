@@ -429,6 +429,31 @@ class UsersController extends AppController
         $this->set(compact('staffs', 'param'));
     }
 
+    /**
+     * Download CSV template
+     *
+     * @return \Cake\Http\Response|null
+     */
+    public function downloadTemplate()
+    {
+        $filename = 'users_import_template.csv';
+        $filepath = WWW_ROOT . 'uploads' . DS . $filename;
+        
+        // ファイルが存在するかチェック
+        if (!file_exists($filepath)) {
+            $this->Flash->error(__('テンプレートファイルが見つかりません。'));
+            return $this->redirect(['action' => 'import']);
+        }
+
+        // レスポンスを設定
+        $response = $this->response->withFile($filepath, [
+            'download' => true,
+            'name' => $filename,
+        ]);
+
+        return $response;
+    }
+
     public function comparedImages($userId = null)
     {
         $this->loadModel('ComparedImages');
@@ -1262,6 +1287,13 @@ class UsersController extends AppController
         $successCount = 0;
         $errorCount = 0;
         $errors = [];
+
+        $lastUser = $this->Users->find()
+        ->select(['id'])
+        ->orderDesc('id')
+        ->first();
+
+        $nextMemberNumber = $lastUser ? $lastUser->id + 3000000 + 1 : 1;
         
         // データベース接続を取得
         $connection = $this->Users->getConnection();
@@ -1293,6 +1325,7 @@ class UsersController extends AppController
             
             $lineNumber = 1;
             $hasErrors = false;
+            $memberNumber = $nextMemberNumber;
             
             while (($data = fgetcsv($handle)) !== false) {
                 $lineNumber++;
@@ -1305,7 +1338,7 @@ class UsersController extends AppController
                 }
                 
                 // データの検証と変換
-                $userData = $this->validateAndTransformCsvData($data, $lineNumber);
+                $userData = $this->validateAndTransformCsvData($data, $lineNumber, $memberNumber);
                 
                 if (isset($userData['error'])) {
                     $errorCount++;
@@ -1313,6 +1346,8 @@ class UsersController extends AppController
                     $hasErrors = true;
                     continue;
                 }
+
+                $memberNumber++;
                 
                 // ユーザーの保存
                 try {
@@ -1375,7 +1410,7 @@ class UsersController extends AppController
      * @param int $lineNumber
      * @return array
      */
-    private function validateAndTransformCsvData($rowData, $lineNumber)
+    private function validateAndTransformCsvData($rowData, $lineNumber, $memberNumber)
     {
         $userData = [];
         
@@ -1386,57 +1421,61 @@ class UsersController extends AppController
         if ($existingUser) {
             return ['error' => "行{$lineNumber}: メールアドレスが既に登録されています。"];
         }
-        
-        
-        // データの変換
-        $userData['member_number'] = $this->createManagementNumber();
-        $userData['email'] = trim($rowData['1']);
-        $userData['last_name'] = trim($rowData['2']);
-        $userData['first_name'] = trim($rowData['2']);
-        $userData['birthday'] = $this->parseDate($rowData['4']);
-        $userData['tel'] = !empty($rowData['4']) ? trim($rowData['3']) : null;
-        $userData['address'] = !empty($rowData[5]) ? trim($rowData[5]) : null;
-        $userData['note'] = !empty($rowData[6]) ? trim($rowData[6]) : null;
-        $userData['start_datetime'] = $this->parseDateTime($rowData[7]) ? $this->parseDateTime($rowData[7]) : new DateTime();
-        $userData['password'] = !empty($rowData[8]) ? trim($rowData[8]) : $this->getNextMonthString();
-        $userData['staff_id'] = !empty($rowData[9]) ? $this->getStaffId(trim($rowData[9])) : $this->getStaffId('SHOCO');
+
+        if ($rowData[1] == '') {
+            return ['error' => "行{$lineNumber}: メールアドレスが空です。"];
+        }
+
+        if ($rowData[2] == '') {
+            return ['error' => "行{$lineNumber}: 姓が空です。"];
+        }
+
+        if ($rowData[4] == '') {
+            return ['error' => "行{$lineNumber}: 名が空です。"];
+        }
+
 
         
-        // 日付の変換
-        if (!empty($rowData['birthday'])) {
-            $birthday = $this->parseDate($rowData['birthday']);
-            if ($birthday) {
-                $userData['birthday'] = $birthday;
-            }
-        }
-        
-        if (!empty($rowData['end_datetime'])) {
-            $endDatetime = $this->parseDateTime($rowData['end_datetime']);
-            if ($endDatetime) {
-                $userData['end_datetime'] = $endDatetime;
-            }
-        }
-        
-        // 担当講師の設定
-        if (!empty($rowData['staff_name'])) {
-            $staff = $this->Users->Staffs->find()
-                ->where(['name' => trim($rowData['staff_name']), 'is_deleted' => 0])
-                ->first();
-            if ($staff) {
-                $userData['staff_id'] = $staff->id;
-            }
-        }
+        // データの変換 - 新しいCSV構造に合わせて修正
+        $userData['member_number'] = $memberNumber;
+        $userData['email'] = trim($rowData[1]);
+        $userData['last_name'] = trim($rowData[2]);
+        $userData['last_name_kana'] = trim($rowData[3]);
+        $userData['first_name'] = trim($rowData[4]);
+        $userData['first_name_kana'] = trim($rowData[5]);
+        $userData['tel'] = !empty($rowData[6]) ? trim($rowData[6]) : null;
+        $userData['birthday'] = $this->parseDate($rowData[7]);
+        $userData['zipcode'] = !empty($rowData[8]) ? trim($rowData[8]) : null;
+        $userData['address'] = !empty($rowData[9]) ? trim($rowData[9]) : null;
+        $userData['note'] = "";
+        $userData['course_id'] = !empty($rowData[10]) ? $this->getCourseId(trim($rowData[10])) : null;
+        // 申し込み日時（タイムスタンプから）
+        $userData['start_datetime'] = $this->getFirstDayOfNextMonth();
         
         // デフォルト値の設定
         $userData['uuid'] = substr(bin2hex(random_bytes(30)), 0, 30);
-        $userData['password'] = 'password123'; // デフォルトパスワード
+        $userData['password'] = $this->getNextMonthString(); // 来月のYYYYMM形式をパスワードに設定
         $userData['is_continue'] = 1;
         $userData['light_plan'] = 0;
         $userData['staff_plan'] = 0;
         $userData['is_deleted'] = 0;
         $userData['is_light_plan_first_event'] = 0;
         
+        // 担当講師のデフォルト設定
+        $userData['staff_id'] = $this->getStaffId('SHOCO');
+        
         return $userData;
+    }
+
+    private function getCourseId($courseName)
+    {
+        $courses = Configure::read("COURSE");
+        foreach ($courses as $key => $value) {
+            if ($value == $courseName) {
+                return $key;
+            }
+        }
+        return 2;
     }
 
     /**
@@ -1519,6 +1558,17 @@ class UsersController extends AppController
         $date = new \DateTime();
         $date->modify('+1 month');
         return $date->format('Ym');
+    }
+
+    /**
+     * 来月の初日を取得
+     * 
+     * @return \Cake\I18n\FrozenTime
+     */
+    private function getFirstDayOfNextMonth()
+    {
+        $date = new \Cake\I18n\FrozenTime('first day of next month');
+        return $date;
     }
 
     /**
