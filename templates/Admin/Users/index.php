@@ -150,7 +150,7 @@
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $user->id], ['class' => 'btn btn-outline-secondary btn-sm save-scroll-link', 'confirm' => __('退会は編集から「利用終了日時」を設定してください。本当に削除してよろしいですか？', $user->id)]) ?>
                         </td>
                         <td nowrap>
-                            <a href="<?= $this->Url->build(['action' => 'customerInformations', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">カルテ</a>
+                            <a href="<?= $this->Url->build(['action' => 'customerInformations', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link" target="_blank">カルテ</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
