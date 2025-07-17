@@ -1410,7 +1410,11 @@
 
             wrappedLines.forEach(line => {
                 const textWidth = ctx.measureText(line).width;
-                const textX = x + padding + (maxWidth - textWidth) / 2;
+                // Old line:
+                // const textX = x + padding + (maxWidth - textWidth) / 2;
+
+                // New line for left alignment:
+                const textX = x + padding;
                 ctx.fillText(line, textX, currentY);
                 currentY += lineHeight;
             });
