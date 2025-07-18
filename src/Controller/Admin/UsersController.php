@@ -34,6 +34,7 @@ class UsersController extends AppController
         parent::initialize();
 
         $this->loadModel('ComparedImages');
+        $this->loadModel('Habits');
     }
 
     
@@ -578,34 +579,25 @@ class UsersController extends AppController
             ->first();
 
         if (!$user) {
-            return $this->redirect(['action' => 'index']);
+            return $this->redirect(['action' => 'customerInformations']);
         }
 
-        // if ($this->request->is(['patch', 'post', 'put'])) {
-        //     $data = $this->request->getData();
-
-        //     $user = $this->Users->patchEntity($user, $data);
-
-        //     if ($this->Users->save($user)) {
-        //         $this->Flash->success(__('更新しました。'));
-
-        //         $param = $this->request->getQuery();
-
-        //         return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
-        //     }
-        //     $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
-        // }
+        $habit = $this->Habits->find('all')
+        ->where([
+            'user_id' => $id,
+        ])
+        ->first();
 
         //mockデータ
-        $mockHabitsData = [
-            'occupation' => '専業主婦 / 営業 / 販売業 / 看護師 等々',
-            'eating_habits' => '朝食抜きが多い、夜に炭水化物を多く摂る',
-            'sleep' => '平均5～6時間、入眠しにくいことがある',
-            'stress_factors' => '仕事（事務職・残業あり）、肩こり・眼精疲労',
-            'exercise_history' => '中学までバスケ、以降はほぼなし',
-            'medical_history' => '腰痛経験あり（2018年）',
-            'other_notes' => '月経前の浮腫・不調あり、冷え性、柔軟性低い'
-        ];
+        // $mockHabitsData = [
+        //     'occupation' => '専業主婦 / 営業 / 販売業 / 看護師 等々',
+        //     'eating_habits' => '朝食抜きが多い、夜に炭水化物を多く摂る',
+        //     'sleep' => '平均5～6時間、入眠しにくいことがある',
+        //     'stress_factors' => '仕事（事務職・残業あり）、肩こり・眼精疲労',
+        //     'exercise_history' => '中学までバスケ、以降はほぼなし',
+        //     'medical_history' => '腰痛経験あり（2018年）',
+        //     'other_notes' => '月経前の浮腫・不調あり、冷え性、柔軟性低い'
+        // ];
 
         $mockPurposeData = [
             'email' => 'aaaaaa@bbbbb.co.jp',
@@ -814,7 +806,95 @@ class UsersController extends AppController
 
         $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'mockHabitsData', 'mockPurposeData', 'mockBodyData', 'mockMentionData', 'mockConsultData', 'mockSelfData', 'mockDifferenceData'));
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'mockPurposeData', 'mockBodyData', 'mockMentionData', 'mockConsultData', 'mockSelfData', 'mockDifferenceData'));
+    }
+
+    public function customerMain($id = null){
+        $user = $this->Users->find('all')
+            ->contain(['Staffs'])
+            ->where([
+                'Users.id' => $id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            $user = $this->Users->patchEntity($user, $data);
+
+            if ($this->Users->save($user)) {
+                $this->Flash->success(__('更新しました。'));
+
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+        }
+
+        // スタッフを配列で取得
+        $staffs = $this->Users->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => [
+                'is_deleted' => 0
+            ]
+        ])->toArray();
+
+        // 都道府県情報
+        $prefectures = Configure::read("PREFECTURES");
+
+        $param = $this->request->getQuery();
+
+        $courses = Configure::read("COURSE");
+
+        $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
+    }
+
+    public function habits($id = null){
+        $habit = $this->Habits->find('all')
+        ->where([
+            'user_id' => $id,
+        ])
+        ->first();
+
+        // if (!$habit) {
+        //     return $this->redirect(['action' => 'customerInformations']);
+        // }
+
+        $user = $this->Users->find('all')
+        ->where([
+            'id' => $id,
+            'is_deleted' => 0
+        ])
+        ->first();
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            $habit = $this->Habits->patchEntity($habit, $data);
+
+            if ($this->Habits->save($habit)) {
+                $this->Flash->success(__('更新しました。'));
+
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+        }
+
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'param'));
     }
 
     /**

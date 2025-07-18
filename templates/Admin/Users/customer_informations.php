@@ -33,6 +33,7 @@
                             <th nowrap style="text-align: center;">住所</th>
                             <th nowrap style="text-align: center;">プログラム開始日</th>
                             <th nowrap style="text-align: center;">担当講師</th>
+                            <th></th>
                         </tr>
                     </tr>
                 </thead>
@@ -62,6 +63,9 @@
                         </td>
                         <td nowrap style="text-align: center;"><?= h($user->start_datetime) ?></td>
                         <td nowrap style="text-align: center;"><?= ($user->staff) ? $user->staff->name : '' ?></td>
+                        <td nowrap style="text-align: center;">
+                            <a href="<?= $this->Url->build(['action' => 'customerMain', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">編集</a>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -79,18 +83,22 @@
                             <th nowrap style="text-align: center;">運動歴</th>
                             <th nowrap style="text-align: center;">既往歴</th>
                             <th nowrap style="text-align: center;">その他注意点</th>
+                            <th style="width: 150px;"></th>
                         </tr>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><?= h($mockHabitsData['occupation']) ?></td>
-                        <td><?= h($mockHabitsData['eating_habits']) ?></td>
-                        <td><?= h($mockHabitsData['sleep']) ?></td>
-                        <td><?= h($mockHabitsData['stress_factors']) ?></td>
-                        <td><?= h($mockHabitsData['exercise_history']) ?></td>
-                        <td><?= h($mockHabitsData['medical_history']) ?></td>
-                        <td><?= h($mockHabitsData['other_notes']) ?></td>
+                        <td><?= h($habit['occupation']) ?></td>
+                        <td><?= h($habit['eating_habits']) ?></td>
+                        <td><?= h($habit['sleep']) ?></td>
+                        <td><?= h($habit['stress_factors']) ?></td>
+                        <td><?= h($habit['exercise_history']) ?></td>
+                        <td><?= h($habit['medical_history']) ?></td>
+                        <td><?= h($habit['other_notes']) ?></td>
+                        <td nowrap style="text-align: center;">
+                            <a href="<?= $this->Url->build(['action' => 'habits', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">編集</a>
+                        </td>
                     </tr>
                 </tbody>
             </table>

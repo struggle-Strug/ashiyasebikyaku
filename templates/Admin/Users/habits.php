@@ -7,49 +7,49 @@
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">職業</label>
             <div class="col-sm-6">
-                <?= $this->Form->text('occupation', ['class' => 'form-control', 'placeholder' => $mockUserData['occupation']]) ?>
+                <?= $this->Form->text('occupation', ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('occupation') ?></span>
             </div>
         </div>
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">食事習慣</label>
             <div class="col-sm-6">
-                <?= $this->Form->textarea('eating_habits', ['class' => 'form-control', 'placeholder' => $mockUserData['eating_habits']]) ?>
+                <?= $this->Form->textarea('eating_habits', ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('eating_habits') ?></span>
             </div>
         </div>
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">睡眠</label>
             <div class="col-sm-6">
-                <?= $this->Form->textarea('sleep', ['class' => 'form-control', 'placeholder' => $mockUserData['sleep']]) ?>
+                <?= $this->Form->textarea('sleep', ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('course_id') ?></span>
             </div>
         </div>
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">ストレス要因</label>
             <div class="col-sm-6">
-                <?= $this->Form->textarea('stress_factors', ['class' => 'form-control', 'placeholder' => $mockUserData['stress_factors']]) ?>
+                <?= $this->Form->textarea('stress_factors', ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('stress_factors') ?></span>
             </div>
         </div>
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">運動歴</label>
             <div class="col-sm-6">
-                <?= $this->Form->textarea('exercise_history', ['class' => 'form-control', 'placeholder' => $mockUserData['exercise_history']]) ?>
+                <?= $this->Form->textarea('exercise_history', ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('exercise_history') ?></span>
             </div>
         </div>
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">既往歴</label>
             <div class="col-sm-6">
-                <?= $this->Form->textarea('medical_history', ['class' => 'form-control', 'placeholder' => $mockUserData['medical_history']]) ?>
+                <?= $this->Form->textarea('medical_history', ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('medical_history') ?></span>
             </div>
         </div>
         <div class="form-group row">
             <label for="" class="col-sm-2 col-form-label text-md-right">その他注意点</label>
             <div class="col-sm-6">
-                <?= $this->Form->textarea('other_notes', ['class' => 'form-control', 'placeholder' => $mockUserData['other_notes']]) ?>
+                <?= $this->Form->textarea('other_notes', ['class' => 'form-control', 'placeholder' => '']) ?>
                 <span class="text-danger"><?= $this->Form->error('other_notes') ?></span>
             </div>
         </div>
