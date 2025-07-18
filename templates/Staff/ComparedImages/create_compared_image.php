@@ -1325,7 +1325,7 @@ $(function () {
 
         wrappedLines.forEach(line => {
             const textWidth = ctx.measureText(line).width;
-            const textX = x + padding + (maxWidth - textWidth) / 2;
+            const textX = x + padding;
             ctx.fillText(line, textX, currentY);
             currentY += lineHeight;
         });
@@ -1355,7 +1355,7 @@ $(function () {
             const rightHeight = rightSvg.clientHeight;
             const maxHeight = Math.max(leftHeight, rightHeight);
             
-            const pixelRatio = window.devicePixelRatio || 1;
+            const pixelRatio = 0.75; // 解像度を半分に下げる
             
             canvas.width = (leftWidth + rightWidth) * pixelRatio; // 間隔なし
             canvas.height = maxHeight * pixelRatio;
@@ -1464,7 +1464,7 @@ $(function () {
             });
 
             // PNGとして出力
-            const pngDataUrl = canvas.toDataURL('image/png');
+            const pngDataUrl = canvas.toDataURL('image/png', 0.75);
             document.getElementById("preview").src = pngDataUrl;
             document.getElementById("preview").style.display = "block";
         } catch (error) {
@@ -1497,7 +1497,7 @@ $(function () {
             const rightHeight = rightSvg.clientHeight;
             const maxHeight = Math.max(leftHeight, rightHeight);
             
-            const pixelRatio = window.devicePixelRatio || 1;
+            const pixelRatio = 0.75; // 解像度を半分に下げる
             
             canvas.width = (leftWidth + rightWidth) * pixelRatio;
             canvas.height = maxHeight * pixelRatio;
@@ -1603,7 +1603,7 @@ $(function () {
             });
 
             // PNGとして出力
-            const pngDataUrl = canvas.toDataURL('image/png');
+            const pngDataUrl = canvas.toDataURL('image/png', 0.75);
             uploadImageToServer(pngDataUrl);
         } catch (error) {
             console.error('Error during SVG to canvas conversion:', error);
