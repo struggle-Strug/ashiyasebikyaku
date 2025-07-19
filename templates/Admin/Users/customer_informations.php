@@ -119,22 +119,28 @@ $(document).ready(function() {
                 ? `<textarea name="${field}" class="form-control">${value}</textarea>` 
                 : `<input name="${field}" class="form-control" value="${value}">`;
             $td.html(input);
-            $td.closest('table').find('.save-btn').show();
+            $td.closest('form').find('.save-btn').show();  // updated: limit to own form
         });
     };
 
-    // User info (special handling for select + multiple inputs)
     const courses = <?= json_encode($courses) ?>;
     const staffs = <?= json_encode($staffs) ?>;
+
     $('.editable').on('click', function() {
         const $td = $(this);
         if ($td.find('input, select').length > 0) return;
         const field = $td.data('field');
         let html = '';
+        const currentValue = $td.text().trim();
+
         switch (field) {
             case 'course_id':
                 html = '<select name="course_id" class="form-control">' +
-                    Object.entries(courses).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') + '</select>';
+                    Object.entries(courses).map(([id, name]) => {
+                        const selected = (name === currentValue || id === currentValue) ? 'selected' : '';
+                        return `<option value="${id}" ${selected}>${name}</option>`;
+                    }).join('') +
+                    '</select>';
                 break;
             case 'name_kanji':
                 html = `<input name="last_name" class="form-control mb-1" value="<?= h($user->last_name) ?>" placeholder="姓">
@@ -158,11 +164,15 @@ $(document).ready(function() {
                 break;
             case 'staff_id':
                 html = '<select name="staff_id" class="form-control">' +
-                    Object.entries(staffs).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') + '</select>';
+                    Object.entries(staffs).map(([id, name]) => {
+                        const selected = (name === currentValue || id === currentValue) ? 'selected' : '';
+                        return `<option value="${id}" ${selected}>${name}</option>`;
+                    }).join('') +
+                    '</select>';
                 break;
         }
         $td.html(html);
-        $td.closest('table').find('.save-btn').show();
+        $td.closest('form').find('.save-btn').show();  // updated: limit to own form
     });
 
     setupEditable('.editable-habit', true);
