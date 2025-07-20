@@ -22,7 +22,7 @@ use Cake\ORM\Entity;
  *
  * @property \App\Model\Entity\User $user ユーザー関連データ
  */
-class Habits extends Entity
+class Habit extends Entity
 {
     protected $_accessible = [
         'user_id' => true,

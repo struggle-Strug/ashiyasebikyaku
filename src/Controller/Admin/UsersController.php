@@ -37,6 +37,7 @@ class UsersController extends AppController
         $this->loadModel('Habits');
         $this->loadModel('Purposes');
         $this->loadModel('BodyDatas');
+        $this->loadModel('Mentions');
     }
 
     
@@ -609,73 +610,17 @@ class UsersController extends AppController
             ->order(['date' => 'ASC'])
             ->toArray();
 
-        //mockデータ
+        $mention = $this->Mentions->find('all')
+        ->where([
+            'user_id' => $id,
+        ])
+        ->first();
 
-        $mockBodyData = [
-            [
-                'date' => '2025/05/01',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '✕',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/05/20',
-                'ankle' => '◯',
-                'instep' => '△',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '✕',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/06/10',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '✕',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/06/30',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '△',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/07/20',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '△',
-                'toes' => '✕',
-                'note' => '寝指の改善が進まず'
-            ],
-            [
-                'date' => '2025/08/10',
-                'ankle' => '◎',
-                'instep' => '◎',
-                'vertical_arch' => '◯',
-                'horizontal_arch' => '◯',
-                'toes' => '△',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/08/30',
-                'ankle' => '◎',
-                'instep' => '◎',
-                'vertical_arch' => '◯',
-                'horizontal_arch' => '◯',
-                'toes' => '△',
-                'note' => ''
-            ],
-        ];
+        if (!$mention) {
+            $mention = $this->Mentions->newEntity(['user_id' => $id]);
+        }
+
+        //mockデータ
 
         $mockMentionData = [
             'personality_tendency' => '真面目、完璧主義。失敗すると落ち込みやすい',
@@ -806,7 +751,7 @@ class UsersController extends AppController
 
         $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mockBodyData', 'mockMentionData', 'mockConsultData', 'mockSelfData', 'mockDifferenceData'));
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'mockMentionData', 'mockConsultData', 'mockSelfData', 'mockDifferenceData'));
     }
 
     public function customerMain($id = null){
@@ -962,50 +907,53 @@ class UsersController extends AppController
         $param = $this->request->getQuery();
         $this->set(compact('user', 'param'));
     }
-    
 
-    public function addBodyData($id = null){
+    public function mention($id = null)
+    {
         $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
+            ->where([
+                'id' => $id,
+                'is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
         }
 
-        $param = $this->request->getQuery();
+        // Mentions テーブルから取得
+        $mention = $this->Mentions->find('all')
+            ->where([
+                'user_id' => $id
+            ])
+            ->first();
 
-        $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
-
-        $this->set(compact('user', 'param', 'bodyDataOptions'));
-    }
-
-    public function mention($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
-        if (!$user) {
-            return $this->redirect(['action' => 'index']);
+        // なければ newEntity
+        if (!$mention) {
+            $mention = $this->Mentions->newEntity(['user_id' => $id]);
         }
 
-        $mockUserData = [
-            'personality_tendency' => '真面目、完璧主義。失敗すると落ち込みやすい',
-            'motivation_source' => '効果を数値で見るとやる気が出る。写真比較も◎',
-            'dropout_risk' => '忙しさで通えなくなったときの自己嫌悪でフェードアウト傾向あり'
-        ];
-        
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            $mention = $this->Mentions->patchEntity($mention, $data);
+
+            if ($this->Mentions->save($mention)) {
+                $this->Flash->success(__('更新しました。'));
+
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+
+            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+        }
 
         $param = $this->request->getQuery();
 
-        $this->set(compact('user', 'param', 'mockUserData'));
+        $this->set(compact('user', 'mention', 'param'));
     }
+
 
     public function consultHistory($id = null){
         $user = $this->Users->find('all')

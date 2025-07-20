@@ -1,7 +1,7 @@
 <?php $this->assign('title', 'カルテ'); ?>
 <div class="card">
 
-    <!-- USER INFO FORM -->
+    <!-- 基本情報 -->
     <?= $this->Form->create($user, [
         'url' => ['controller' => 'Users', 'action' => 'customerMain', $user->id],
         'type' => 'post'
@@ -37,7 +37,7 @@
     </div>
     <?= $this->Form->end() ?>
 
-    <!-- HABITS FORM -->
+    <!-- 生活習慣・既往歴 -->
     <?= $this->Form->create($habit, [
         'url' => ['controller' => 'Users', 'action' => 'habits', $user->id],
         'type' => 'post'
@@ -69,7 +69,7 @@
     </div>
     <?= $this->Form->end() ?>
 
-    <!-- PURPOSE FORM -->
+    <!-- 目標設定シート -->
     <?= $this->Form->create($purpose, [
         'url' => ['controller' => 'Users', 'action' => 'purpose', $user->id],
         'type' => 'post'
@@ -81,13 +81,13 @@
                 <tr>
                     <th>メール</th>
                     <th>名前</th>
-                    <th>現在の見た目の悩み</th>
-                    <th>現在の機能の悩み</th>
-                    <th>見た目の目標</th>
-                    <th>機能の目標</th>
-                    <th>未来の自己イメージ</th>
-                    <th>次の2週間の課題</th>
-                    <th>相談内容</th>
+                    <th>現在の悩み(容姿面)</th>
+                    <th>現在の悩み(機能面)</th>
+                    <th>期間中の目標(容姿面)</th>
+                    <th>期間中の目標(機能面)</th>
+                    <th>未来のセルフイメージ</th>
+                    <th>次の2週間でやるワーク</th>
+                    <th>個別コンサルで相談したいこと</th>
                     <th></th>
                 </tr>
             </thead>
@@ -103,23 +103,24 @@
     </div>
     <?= $this->Form->end() ?>
 
-    <!-- BODYDATA FORM -->
+
+    <!-- 身体データ（定性指標） -->
     <?= $this->Form->create(null, [
         'url' => ['controller' => 'Users', 'action' => 'bodyData', $user->id],
         'type' => 'post'
     ]) ?>
     <div class="card-body">
-        <h4>ボディデータ</h4>
+        <h4>身体データ（定性指標）</h4>
         <button type="button" id="add-body-row" class="btn btn-outline-primary btn-sm">＋ 追加</button>
         <table class="table table-bordered table-striped" id="body-data-table" style="margin-top: 4px;">
             <thead>
                 <tr>
                     <th>日付</th>
                     <th>足首</th>
-                    <th>甲</th>
+                    <th>足の甲</th>
                     <th>縦アーチ</th>
                     <th>横アーチ</th>
-                    <th>つま先</th>
+                    <th>足指</th>
                     <th>備考</th>
                     <th></th>
                 </tr>
@@ -136,8 +137,35 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
-        
         <button type="submit" class="btn btn-success save-btn" style="display:none; margin-top: 4px;">保存</button>
+    </div>
+    <?= $this->Form->end() ?>
+
+    <!-- 心理・モチベーション -->
+    <?= $this->Form->create(null, [
+        'url' => ['controller' => 'Users', 'action' => 'mention', $user->id],
+        'type' => 'post'
+    ]) ?>
+    <div class="card-body">
+        <h4>心理・モチベーション</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>性格傾向</th>
+                    <th>モチベーション源泉</th>
+                    <th>離脱リスク</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <?php foreach (['personality_tendency', 'motivation_source', 'dropout_risk'] as $field): ?>
+                        <td class="editable-mention" data-field="<?= $field ?>"><span><?= h($mention[$field]) ?></span></td>
+                    <?php endforeach; ?>
+                    <td><button type="submit" class="btn btn-success save-btn" style="display:none;">保存</button></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
     <?= $this->Form->end() ?>
 
@@ -151,12 +179,12 @@ $(document).ready(function() {
 
     const showSaveButton = ($td) => $td.closest('form').find('.save-btn').show();
 
-    $('.editable, .editable-habit, .editable-purpose').on('click', function() {
+    $('.editable, .editable-habit, .editable-purpose, .editable-mention').on('click', function() {
         const $td = $(this);
         if ($td.find('input, select, textarea').length > 0) return;
         const field = $td.data('field');
         const value = $td.text().trim();
-        let input = value.length > 50 ? `<textarea name="${field}" class="form-control">${value}</textarea>` : `<input name="${field}" class="form-control" value="${value}">`;
+        let input = `<textarea name="${field}" class="form-control">${value}</textarea>`;
         $td.html(input);
         showSaveButton($td);
     });
@@ -170,16 +198,21 @@ $(document).ready(function() {
                 html = '<select name="course_id" class="form-control">' + Object.entries(courses).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') + '</select>';
                 break;
             case 'name_kanji':
-                html = `<input name="last_name" class="form-control mb-1" value="<?= h($user->last_name) ?>" placeholder="姓"><input name="first_name" class="form-control" value="<?= h($user->first_name) ?>" placeholder="名">`;
+                html = `<input name="last_name" class="form-control mb-1" value="<?= h($user->last_name) ?>" placeholder="姓">
+                        <input name="first_name" class="form-control" value="<?= h($user->first_name) ?>" placeholder="名">`;
                 break;
             case 'name_kana':
-                html = `<input name="last_name_kana" class="form-control mb-1" value="<?= h($user->last_name_kana) ?>" placeholder="姓カナ"><input name="first_name_kana" class="form-control" value="<?= h($user->first_name_kana) ?>" placeholder="名カナ">`;
+                html = `<input name="last_name_kana" class="form-control mb-1" value="<?= h($user->last_name_kana) ?>" placeholder="姓カナ">
+                        <input name="first_name_kana" class="form-control" value="<?= h($user->first_name_kana) ?>" placeholder="名カナ">`;
                 break;
             case 'birthday':
                 html = `<input type="date" name="birthday" class="form-control" value="<?= h($user->birthday) ?>">`;
                 break;
             case 'address':
-                html = `<input name="zipcode" class="form-control mb-1" value="<?= h($user->zipcode) ?>" placeholder="郵便番号"><input name="prefecture" class="form-control mb-1" value="<?= h($user->prefecture) ?>" placeholder="都道府県"><input name="city" class="form-control mb-1" value="<?= h($user->city) ?>" placeholder="市区町村"><input name="address" class="form-control" value="<?= h($user->address) ?>" placeholder="住所詳細">`;
+                html = `<input name="zipcode" class="form-control mb-1" value="<?= h($user->zipcode) ?>" placeholder="郵便番号">
+                        <input name="prefecture" class="form-control mb-1" value="<?= h($user->prefecture) ?>" placeholder="都道府県">
+                        <input name="city" class="form-control mb-1" value="<?= h($user->city) ?>" placeholder="市区町村">
+                        <input name="address" class="form-control" value="<?= h($user->address) ?>" placeholder="住所詳細">`;
                 break;
             case 'start_datetime':
                 html = `<input type="date" name="start_datetime" class="form-control" value="<?= date('Y-m-d', strtotime($user->start_datetime)) ?>">`;
