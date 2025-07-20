@@ -36,6 +36,7 @@ class UsersController extends AppController
         $this->loadModel('ComparedImages');
         $this->loadModel('Habits');
         $this->loadModel('Purposes');
+        $this->loadModel('BodyDatas');
     }
 
     
@@ -603,19 +604,12 @@ class UsersController extends AppController
             $purpose = $this->Purposes->newEntity(['user_id' => $id]);
         }
 
-        //mockデータ
+        $bodyDatas = $this->BodyDatas->find('all')
+            ->where(['user_id' => $id])
+            ->order(['date' => 'ASC'])
+            ->toArray();
 
-        $mockPurposeData = [
-            'email' => 'aaaaaa@bbbbb.co.jp',
-            'name' => '富田敦子',
-            'current_concerns_appearance' => '反腰、ガニ股(立つと左足軸で右足休めの姿勢に無意識になる)、膝裏曲っていてO脚、猫背、巻き肩、垂尻、お腹ポッコリ、二重顎、右脚指頭(人差し指・中指・くすり指)上部にタコ、左右足裏親指と人差し指の間にタコ、左右足小指側面、タコ、左右足くすり指と小指',
-            'current_concerns_function' => '腰椎椎間板ヘルニア・変形・すべり・狭窄と頸椎狭窄による腰痛、背中痛、首・肩凝り、坐骨神経痛、脚痺れ、膝・股関節・骨盤痛、頭痛、めまい、耳鳴り、耳痛。不眠（目覚ましより先に起きる）、腰痛で仰向けで眠れない。又は無意識に膝立てて寝て眠り浅く1日中眠気ある。食い縛り(夜はマウスピース使用)、食事で座っていても、料理で立っていて、外出で歩いていても腰痛',
-            'goal_appearance' => '真直ぐな足でまっすぐ歩いている。お尻が上がっている。足指が真直ぐになってきちんと開けるようになっている。肩が下がって、姿勢が真直ぐになっている。お腹真直ぐ、顎の周りがすっきりしている。程良い筋肉がある',
-            'goal_function' => '全ての痛みが無い身体。疲れ知らずで体力有る。膝を立てなくても眠れる。食い縛り無くなってマウスピース不要になる。生き生きしてキラキラして勢いがあってとても元気。食いしばりがなく、眠れ',
-            'future_self_image' => 'ハンドメイドでブランド立ち上げ。受注が多く入り、お客様に喜んでもらって私も嬉しく笑顔が絶えず、毎日楽しくて仕方がない。時間に追われる生活ではなく、ゆっくりとした自然と共存する心豊かなのんびりとした生活。',
-            'next_two_weeks_work' => '脳バグ探し',
-            'consulting_topics' => '6月いっぱいまで休職中で、朝起きて直ぐローラーとボールでストレッチして、仙骨のワークと足首のワーク（インスタでアップされているもの）をした後、理学療法士伝授のリハビリ体操(軽い筋トレ含む)を1時間ほどしない動けない状態です。また、時間は決まっていませんが、公園に行って裸足歩きをしたり、鉄棒で股関節の刺激をしたり、うんていにぶら下がって脇伸ばしをしたりしています。あと、週一でヨガ'
-        ];
+        //mockデータ
 
         $mockBodyData = [
             [
@@ -812,7 +806,7 @@ class UsersController extends AppController
 
         $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'mockPurposeData', 'mockBodyData', 'mockMentionData', 'mockConsultData', 'mockSelfData', 'mockDifferenceData'));
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mockBodyData', 'mockMentionData', 'mockConsultData', 'mockSelfData', 'mockDifferenceData'));
     }
 
     public function customerMain($id = null){
@@ -934,88 +928,41 @@ class UsersController extends AppController
         $this->set(compact('user', 'purpose', 'param'));
     }
 
-    public function bodyData($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
+    public function bodyData($id = null) {
+        $user = $this->Users->find()
+            ->where(['id' => $id, 'is_deleted' => 0])
+            ->first();
+    
         if (!$user) {
             return $this->redirect(['action' => 'index']);
         }
-
-        $mockUserData = [
-            [
-                'date' => '2025/05/01',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '✕',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/05/20',
-                'ankle' => '◯',
-                'instep' => '△',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '✕',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/06/10',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '✕',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/06/30',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '△',
-                'toes' => '✕',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/07/20',
-                'ankle' => '◯',
-                'instep' => '◯',
-                'vertical_arch' => '△',
-                'horizontal_arch' => '△',
-                'toes' => '✕',
-                'note' => '寝指の改善が進まず'
-            ],
-            [
-                'date' => '2025/08/10',
-                'ankle' => '◎',
-                'instep' => '◎',
-                'vertical_arch' => '◯',
-                'horizontal_arch' => '◯',
-                'toes' => '△',
-                'note' => ''
-            ],
-            [
-                'date' => '2025/08/30',
-                'ankle' => '◎',
-                'instep' => '◎',
-                'vertical_arch' => '◯',
-                'horizontal_arch' => '◯',
-                'toes' => '△',
-                'note' => ''
-            ],
-        ];
-
+    
+        if ($this->request->is(['post', 'put', 'patch'])) {
+            $dataList = $this->request->getData('bodyData');
+    
+            foreach ($dataList as $data) {
+                if (empty($data['id'])) {
+                    $bodyData = $this->BodyDatas->newEntity($data);
+                    $bodyData->user_id = $id;
+                } else {
+                    $bodyData = $this->BodyDatas->get($data['id']);
+                    $bodyData = $this->BodyDatas->patchEntity($bodyData, $data);
+                }
+    
+                if (!$this->BodyDatas->save($bodyData)) {
+                    $this->Flash->error(__('ボディデータの保存に失敗しました。'));
+                    return $this->redirect(['action' => 'customerInformations', $id]);
+                }
+            }
+    
+            $this->Flash->success(__('ボディデータを保存しました。'));
+            return $this->redirect(['action' => 'customerInformations', $id]);
+        }
+    
         $param = $this->request->getQuery();
-
-        $this->set(compact('user', 'param', 'mockUserData'));
+        $this->set(compact('user', 'param'));
     }
+    
 
     public function addBodyData($id = null){
         $user = $this->Users->find('all')
