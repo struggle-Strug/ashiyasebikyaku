@@ -103,7 +103,6 @@
     </div>
     <?= $this->Form->end() ?>
 
-
     <!-- 身体データ（定性指標） -->
     <?= $this->Form->create(null, [
         'url' => ['controller' => 'Users', 'action' => 'bodyData', $user->id],
@@ -169,7 +168,50 @@
     </div>
     <?= $this->Form->end() ?>
 
+    <!-- 自己記録 -->
+    <?= $this->Form->create(null, [
+        'url' => ['controller' => 'Users', 'action' => 'selfData', $user->id],
+        'type' => 'post'
+    ]) ?>
+    <div class="card-body">
+        <h4>課題の自己認識結果</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>登録日</th>
+                    <th>A.前回から今回までの良い変化・成長</th>
+                    <th>B.前回設定したワークの振り返り</th>
+                    <th>C.まだ変化を感じられていない部分</th>
+                    <th>D.今の自分の状態</th>
+                    <th>E.次の2週間でやりたいワーク</th>
+                    <th>F.個別コンサルで相談したいこと</th>
+                    <th>指導内容</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($selfdata as $index => $self): ?>
+                    <input type="hidden" name="selfData[<?= $index ?>][id]" value="<?= h($self['id']) ?>">
+                    <tr>
+                        <td><?= h($self['date']) ?></td>
+                        <td><?= h($self['good_changes']) ?></td>
+                        <td><?= h($self['work_review']) ?></td>
+                        <td><?= h($self['no_change_parts']) ?></td>
+                        <td><?= h($self['current_state']) ?></td>
+                        <td><?= h($self['next_two_weeks_work']) ?></td>
+                        <td><?= h($self['consult_topics']) ?></td>
+                        <td class="editable-self" data-index="<?= $index ?>"><span><?= h($self['consult_content']) ?></span></td>
+                        <td>
+                            <button type="submit" class="btn btn-success save-btn" style="display:none;">保存</button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?= $this->Form->end() ?>
 </div>
+
 
 <script>
 $(document).ready(function() {
@@ -177,11 +219,13 @@ $(document).ready(function() {
     const staffs = <?= json_encode($staffs) ?>;
     const bodyOptions = ['◎', '◯', '△', '✕'];
 
+    // 💡 編集したとき、そのフォーム内の保存ボタンを表示する
     const showSaveButton = ($td) => $td.closest('form').find('.save-btn').show();
 
+    // 💡 基本・習慣・目標・心理部分 → クリックでtextareaに変換
     $('.editable, .editable-habit, .editable-purpose, .editable-mention').on('click', function() {
         const $td = $(this);
-        if ($td.find('input, select, textarea').length > 0) return;
+        if ($td.find('input, select, textarea').length > 0) return;  // すでに編集中なら何もしない
         const field = $td.data('field');
         const value = $td.text().trim();
         let input = `<textarea name="${field}" class="form-control">${value}</textarea>`;
@@ -189,13 +233,16 @@ $(document).ready(function() {
         showSaveButton($td);
     });
 
+    // 💡 基本情報（特別処理: selectや複数input）
     $('.editable').on('click', function() {
         const $td = $(this);
         const field = $td.data('field');
         let html = '';
         switch (field) {
             case 'course_id':
-                html = '<select name="course_id" class="form-control">' + Object.entries(courses).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') + '</select>';
+                html = '<select name="course_id" class="form-control">' +
+                    Object.entries(courses).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') +
+                    '</select>';
                 break;
             case 'name_kanji':
                 html = `<input name="last_name" class="form-control mb-1" value="<?= h($user->last_name) ?>" placeholder="姓">
@@ -218,38 +265,58 @@ $(document).ready(function() {
                 html = `<input type="date" name="start_datetime" class="form-control" value="<?= date('Y-m-d', strtotime($user->start_datetime)) ?>">`;
                 break;
             case 'staff_id':
-                html = '<select name="staff_id" class="form-control">' + Object.entries(staffs).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') + '</select>';
+                html = '<select name="staff_id" class="form-control">' +
+                    Object.entries(staffs).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') +
+                    '</select>';
                 break;
         }
         $td.html(html);
         showSaveButton($td);
     });
 
+    // 💡 身体データ「＋追加」ボタン処理
     $('#add-body-row').on('click', function() {
         const index = $('#body-data-table tbody tr').length;
         const row = `<tr>
             <td class="editable-body" data-field="date" data-index="${index}"><span></span></td>
-            ${['ankle', 'instep', 'vertical_arch', 'horizontal_arch', 'toes'].map(f => `<td class="editable-body" data-field="${f}" data-index="${index}"><span></span></td>`).join('')}
+            ${['ankle', 'instep', 'vertical_arch', 'horizontal_arch', 'toes'].map(f =>
+                `<td class="editable-body" data-field="${f}" data-index="${index}"><span></span></td>`
+            ).join('')}
             <td class="editable-body" data-field="note" data-index="${index}"><span></span></td>
             <td></td>
         </tr>`;
         $('#body-data-table tbody').append(row);
     });
 
+    // 💡 身体データセルをクリックしたときの処理
     $(document).on('click', '.editable-body', function() {
         const $td = $(this);
         if ($td.find('input, select').length > 0) return;
         const field = $td.data('field');
         const index = $td.data('index');
         const value = $td.text().trim();
-        let input = field === 'date'
+        let input = (field === 'date')
             ? `<input type="date" name="bodyData[${index}][${field}]" class="form-control" value="${value}">`
-            : `<select name="bodyData[${index}][${field}]" class="form-control">${bodyOptions.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('')}</select>`;
+            : `<select name="bodyData[${index}][${field}]" class="form-control">` +
+                bodyOptions.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('') +
+              `</select>`;
         if (field === 'note') {
             input = `<input name="bodyData[${index}][note]" class="form-control" value="${value}">`;
         }
         $td.html(input);
         showSaveButton($td);
     });
+
+    // 💡 自己記録（consult_content のみ）をクリックしたときの処理
+    $(document).on('click', '.editable-self', function() {
+        const $td = $(this);
+        if ($td.find('textarea').length > 0) return;
+        const index = $td.data('index');
+        const value = $td.text().trim();
+        const input = `<textarea name="selfData[${index}][consult_content]" class="form-control">${value}</textarea>`;
+        $td.html(input);
+        showSaveButton($td);
+    });
 });
 </script>
+

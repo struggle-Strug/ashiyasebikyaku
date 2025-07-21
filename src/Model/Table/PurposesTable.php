@@ -14,32 +14,51 @@ class PurposesTable extends Table
         $this->setDisplayField('name');
         $this->setPrimaryKey('id');
 
-        // Add Timestamp behavior for automatic created/modified fields
         $this->addBehavior('Timestamp'); 
 
-        // Define the association with the Users table
         $this->belongsTo('Users', [
             'foreignKey' => 'user_id',
-            'joinType' => 'INNER', // or 'LEFT' if it's optional
+            'joinType' => 'INNER',
         ]);
     }
 
     public function validationDefault(Validator $validator): Validator
     {
-        $textFields = [
-            'email',
-            'name',
-            'current_concerns_appearance',
-            'current_concerns_function',
-            'goal_appearance',
-            'goal_function',
-            'future_self_image',
-            'next_two_weeks_work',
-            'consulting_topics'
-        ];
-        foreach ($textFields as $field) {
-            $validator->allowEmptyString($field);
-        }
+        $validator
+            ->requirePresence('email', 'create')
+            ->notEmptyString('email', '必須項目です。');
+
+        $validator
+            ->requirePresence('name', 'create')
+            ->notEmptyString('name', '必須項目です。');
+
+        $validator
+            ->requirePresence('current_concerns_appearance', 'create')
+            ->notEmptyString('current_concerns_appearance', '必須項目です。');
+
+        $validator
+            ->requirePresence('current_concerns_function', 'create')
+            ->notEmptyString('current_concerns_function', '必須項目です。');
+
+        $validator
+            ->requirePresence('goal_appearance', 'create')
+            ->notEmptyString('goal_appearance', '必須項目です。');
+
+        $validator
+            ->requirePresence('goal_function', 'create')
+            ->notEmptyString('goal_function', '必須項目です。');
+
+        $validator
+            ->requirePresence('future_self_image', 'create')
+            ->notEmptyString('future_self_image', '必須項目です。');
+
+        $validator
+            ->requirePresence('next_two_weeks_work', 'create')
+            ->notEmptyString('next_two_weeks_work', '必須項目です。');
+
+        $validator
+            ->requirePresence('consulting_topics', 'create')
+            ->notEmptyString('consulting_topics', '必須項目です。');
 
         return $validator;
     }

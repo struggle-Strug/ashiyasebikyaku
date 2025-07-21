@@ -38,6 +38,7 @@ class UsersController extends AppController
         $this->loadModel('Purposes');
         $this->loadModel('BodyDatas');
         $this->loadModel('Mentions');
+        $this->loadModel('SelfDatas');
     }
 
     
@@ -620,13 +621,12 @@ class UsersController extends AppController
             $mention = $this->Mentions->newEntity(['user_id' => $id]);
         }
 
-        //mockデータ
+        $selfdata = $this->SelfDatas->find('all')
+            ->where(['user_id' => $id])
+            ->order(['date' => 'ASC'])
+            ->toArray();
 
-        $mockMentionData = [
-            'personality_tendency' => '真面目、完璧主義。失敗すると落ち込みやすい',
-            'motivation_source' => '効果を数値で見るとやる気が出る。写真比較も◎',
-            'dropout_risk' => '忙しさで通えなくなったときの自己嫌悪でフェードアウト傾向あり'
-        ];
+        //mockデータ
 
         $mockConsultData = [
             [
@@ -673,20 +673,6 @@ class UsersController extends AppController
                 'note' => '仮説通りの本人も成果を感じていないため、変更を合意',
                 'next_step' => '写真診断から×××→×××にワークを変更指示',
                 'instructor' => 'YUMICO'
-            ]
-        ];
-
-        $mockSelfData = [
-            [
-                'id' => 1,
-                'date' => '2025/07/20',
-                'good_changes' => '足の指が柔らかくなったように感じる。足裏の感覚持ててよし◎',
-                'work_review' => '毎日は取り組めなかった実践レッスンに参加する',
-                'no_change_parts' => 'X脚、ヒラメ筋のポコリ、足首のくびれの感覚変わらず。小指は使えていない。アーチが崩れている。内転筋が使えていない。小指側に頼りすぎ。立方骨',
-                'current_state' => '疲労は個、アレルギーで目や鼻、だるさ。少し心も疲れ気味、やる気元気ない。生活リズムに変化なし。ストレス多',
-                'next_two_weeks_work' => 'とにかく毎日ワークをする。日々の宿題がちょっとでもきちんと着いていく。ちょっと一休みの前に一回',
-                'consult_topics' => '上半身の最終的な形はありますか？やや猫背、首顔など右ガチガチで使いやすいの改善したいです！ガチガチなまま下半身だけニョ〜んとのびても意味ない気がしていますが中間層は伸ばせる気がしないです。舌押しで出っ歯が動かせてきてるのであっていますか？このまま続けたら良いですか？今までやってきた腹圧、上肢の補強の宿題の優先順位も確認していきたいです。',
-                'consult_content' => ''
             ]
         ];
 
@@ -751,7 +737,7 @@ class UsersController extends AppController
 
         $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'mockMentionData', 'mockConsultData', 'mockSelfData', 'mockDifferenceData'));
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'selfdata', 'mockConsultData', 'mockDifferenceData'));
     }
 
     public function customerMain($id = null){
@@ -953,6 +939,37 @@ class UsersController extends AppController
 
         $this->set(compact('user', 'mention', 'param'));
     }
+
+    public function selfData($id = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
+
+        $user = $this->Users->get($id);
+        if (!$user) {
+            $this->Flash->error('ユーザーが見つかりませんでした。');
+            return $this->redirect(['action' => 'customerInformations']);
+        }
+
+        $selfDataTable = $this->getTableLocator()->get('SelfDatas');
+        $data = $this->request->getData();
+
+        // 既存の selfdata 行を取得
+        $existing = $selfDataTable->find()
+            ->where(['user_id' => $id])
+            ->order(['date' => 'ASC'])
+            ->toArray();
+
+        foreach ($existing as $index => $entity) {
+            if (isset($data['selfData'][$index]['consult_content'])) {
+                $entity->consult_content = $data['selfData'][$index]['consult_content'];
+                $selfDataTable->save($entity);
+            }
+        }
+
+        $this->Flash->success('自己データを保存しました。');
+        return $this->redirect(['action' => 'customerInformations', $id]);
+    }
+
 
 
     public function consultHistory($id = null){
