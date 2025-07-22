@@ -45,6 +45,30 @@ class LessonsController extends AppController
                 'EventSchedules.end_time' => 'desc'
             ]);
 
+        // 検索
+        $param = $this->request->getQuery();
+
+        // 開催日時
+        if (!empty($param['event_date'])) {
+            $query->where(['EventSchedules.event_date' => $param['event_date']]);
+        } else {
+            $param['event_date'] = '';
+        }
+
+        // 区分
+        if (!empty($param['event_type'])) {
+            $query->where(['EventSchedules.event_type' => $param['event_type']]);
+        } else {
+            $param['event_type'] = '';
+        }
+
+        // 講師
+        if (!empty($param['staff_id'])) {
+            $query->where(['Events.staff_id' => $param['staff_id']]);
+        } else {
+            $param['staff_id'] = '';
+        }
+
         $eventType = Configure::read("EVENT_TYPE");
 
         $staffs = $this->Lessons->Staffs->find('list', [

@@ -13,7 +13,7 @@
             <div class="col-md-3 mt-2">
                 <label>区分</label>
                 <div class="input-group">
-                    <?= $this->Form->select('list_id', $listOptions, ['class' => 'form-control', 'empty' => '-', 'default' => $param['list_id']]) ?>
+                    <?= $this->Form->select('event_type', $listOptions, ['class' => 'form-control', 'empty' => '-', 'default' => $param['event_type']]) ?>
                 </div>
             </div>
             <div class="col-md-3 mt-2">
