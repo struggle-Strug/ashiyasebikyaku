@@ -641,7 +641,7 @@ class UsersController extends AppController
                 'instruction' => '足の踏み方指導',
                 'note' => '親指を潰して踏むと膝が痛くなるが、足裏の正しい使い方がわかれば膝が痛くなることが体感できた',
                 'next_step' => '足の踏み方が正しくできているか確認し、膝の痛みが緩和したか本人の体感を確認する',
-                'instructor' => 'SHOCO'
+                'staff_id' => '1'
             ],
             [
                 'date' => '2025/05/15',
@@ -650,7 +650,7 @@ class UsersController extends AppController
                 'instruction' => '膝内側に入る癖あり。鏡で都度修正',
                 'note' => '',
                 'next_step' => '',
-                'instructor' => 'FUKUCHAN'
+                'staff_id' => '2'
             ],
             [
                 'date' => '2025/06/01',
@@ -659,7 +659,7 @@ class UsersController extends AppController
                 'instruction' => '食事記録アプリ導入済、前回とほぼ様子',
                 'note' => '',
                 'next_step' => '',
-                'instructor' => 'SHOCO'
+                'staff_id' => '1'
             ],
             [
                 'date' => '2025/06/07',
@@ -668,7 +668,7 @@ class UsersController extends AppController
                 'instruction' => '小指と美脚の関係性を学習',
                 'note' => 'しっかり理解できた。膝痛で階段できない',
                 'next_step' => '膝の関節ロックを解消',
-                'instructor' => 'YUMICO'
+                'staff_id' => '1'
             ],
             [
                 'date' => '2025/06/16',
@@ -677,7 +677,7 @@ class UsersController extends AppController
                 'instruction' => '写真診断の結果、ワークの変更を討議',
                 'note' => '仮説通りの本人も成果を感じていないため、変更を合意',
                 'next_step' => '写真診断から×××→×××にワークを変更指示',
-                'instructor' => 'YUMICO'
+                'staff_id' => '2'
             ]
         ];
 
@@ -933,45 +933,42 @@ class UsersController extends AppController
     }
 
     public function differences($userId = null)
-    {
-        $this->request->allowMethod(['post', 'put']);
+{
+    $this->request->allowMethod(['post', 'put']);
 
-        $data = $this->request->getData('differences');
-        if (!$data) {
-            $this->Flash->error('データが送信されませんでした。');
-            return $this->redirect(['action' => 'customerInformations', $userId]);
-        }
-
-        foreach ($data as $item) {
-            if (!empty($item['id'])) {
-                // Update existing record
-                $difference = $this->Differences->get($item['id']);
-            } else {
-                // Create new record
-                $difference = $this->Differences->newEmptyEntity();
-                $difference->user_id = $userId;
-            }
-
-            $difference = $this->Differences->patchEntity($difference, [
-                'milestone' => $item['milestone'] ?? '',
-                'category' => $item['category'] ?? '',
-                'target1' => $item['target1'] ?? '',
-                'target2' => $item['target2'] ?? '',
-                'evaluation1' => $item['evaluation1'] ?? '',
-                'evaluation2' => $item['evaluation2'] ?? '',
-                'comment1' => $item['comment1'] ?? '',
-                'comment2' => $item['comment2'] ?? '',
-            ]);
-
-            if (!$this->Differences->save($difference)) {
-                $this->Flash->error('保存中にエラーが発生しました。');
-                return $this->redirect(['action' => 'customerInformations', $userId]);
-            }
-        }
-
-        $this->Flash->success('成果差分が保存されました。');
+    $data = $this->request->getData('differences');
+    if (!$data) {
+        $this->Flash->error('データが送信されませんでした。');
         return $this->redirect(['action' => 'customerInformations', $userId]);
     }
+
+    foreach ($data as $item) {
+        if (!empty($item['id'])) {
+            $difference = $this->Differences->get($item['id']);
+        } else {
+            $difference = $this->Differences->newEmptyEntity();
+            $difference->user_id = $userId;
+        }
+
+        $fieldsToUpdate = [];
+        foreach (['milestone', 'category', 'target1', 'target2', 'evaluation1', 'evaluation2', 'comment1', 'comment2'] as $field) {
+            if (array_key_exists($field, $item)) {
+                $fieldsToUpdate[$field] = $item[$field];
+            }
+        }
+        $difference = $this->Differences->patchEntity($difference, $fieldsToUpdate);
+
+
+        if (!$this->Differences->save($difference)) {
+            $this->Flash->error('保存中にエラーが発生しました。');
+            return $this->redirect(['action' => 'customerInformations', $userId]);
+        }
+    }
+
+    $this->Flash->success('成果差分が保存されました。');
+    return $this->redirect(['action' => 'customerInformations', $userId]);
+}
+
 
 
     /**

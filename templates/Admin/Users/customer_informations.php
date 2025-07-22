@@ -136,7 +136,7 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <button type="submit" class="btn btn-success save-btn" style="display:none; margin-top: 4px;">保存</button>
+        <button type="submit" class="btn btn-success save-btn" style="margin-top: 4px;">保存</button>
     </div>
     <?= $this->Form->end() ?>
 
@@ -229,44 +229,26 @@
                     <th>評価</th>
                     <th>評価コメント</th>
                     <th>Before/After写真</th>
-                    <th>保存</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($differences as $index => $diff): ?>
                     <input type="hidden" name="differences[<?= $index ?>][id]" value="<?= h($diff['id']) ?>">
                     <tr>
-                        <td class="editable-difference" data-field="milestone" data-index="<?= $index ?>">
-                            <span><?= h($diff['milestone']) ?></span>
-                        </td>
-                        <td class="editable-difference" data-field="category" data-index="<?= $index ?>">
-                            <span><?= h($diff['category']) ?></span>
-                        </td>
-                        <td class="editable-difference" data-field="targets" data-index="<?= $index ?>">
-                            <span><?= h($diff['target1']) ?><br><?= h($diff['target2']) ?></span>
-                        </td>
-                        <td class="editable-difference" data-field="evaluations" data-index="<?= $index ?>">
-                            <span><?= h($diff['evaluation1']) ?><br><?= h($diff['evaluation2']) ?></span>
-                        </td>
-                        <td class="editable-difference" data-field="comments" data-index="<?= $index ?>">
-                            <span><?= h($diff['comment1']) ?><br><?= h($diff['comment2']) ?></span>
-                        </td>
-                        <?php if($index == 0) : ?>
-                        <td>
-                            <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link" target="_blank">画像比較確認</a>
-                        </td>
-                        <?php endif ?>
-                        <td>
-                            <button type="submit" class="btn btn-success save-btn" style="display: none;">保存</button>
-                        </td>
+                        <td class="editable-difference" data-field="milestone" data-index="<?= $index ?>"><span><?= h($diff['milestone']) ?></span></td>
+                        <td class="editable-difference" data-field="category" data-index="<?= $index ?>"><span><?= h($diff['category']) ?></span></td>
+                        <td class="editable-difference" data-field="targets" data-index="<?= $index ?>"><span><?= h($diff['target1']) ?><br><?= h($diff['target2']) ?></span></td>
+                        <td class="editable-difference" data-field="evaluations" data-index="<?= $index ?>"><span><?= h($diff['evaluation1']) ?><br><?= h($diff['evaluation2']) ?></span></td>
+                        <td class="editable-difference" data-field="comments" data-index="<?= $index ?>"><span><?= h($diff['comment1']) ?><br><?= h($diff['comment2']) ?></span></td>
+                        <td><a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id]); ?>" class="btn btn-outline-primary btn-sm" target="_blank">画像比較確認</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <button type="submit" class="btn btn-success" style="margin-top: 4px;">保存</button>
     </div>
     <?= $this->Form->end() ?>
-
-
 </div>
 
 
@@ -278,26 +260,35 @@ $(document).ready(function() {
 
     const showSaveButton = ($td) => {
         $td.closest('tr').find('.save-btn').show();
-        $td.closest('tr').siblings().find('.save-btn').hide();
     };
 
-    // 💡 Common text/textarea for general editable cells
+    // 🔧 Collect current value safely
+    const getCurrentValue = ($td) => {
+        const html = $td.find('span').html() || '';
+        return html.replace(/<br\s*\/?>/gi, '\n').trim();
+    };
+
+    const getCurrentValuesArray = ($td) => {
+        const html = $td.find('span').html() || '';
+        return html.split('<br>').map(v => v.trim());
+    };
+
+    // General handler
     $(document).on('click', '.editable, .editable-habit, .editable-purpose, .editable-mention, .editable-self', function() {
         const $td = $(this);
         if ($td.find('input, select, textarea').length > 0) return;
         const field = $td.data('field');
-        const value = $td.text().trim();
-        let input = `<textarea name="${field}" class="form-control">${value}</textarea>`;
-        $td.html(input);
+        const value = getCurrentValue($td);
+        $td.html(`<textarea name="${field}" class="form-control">${value}</textarea>`);
         showSaveButton($td);
     });
 
-    // 💡 Special handling for basic info (select/input combinations)
+    // Special handling for basic info
     $(document).on('click', '.editable', function() {
         const $td = $(this);
         const field = $td.data('field');
+        const value = getCurrentValue($td);
         let html = '';
-        const value = $td.text().trim();
         switch (field) {
             case 'course_id':
                 html = '<select name="course_id" class="form-control">' +
@@ -336,13 +327,13 @@ $(document).ready(function() {
         showSaveButton($td);
     });
 
-    // 💡 BodyData editable cells
+    // BodyData editable
     $(document).on('click', '.editable-body', function() {
         const $td = $(this);
         if ($td.find('input, select').length > 0) return;
         const field = $td.data('field');
         const index = $td.data('index');
-        const value = $td.text().trim();
+        const value = getCurrentValue($td);
         let input;
         if (field === 'date') {
             input = `<input type="date" name="bodyData[${index}][${field}]" class="form-control" value="${value}">`;
@@ -357,17 +348,14 @@ $(document).ready(function() {
         showSaveButton($td);
     });
 
-    // 💡 Difference table editable cells
+    // Difference table editable
     $(document).on('click', '.editable-difference', function() {
         const $td = $(this);
         if ($td.find('input, select, textarea').length > 0) return;
 
         const field = $td.data('field');
         const index = $td.data('index');
-        const rawHtml = $td.find('span').html();
-        const rawValues = rawHtml ? rawHtml.split('<br>') : ['',''];
-        const val1 = rawValues[0]?.trim() || '';
-        const val2 = rawValues[1]?.trim() || '';
+        const [val1, val2] = getCurrentValuesArray($td);
         let html = '';
 
         if (field === 'milestone' || field === 'category') {
@@ -392,7 +380,7 @@ $(document).ready(function() {
         showSaveButton($td);
     });
 
-    // 💡 Add new body row
+    // Add body row
     $('#add-body-row').on('click', function() {
         const index = $('#body-data-table tbody tr').length;
         const row = `<tr>
@@ -405,7 +393,7 @@ $(document).ready(function() {
         $('#body-data-table tbody').append(row);
     });
 
-    // 💡 Add new difference row
+    // Add difference row
     $('#add-difference-row').on('click', function() {
         const index = $('#difference-table tbody tr').length;
         const row = `<tr>
@@ -420,6 +408,7 @@ $(document).ready(function() {
     });
 });
 </script>
+
 
 
 
