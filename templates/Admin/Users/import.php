@@ -9,8 +9,10 @@
             <h5><i class="icon fas fa-info"></i> CSVインポートについて</h5>
             <ul>
                 <li>1行目はヘッダー行として扱われます。</li>
-                <li>必須項目：メールアドレス、姓、名利用</li>
+                <li>必須項目：メールアドレス、姓、姓（よみがな）、名、名（よみがな）、携帯番号、生年月日、お住まい（郵便番号）、お住まい（住所）、申し込みプログラム</li>
+                <li>プログラム開始日、担当講師、男女、パスワードの列は以下のサンプルを参考に追加してください。</li>
                 <li>生年月日形式：YYYY/MM/DD</li>
+                <li>プログラム開始日形式：YYYY/MM/DD</li>
             </ul>
         </div>
         
@@ -19,8 +21,14 @@
             <ul>
                 <li>メールアドレスは重複できません。</li>
                 <li>パスワードは「来月の年月の文字列」で設定されます。（例：202508）</li>
+                <li>郵便番号は7桁の数字で入力してください。</li>
+                <li>性別は「男性」か「女性」で入力してください。</li>
                 <li>担当講師は「SHOCO」さんが割り当てられます。</li>
                 <li>申し込みプログラムが空白の場合はマスターコースになります。</li>
+                <li>プログラム開始日が空白の場合は来月の1日になります。</li>
+                <li>担当講師が空白の場合はSHOCOさんになります。</li>
+                <li>性別が空白の場合は女性になります。</li>
+                <li>パスワードが空白の場合は来月の年月の文字列になります。</li>
             </ul>
         </div>
         
@@ -48,14 +56,18 @@
                             <th>タイムスタンプ</th>
                             <th>メールアドレス<span class="text-danger">（必須）</span></th>
                             <th>姓<span class="text-danger">（必須）</span></th>
-                            <th>姓（よみがな）</th>
+                            <th>姓（よみがな）<span class="text-danger">（必須）</span></th>
                             <th>名<span class="text-danger">（必須）</span></th>
-                            <th>名（よみがな）</th>
-                            <th>携帯番号</th>
-                            <th>生年月日</th>
-                            <th>お住まい（郵便番号）</th>
-                            <th>お住まい（住所）</th>
-                            <th>申し込みプログラム</th>
+                            <th>名（よみがな）<span class="text-danger">（必須）</span></th>
+                            <th>携帯番号<span class="text-danger">（必須）</span></th>
+                            <th>生年月日<span class="text-danger">（必須）</span></th>
+                            <th>お住まい（郵便番号）<span class="text-danger">（必須）</span></th>
+                            <th>お住まい（住所）<span class="text-danger">（必須）</span></th>
+                            <th>申し込みプログラム<span class="text-danger">（必須）</span></th>
+                            <th>プログラム開始日</th>
+                            <th>担当講師</th>
+                            <th>男女（性別）</th>
+                            <th>パスワード</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,11 +78,15 @@
                           <td>たなか</td>
                           <td>太郎</td>
                           <td>たろう</td>
-                          <td>090-1234-5678</td>
+                          <td>09012345678</td>
                           <td>1990/01/01</td>
-                          <td>100-0000</td>
+                          <td>1000000</td>
                           <td>東京都千代田区1-1-1</td>
                           <td>エバーコース</td>
+                          <td>2025/08/01</td>
+                          <td>SHOCO</td>
+                          <td>男性</td>
+                          <td>202508</td>
                         </tr>
                     </tbody>
                 </table>
