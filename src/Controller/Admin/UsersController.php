@@ -40,6 +40,7 @@ class UsersController extends AppController
         $this->loadModel('Mentions');
         $this->loadModel('SelfDatas');
         $this->loadModel('Differences');
+        $this->loadModel('Consults');
     }
 
     
@@ -622,6 +623,11 @@ class UsersController extends AppController
             $mention = $this->Mentions->newEntity(['user_id' => $id]);
         }
 
+        $consults = $this->Consults->find()
+            ->where(['user_id' => $id])
+            ->all()
+            ->toList();
+
         $selfdata = $this->SelfDatas->find('all')
             ->where(['user_id' => $id])
             ->order(['date' => 'ASC'])
@@ -630,56 +636,6 @@ class UsersController extends AppController
         $differences = $this->Differences->find('all')
             ->where(['user_id' => $id])
             ->toArray();
-
-        //mockデータ
-
-        $mockConsultData = [
-            [
-                'date' => '2025/05/01',
-                'category' => '実践レッスン',
-                'theme' => '歩き方（仙骨ウォーク）',
-                'instruction' => '足の踏み方指導',
-                'note' => '親指を潰して踏むと膝が痛くなるが、足裏の正しい使い方がわかれば膝が痛くなることが体感できた',
-                'next_step' => '足の踏み方が正しくできているか確認し、膝の痛みが緩和したか本人の体感を確認する',
-                'staff_id' => '1'
-            ],
-            [
-                'date' => '2025/05/15',
-                'category' => '実践レッスン',
-                'theme' => '下半身トレーニング（基礎）',
-                'instruction' => '膝内側に入る癖あり。鏡で都度修正',
-                'note' => '',
-                'next_step' => '',
-                'staff_id' => '2'
-            ],
-            [
-                'date' => '2025/06/01',
-                'category' => '実践レッスン',
-                'theme' => '食事アドバイスと振り返り面談',
-                'instruction' => '食事記録アプリ導入済、前回とほぼ様子',
-                'note' => '',
-                'next_step' => '',
-                'staff_id' => '1'
-            ],
-            [
-                'date' => '2025/06/07',
-                'category' => '脳バグレッスン',
-                'theme' => '',
-                'instruction' => '小指と美脚の関係性を学習',
-                'note' => 'しっかり理解できた。膝痛で階段できない',
-                'next_step' => '膝の関節ロックを解消',
-                'staff_id' => '1'
-            ],
-            [
-                'date' => '2025/06/16',
-                'category' => '個人コンサル',
-                'theme' => '',
-                'instruction' => '写真診断の結果、ワークの変更を討議',
-                'note' => '仮説通りの本人も成果を感じていないため、変更を合意',
-                'next_step' => '写真診断から×××→×××にワークを変更指示',
-                'staff_id' => '2'
-            ]
-        ];
 
         // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
@@ -699,7 +655,7 @@ class UsersController extends AppController
 
         $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'selfdata', 'differences', 'mockConsultData'));
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'consults', 'selfdata', 'differences'));
     }
 
     public function customerMain($id = null){
@@ -902,6 +858,63 @@ class UsersController extends AppController
         $this->set(compact('user', 'mention', 'param'));
     }
 
+    public function consults($userId = null)
+    {
+        $user = $this->Users->find()
+            ->where(['id' => $userId, 'is_deleted' => 0])
+            ->first();
+
+        if (!$user) {
+            $this->Flash->error(__('ユーザーが見つかりませんでした。'));
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->request->is(['post', 'put', 'patch'])) {
+            $dataList = $this->request->getData('consults');
+
+            $connection = $this->Consults->getConnection();
+            $connection->begin();
+
+            try {
+                foreach ($dataList as $data) {
+                    if (!empty($data['id'])) {
+                        $consult = $this->Consults->get($data['id']);
+                    } else {
+                        $consult = $this->Consults->newEmptyEntity();
+                        $consult->user_id = $userId;
+                        $consult->date = new \Cake\I18n\FrozenDate();
+                        $consult->category = 2; // 個別コンサルティング固定
+                    }
+
+                    // ✅ Only update fields present in $data — don't overwrite with ''
+                    $fieldsToUpdate = [];
+                    foreach (['theme', 'instruction', 'note', 'next_step', 'staff_id'] as $field) {
+                        if (array_key_exists($field, $data)) {
+                            $fieldsToUpdate[$field] = $data[$field];
+                        }
+                    }
+
+                    $consult = $this->Consults->patchEntity($consult, $fieldsToUpdate);
+
+                    if (!$this->Consults->save($consult)) {
+                        throw new \Exception(__('保存に失敗しました（テーマ: {0}）', $data['theme'] ?? '未入力'));
+                    }
+                }
+
+                $connection->commit();
+                $this->Flash->success(__('全てのコンサルデータを保存しました。'));
+            } catch (\Exception $e) {
+                $connection->rollback();
+                $this->Flash->error($e->getMessage());
+            }
+
+            return $this->redirect(['action' => 'customerInformations', $userId]);
+        }
+
+        $param = $this->request->getQuery();
+        $this->set(compact('user', 'param'));
+    }
+
     public function selfData($id = null)
     {
         $this->request->allowMethod(['post', 'put']);
@@ -933,41 +946,41 @@ class UsersController extends AppController
     }
 
     public function differences($userId = null)
-{
-    $this->request->allowMethod(['post', 'put']);
+    {
+        $this->request->allowMethod(['post', 'put']);
 
-    $data = $this->request->getData('differences');
-    if (!$data) {
-        $this->Flash->error('データが送信されませんでした。');
-        return $this->redirect(['action' => 'customerInformations', $userId]);
-    }
-
-    foreach ($data as $item) {
-        if (!empty($item['id'])) {
-            $difference = $this->Differences->get($item['id']);
-        } else {
-            $difference = $this->Differences->newEmptyEntity();
-            $difference->user_id = $userId;
-        }
-
-        $fieldsToUpdate = [];
-        foreach (['milestone', 'category', 'target1', 'target2', 'evaluation1', 'evaluation2', 'comment1', 'comment2'] as $field) {
-            if (array_key_exists($field, $item)) {
-                $fieldsToUpdate[$field] = $item[$field];
-            }
-        }
-        $difference = $this->Differences->patchEntity($difference, $fieldsToUpdate);
-
-
-        if (!$this->Differences->save($difference)) {
-            $this->Flash->error('保存中にエラーが発生しました。');
+        $data = $this->request->getData('differences');
+        if (!$data) {
+            $this->Flash->error('データが送信されませんでした。');
             return $this->redirect(['action' => 'customerInformations', $userId]);
         }
-    }
 
-    $this->Flash->success('成果差分が保存されました。');
-    return $this->redirect(['action' => 'customerInformations', $userId]);
-}
+        foreach ($data as $item) {
+            if (!empty($item['id'])) {
+                $difference = $this->Differences->get($item['id']);
+            } else {
+                $difference = $this->Differences->newEmptyEntity();
+                $difference->user_id = $userId;
+            }
+
+            $fieldsToUpdate = [];
+            foreach (['milestone', 'category', 'target1', 'target2', 'evaluation1', 'evaluation2', 'comment1', 'comment2'] as $field) {
+                if (array_key_exists($field, $item)) {
+                    $fieldsToUpdate[$field] = $item[$field];
+                }
+            }
+            $difference = $this->Differences->patchEntity($difference, $fieldsToUpdate);
+
+
+            if (!$this->Differences->save($difference)) {
+                $this->Flash->error('保存中にエラーが発生しました。');
+                return $this->redirect(['action' => 'customerInformations', $userId]);
+            }
+        }
+
+        $this->Flash->success('成果差分が保存されました。');
+        return $this->redirect(['action' => 'customerInformations', $userId]);
+    }
 
 
 
