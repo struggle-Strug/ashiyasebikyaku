@@ -7,7 +7,9 @@
                 <div class="nav-tabs-wrapper">
                     <ul id="tabs" class="nav nav-tabs">
                         <li class="active"><a href="<?= $this->Url->build(['action' => 'index']); ?>">初回</a></li>
-                        <li><a href="<?= $this->Url->build(['action' => 'updates']); ?>">2回目以降</a></li>
+                        <li>
+                            <a href="<?= $purpose ? $this->Url->build(['action' => 'updates']) : '#' ?>" <?= $purpose ? '' : 'class="disabled"' ?>>2回目以降</a>
+                        </li>
                     </ul>
                 </div>
             </div>
