@@ -7,7 +7,7 @@
         'type' => 'post'
     ]) ?>
     <div class="card-body">
-        <h4>基本情報</h4>
+        <h4>1.基本情報</h4>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -43,7 +43,7 @@
         'type' => 'post'
     ]) ?>
     <div class="card-body">
-        <h4>生活習慣・既往歴</h4>
+        <h4>2.生活習慣・既往歴</h4>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -75,7 +75,7 @@
         'type' => 'post'
     ]) ?>
     <div class="card-body">
-        <h4>目標設定シート</h4>
+        <h4>3.目標設定シート</h4>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -109,7 +109,7 @@
         'type' => 'post'
     ]) ?>
     <div class="card-body">
-        <h4>身体データ（定性指標）</h4>
+        <h4>4.身体データ（定性指標）</h4>
         <button type="button" id="add-body-row" class="btn btn-outline-primary btn-sm">＋ 追加</button>
         <table class="table table-bordered table-striped" id="body-data-table" style="margin-top: 4px;">
             <thead>
@@ -146,7 +146,7 @@
         'type' => 'post'
     ]) ?>
     <div class="card-body">
-        <h4>心理・モチベーション</h4>
+        <h4>5.心理・モチベーション</h4>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -174,7 +174,7 @@
         'type' => 'post'
     ]) ?>
     <div class="card-body">
-        <h4>課題の自己認識結果</h4>
+        <h4>7.課題の自己認識結果</h4>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -210,6 +210,57 @@
         </table>
     </div>
     <?= $this->Form->end() ?>
+
+    <!-- 成果差分（マイルストーン表） -->
+    <?= $this->Form->create(null, [
+        'url' => ['controller' => 'Users', 'action' => 'differences', $user->id],
+        'type' => 'post'
+    ]) ?>
+    <div class="card-body">
+        <h4>8.標準モデルとの差異結果</h4>
+        <button type="button" id="add-difference-row" class="btn btn-outline-primary btn-sm" style="margin-bottom: 4px;">＋ 追加</button>
+
+        <table class="table table-bordered table-striped" id="difference-table">
+            <thead>
+                <tr>
+                    <th>マイルストーン</th>
+                    <th>成果カテゴリ</th>
+                    <th>標準達成目安</th>
+                    <th>評価</th>
+                    <th>評価コメント</th>
+                    <th>保存</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($differences as $index => $diff): ?>
+                    <input type="hidden" name="differences[<?= $index ?>][id]" value="<?= h($diff['id']) ?>">
+                    <tr>
+                        <td class="editable-difference" data-field="milestone" data-index="<?= $index ?>">
+                            <span><?= h($diff['milestone']) ?></span>
+                        </td>
+                        <td class="editable-difference" data-field="category" data-index="<?= $index ?>">
+                            <span><?= h($diff['category']) ?></span>
+                        </td>
+                        <td class="editable-difference" data-field="targets" data-index="<?= $index ?>">
+                            <span><?= h($diff['target1']) ?><br><?= h($diff['target2']) ?></span>
+                        </td>
+                        <td class="editable-difference" data-field="evaluations" data-index="<?= $index ?>">
+                            <span><?= h($diff['evaluation1']) ?><br><?= h($diff['evaluation2']) ?></span>
+                        </td>
+                        <td class="editable-difference" data-field="comments" data-index="<?= $index ?>">
+                            <span><?= h($diff['comment1']) ?><br><?= h($diff['comment2']) ?></span>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-success save-btn" style="display: none;">保存</button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?= $this->Form->end() ?>
+
+
 </div>
 
 
@@ -219,13 +270,15 @@ $(document).ready(function() {
     const staffs = <?= json_encode($staffs) ?>;
     const bodyOptions = ['◎', '◯', '△', '✕'];
 
-    // 💡 編集したとき、そのフォーム内の保存ボタンを表示する
-    const showSaveButton = ($td) => $td.closest('form').find('.save-btn').show();
+    const showSaveButton = ($td) => {
+        $td.closest('tr').find('.save-btn').show();
+        $td.closest('tr').siblings().find('.save-btn').hide();
+    };
 
-    // 💡 基本・習慣・目標・心理部分 → クリックでtextareaに変換
-    $('.editable, .editable-habit, .editable-purpose, .editable-mention').on('click', function() {
+    // 💡 Common text/textarea for general editable cells
+    $(document).on('click', '.editable, .editable-habit, .editable-purpose, .editable-mention, .editable-self', function() {
         const $td = $(this);
-        if ($td.find('input, select, textarea').length > 0) return;  // すでに編集中なら何もしない
+        if ($td.find('input, select, textarea').length > 0) return;
         const field = $td.data('field');
         const value = $td.text().trim();
         let input = `<textarea name="${field}" class="form-control">${value}</textarea>`;
@@ -233,15 +286,17 @@ $(document).ready(function() {
         showSaveButton($td);
     });
 
-    // 💡 基本情報（特別処理: selectや複数input）
-    $('.editable').on('click', function() {
+    // 💡 Special handling for basic info (select/input combinations)
+    $(document).on('click', '.editable', function() {
         const $td = $(this);
         const field = $td.data('field');
         let html = '';
+        const value = $td.text().trim();
         switch (field) {
             case 'course_id':
                 html = '<select name="course_id" class="form-control">' +
-                    Object.entries(courses).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') +
+                    Object.entries(courses).map(([id, name]) =>
+                        `<option value="${id}" ${name === value ? 'selected' : ''}>${name}</option>`).join('') +
                     '</select>';
                 break;
             case 'name_kanji':
@@ -253,7 +308,7 @@ $(document).ready(function() {
                         <input name="first_name_kana" class="form-control" value="<?= h($user->first_name_kana) ?>" placeholder="名カナ">`;
                 break;
             case 'birthday':
-                html = `<input type="date" name="birthday" class="form-control" value="<?= h($user->birthday) ?>">`;
+                html = `<input type="date" name="birthday" class="form-control" value="${value}">`;
                 break;
             case 'address':
                 html = `<input name="zipcode" class="form-control mb-1" value="<?= h($user->zipcode) ?>" placeholder="郵便番号">
@@ -266,7 +321,8 @@ $(document).ready(function() {
                 break;
             case 'staff_id':
                 html = '<select name="staff_id" class="form-control">' +
-                    Object.entries(staffs).map(([id, name]) => `<option value="${id}">${name}</option>`).join('') +
+                    Object.entries(staffs).map(([id, name]) =>
+                        `<option value="${id}" ${name === value ? 'selected' : ''}>${name}</option>`).join('') +
                     '</select>';
                 break;
         }
@@ -274,49 +330,90 @@ $(document).ready(function() {
         showSaveButton($td);
     });
 
-    // 💡 身体データ「＋追加」ボタン処理
-    $('#add-body-row').on('click', function() {
-        const index = $('#body-data-table tbody tr').length;
-        const row = `<tr>
-            <td class="editable-body" data-field="date" data-index="${index}"><span></span></td>
-            ${['ankle', 'instep', 'vertical_arch', 'horizontal_arch', 'toes'].map(f =>
-                `<td class="editable-body" data-field="${f}" data-index="${index}"><span></span></td>`
-            ).join('')}
-            <td class="editable-body" data-field="note" data-index="${index}"><span></span></td>
-            <td></td>
-        </tr>`;
-        $('#body-data-table tbody').append(row);
-    });
-
-    // 💡 身体データセルをクリックしたときの処理
+    // 💡 BodyData editable cells
     $(document).on('click', '.editable-body', function() {
         const $td = $(this);
         if ($td.find('input, select').length > 0) return;
         const field = $td.data('field');
         const index = $td.data('index');
         const value = $td.text().trim();
-        let input = (field === 'date')
-            ? `<input type="date" name="bodyData[${index}][${field}]" class="form-control" value="${value}">`
-            : `<select name="bodyData[${index}][${field}]" class="form-control">` +
-                bodyOptions.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('') +
-              `</select>`;
-        if (field === 'note') {
+        let input;
+        if (field === 'date') {
+            input = `<input type="date" name="bodyData[${index}][${field}]" class="form-control" value="${value}">`;
+        } else if (field === 'note') {
             input = `<input name="bodyData[${index}][note]" class="form-control" value="${value}">`;
+        } else {
+            input = `<select name="bodyData[${index}][${field}]" class="form-control">
+                ${bodyOptions.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('')}
+            </select>`;
         }
         $td.html(input);
         showSaveButton($td);
     });
 
-    // 💡 自己記録（consult_content のみ）をクリックしたときの処理
-    $(document).on('click', '.editable-self', function() {
+    // 💡 Difference table editable cells
+    $(document).on('click', '.editable-difference', function() {
         const $td = $(this);
-        if ($td.find('textarea').length > 0) return;
+        if ($td.find('input, select, textarea').length > 0) return;
+
+        const field = $td.data('field');
         const index = $td.data('index');
-        const value = $td.text().trim();
-        const input = `<textarea name="selfData[${index}][consult_content]" class="form-control">${value}</textarea>`;
-        $td.html(input);
+        const rawHtml = $td.find('span').html();
+        const rawValues = rawHtml ? rawHtml.split('<br>') : ['',''];
+        const val1 = rawValues[0]?.trim() || '';
+        const val2 = rawValues[1]?.trim() || '';
+        let html = '';
+
+        if (field === 'milestone' || field === 'category') {
+            html = `<input name="differences[${index}][${field}]" class="form-control" value="${val1}">`;
+        }
+        else if (field === 'targets') {
+            html = `<textarea name="differences[${index}][target1]" class="form-control mb-1" placeholder="目標①">${val1}</textarea>
+                    <textarea name="differences[${index}][target2]" class="form-control" placeholder="目標②">${val2}</textarea>`;
+        }
+        else if (field === 'evaluations') {
+            html = ['evaluation1', 'evaluation2'].map((ev, i) =>
+                `<select name="differences[${index}][${ev}]" class="form-control mb-1">
+                    ${bodyOptions.map(opt => `<option value="${opt}" ${opt === (i === 0 ? val1 : val2) ? 'selected' : ''}>${opt}</option>`).join('')}
+                 </select>`).join('');
+        }
+        else if (field === 'comments') {
+            html = `<textarea name="differences[${index}][comment1]" class="form-control mb-1" placeholder="コメント①">${val1}</textarea>
+                    <textarea name="differences[${index}][comment2]" class="form-control" placeholder="コメント②">${val2}</textarea>`;
+        }
+
+        $td.html(html);
         showSaveButton($td);
+    });
+
+    // 💡 Add new body row
+    $('#add-body-row').on('click', function() {
+        const index = $('#body-data-table tbody tr').length;
+        const row = `<tr>
+            <td class="editable-body" data-field="date" data-index="${index}"><span></span></td>
+            ${['ankle', 'instep', 'vertical_arch', 'horizontal_arch', 'toes'].map(f =>
+                `<td class="editable-body" data-field="${f}" data-index="${index}"><span></span></td>`).join('')}
+            <td class="editable-body" data-field="note" data-index="${index}"><span></span></td>
+            <td><button type="submit" class="btn btn-success save-btn" style="display:none;">保存</button></td>
+        </tr>`;
+        $('#body-data-table tbody').append(row);
+    });
+
+    // 💡 Add new difference row
+    $('#add-difference-row').on('click', function() {
+        const index = $('#difference-table tbody tr').length;
+        const row = `<tr>
+            <td class="editable-difference" data-field="milestone" data-index="${index}"><span></span></td>
+            <td class="editable-difference" data-field="category" data-index="${index}"><span></span></td>
+            <td class="editable-difference" data-field="targets" data-index="${index}"><span></span></td>
+            <td class="editable-difference" data-field="evaluations" data-index="${index}"><span></span></td>
+            <td class="editable-difference" data-field="comments" data-index="${index}"><span></span></td>
+            <td><button type="submit" class="btn btn-success save-btn" style="display:none;">保存</button></td>
+        </tr>`;
+        $('#difference-table tbody').append(row);
     });
 });
 </script>
+
+
 

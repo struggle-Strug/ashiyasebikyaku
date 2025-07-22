@@ -39,6 +39,7 @@ class UsersController extends AppController
         $this->loadModel('BodyDatas');
         $this->loadModel('Mentions');
         $this->loadModel('SelfDatas');
+        $this->loadModel('Differences');
     }
 
     
@@ -626,6 +627,10 @@ class UsersController extends AppController
             ->order(['date' => 'ASC'])
             ->toArray();
 
+        $differences = $this->Differences->find('all')
+            ->where(['user_id' => $id])
+            ->toArray();
+
         //mockデータ
 
         $mockConsultData = [
@@ -676,49 +681,6 @@ class UsersController extends AppController
             ]
         ];
 
-        $mockDifferenceData = [
-            [
-                'milestone' => '1か月目',
-                'category' => '姿勢改善・習慣化',
-                'target1' => '①呼吸の安定化',
-                'target2' => '②足指・内転筋の感覚獲得',
-                'evaluation1' => '◎/◯/△',
-                'evaluation2' => '◯',
-                'comment1' => '呼吸浅目め、横隔膜の動きに左右差あり',
-                'comment2' => ''
-            ],
-            [
-                'milestone' => '2か月目',
-                'category' => '下半身の引き締まり兆候',
-                'target1' => '①太もも周囲 -1.5cm',
-                'target2' => '②歩き方の安定化',
-                'evaluation1' => '△',
-                'evaluation2' => '△',
-                'comment1' => '',
-                'comment2' => ''
-            ],
-            [
-                'milestone' => '3か月目',
-                'category' => '体形と筋バランスの変化',
-                'target1' => '①ふくらはぎ・膝回りの見た目変化',
-                'target2' => '②脚のライン意識',
-                'evaluation1' => '△',
-                'evaluation2' => '◯',
-                'comment1' => '',
-                'comment2' => ''
-            ],
-            [
-                'milestone' => '4か月目',
-                'category' => '仕上げと維持戦略',
-                'target1' => '①太もも-2〜3cm',
-                'target2' => '②全身バランスとリバウンド防止法習得',
-                'evaluation1' => '△',
-                'evaluation2' => '',
-                'comment1' => '',
-                'comment2' => ''
-            ]
-        ];
-
         // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
@@ -737,7 +699,7 @@ class UsersController extends AppController
 
         $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'selfdata', 'mockConsultData', 'mockDifferenceData'));
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'selfdata', 'differences', 'mockConsultData'));
     }
 
     public function customerMain($id = null){
@@ -970,224 +932,45 @@ class UsersController extends AppController
         return $this->redirect(['action' => 'customerInformations', $id]);
     }
 
+    public function differences($userId = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
 
-
-    public function consultHistory($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
-        if (!$user) {
-            return $this->redirect(['action' => 'index']);
+        $data = $this->request->getData('differences');
+        if (!$data) {
+            $this->Flash->error('データが送信されませんでした。');
+            return $this->redirect(['action' => 'customerInformations', $userId]);
         }
 
-        $mockUserData = [
-            [
-                'date' => '2025/05/01',
-                'category' => '実践レッスン',
-                'theme' => '歩き方（仙骨ウォーク）',
-                'instruction' => '足の踏み方指導',
-                'note' => '親指を潰して踏むと膝が痛くなるが、足裏の正しい使い方がわかれば膝が痛くなることが体感できた',
-                'next_step' => '足の踏み方が正しくできているか確認し、膝の痛みが緩和したか本人の体感を確認する',
-                'instructor' => 'SHOCO'
-            ],
-            [
-                'date' => '2025/05/15',
-                'category' => '実践レッスン',
-                'theme' => '下半身トレーニング（基礎）',
-                'instruction' => '膝内側に入る癖あり。鏡で都度修正',
-                'note' => '',
-                'next_step' => '',
-                'instructor' => 'FUKUCHAN'
-            ],
-            [
-                'date' => '2025/06/01',
-                'category' => '実践レッスン',
-                'theme' => '食事アドバイスと振り返り面談',
-                'instruction' => '食事記録アプリ導入済、前回とほぼ様子',
-                'note' => '',
-                'next_step' => '',
-                'instructor' => 'SHOCO'
-            ],
-            [
-                'date' => '2025/06/07',
-                'category' => '脳バグレッスン',
-                'theme' => '',
-                'instruction' => '小指と美脚の関係性を学習',
-                'note' => 'しっかり理解できた。膝痛で階段できない',
-                'next_step' => '膝の関節ロックを解消',
-                'instructor' => 'YUMICO'
-            ],
-            [
-                'date' => '2025/06/16',
-                'category' => '個人コンサル',
-                'theme' => '',
-                'instruction' => '写真診断の結果、ワークの変更を討議',
-                'note' => '仮説通りの本人も成果を感じていないため、変更を合意',
-                'next_step' => '写真診断から×××→×××にワークを変更指示',
-                'instructor' => 'YUMICO'
-            ]
-        ];
+        foreach ($data as $item) {
+            if (!empty($item['id'])) {
+                // Update existing record
+                $difference = $this->Differences->get($item['id']);
+            } else {
+                // Create new record
+                $difference = $this->Differences->newEmptyEntity();
+                $difference->user_id = $userId;
+            }
 
-        $param = $this->request->getQuery();
+            $difference = $this->Differences->patchEntity($difference, [
+                'milestone' => $item['milestone'] ?? '',
+                'category' => $item['category'] ?? '',
+                'target1' => $item['target1'] ?? '',
+                'target2' => $item['target2'] ?? '',
+                'evaluation1' => $item['evaluation1'] ?? '',
+                'evaluation2' => $item['evaluation2'] ?? '',
+                'comment1' => $item['comment1'] ?? '',
+                'comment2' => $item['comment2'] ?? '',
+            ]);
 
-        $this->set(compact('user', 'param', 'mockUserData'));
-    }
-
-    public function addConsultHistory($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
-        if (!$user) {
-            return $this->redirect(['action' => 'index']);
+            if (!$this->Differences->save($difference)) {
+                $this->Flash->error('保存中にエラーが発生しました。');
+                return $this->redirect(['action' => 'customerInformations', $userId]);
+            }
         }
 
-        // スタッフを配列で取得
-        $staffs = $this->Users->Staffs->find('list', [
-            'keyField' => 'id',
-            'valueField' => 'name',
-            'conditions' => [
-                'is_deleted' => 0
-            ]
-        ])->toArray();
-
-        $param = $this->request->getQuery();
-
-        $this->set(compact('user', 'param', 'staffs'));
-    }
-
-    public function selfUnderstand($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
-        if (!$user) {
-            return $this->redirect(['action' => 'index']);
-        }
-
-        $mockUserData = [
-            [
-                'id' => 1,
-                'date' => '2025/07/20',
-                'good_changes' => '足の指が柔らかくなったように感じる。足裏の感覚持ててよし◎',
-                'work_review' => '毎日は取り組めなかった実践レッスンに参加する',
-                'no_change_parts' => 'X脚、ヒラメ筋のポコリ、足首のくびれの感覚変わらず。小指は使えていない。アーチが崩れている。内転筋が使えていない。小指側に頼りすぎ。立方骨',
-                'current_state' => '疲労は個、アレルギーで目や鼻、だるさ。少し心も疲れ気味、やる気元気ない。生活リズムに変化なし。ストレス多',
-                'next_two_weeks_work' => 'とにかく毎日ワークをする。日々の宿題がちょっとでもきちんと着いていく。ちょっと一休みの前に一回',
-                'consult_topics' => '上半身の最終的な形はありますか？やや猫背、首顔など右ガチガチで使いやすいの改善したいです！ガチガチなまま下半身だけニョ〜んとのびても意味ない気がしていますが中間層は伸ばせる気がしないです。舌押しで出っ歯が動かせてきてるのであっていますか？このまま続けたら良いですか？今までやってきた腹圧、上肢の補強の宿題の優先順位も確認していきたいです。',
-                'consult_content' => ''
-            ]
-        ];
-
-        $param = $this->request->getQuery();
-
-        $this->set(compact('user', 'param', 'mockUserData'));
-    }
-
-    public function addConsultContent($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
-        if (!$user) {
-            return $this->redirect(['action' => 'index']);
-        }
-
-        $param = $this->request->getQuery();
-
-        $this->set(compact('user', 'param'));
-    }
-
-    public function difference($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
-        if (!$user) {
-            return $this->redirect(['action' => 'index']);
-        }
-
-        $mockUserData = [
-            [
-                'milestone' => '1か月目',
-                'category' => '姿勢改善・習慣化',
-                'target1' => '①呼吸の安定化',
-                'target2' => '②足指・内転筋の感覚獲得',
-                'evaluation1' => '◎/◯/△',
-                'evaluation2' => '◯',
-                'comment1' => '呼吸浅目め、横隔膜の動きに左右差あり',
-                'comment2' => ''
-            ],
-            [
-                'milestone' => '2か月目',
-                'category' => '下半身の引き締まり兆候',
-                'target1' => '①太もも周囲 -1.5cm',
-                'target2' => '②歩き方の安定化',
-                'evaluation1' => '△',
-                'evaluation2' => '△',
-                'comment1' => '',
-                'comment2' => ''
-            ],
-            [
-                'milestone' => '3か月目',
-                'category' => '体形と筋バランスの変化',
-                'target1' => '①ふくらはぎ・膝回りの見た目変化',
-                'target2' => '②脚のライン意識',
-                'evaluation1' => '△',
-                'evaluation2' => '◯',
-                'comment1' => '',
-                'comment2' => ''
-            ],
-            [
-                'milestone' => '4か月目',
-                'category' => '仕上げと維持戦略',
-                'target1' => '①太もも-2〜3cm',
-                'target2' => '②全身バランスとリバウンド防止法習得',
-                'evaluation1' => '△',
-                'evaluation2' => '',
-                'comment1' => '',
-                'comment2' => ''
-            ]
-        ];
-        
-
-        $param = $this->request->getQuery();
-
-        $this->set(compact('user', 'param', 'mockUserData'));
-    }
-
-    public function addDifference($id = null){
-        $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
-
-        if (!$user) {
-            return $this->redirect(['action' => 'index']);
-        }
-        
-
-        $param = $this->request->getQuery();
-
-        $this->set(compact('user', 'param'));
+        $this->Flash->success('成果差分が保存されました。');
+        return $this->redirect(['action' => 'customerInformations', $userId]);
     }
 
 
