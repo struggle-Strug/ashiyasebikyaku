@@ -228,6 +228,7 @@
                     <th>標準達成目安</th>
                     <th>評価</th>
                     <th>評価コメント</th>
+                    <th>Before/After写真</th>
                     <th>保存</th>
                 </tr>
             </thead>
@@ -250,6 +251,11 @@
                         <td class="editable-difference" data-field="comments" data-index="<?= $index ?>">
                             <span><?= h($diff['comment1']) ?><br><?= h($diff['comment2']) ?></span>
                         </td>
+                        <?php if($index == 0) : ?>
+                        <td>
+                            <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link" target="_blank">画像比較確認</a>
+                        </td>
+                        <?php endif ?>
                         <td>
                             <button type="submit" class="btn btn-success save-btn" style="display: none;">保存</button>
                         </td>
