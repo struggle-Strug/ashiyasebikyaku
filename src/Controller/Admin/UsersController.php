@@ -655,7 +655,9 @@ class UsersController extends AppController
 
         $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
 
-        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'habit', 'purpose', 'bodyDatas', 'mention', 'consults', 'selfdata', 'differences'));
+        $eventType = Configure::read("EVENT_TYPE");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'eventType', 'habit', 'purpose', 'bodyDatas', 'mention', 'consults', 'selfdata', 'differences'));
     }
 
     public function customerMain($id = null){
@@ -928,15 +930,39 @@ class UsersController extends AppController
         $selfDataTable = $this->getTableLocator()->get('SelfDatas');
         $data = $this->request->getData();
 
-        // 既存の selfdata 行を取得
+        // Define editable fields
+        $editableFields = [
+            'date',
+            'good_changes',
+            'work_review',
+            'no_change_parts',
+            'current_state',
+            'next_two_weeks_work',
+            'consult_topics',
+            'consult_content'
+        ];
+
+        // Fetch existing selfData rows
         $existing = $selfDataTable->find()
             ->where(['user_id' => $id])
             ->order(['date' => 'ASC'])
+            ->indexBy('id') // Allows quick lookup
             ->toArray();
 
-        foreach ($existing as $index => $entity) {
-            if (isset($data['selfData'][$index]['consult_content'])) {
-                $entity->consult_content = $data['selfData'][$index]['consult_content'];
+        if (isset($data['selfData'])) {
+            foreach ($data['selfData'] as $row) {
+                if (empty($row['id']) || !isset($existing[$row['id']])) {
+                    continue;
+                }
+
+                $entity = $existing[$row['id']];
+
+                foreach ($editableFields as $field) {
+                    if (array_key_exists($field, $row)) {
+                        $entity->$field = $row[$field];
+                    }
+                }
+
                 $selfDataTable->save($entity);
             }
         }
@@ -944,6 +970,7 @@ class UsersController extends AppController
         $this->Flash->success('自己データを保存しました。');
         return $this->redirect(['action' => 'customerInformations', $id]);
     }
+
 
     public function differences($userId = null)
     {

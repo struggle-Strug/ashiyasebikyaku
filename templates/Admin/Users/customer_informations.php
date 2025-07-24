@@ -1,4 +1,15 @@
 <?php $this->assign('title', 'カルテ'); ?>
+<style>
+
+    td .form-control {
+        min-width: 150px;
+        max-width: 100%;
+        width: 100%;
+        font-size: 14px;
+        resize: vertical;
+    }
+
+</style>
 <div class="card">
 
     <!-- 基本情報 -->
@@ -259,21 +270,26 @@
                 <?php foreach ($selfdata as $index => $self): ?>
                     <input type="hidden" name="selfData[<?= $index ?>][id]" value="<?= h($self['id']) ?>">
                     <tr>
-                        <td><?= h($self['date']) ?></td>
-                        <td><?= h($self['good_changes']) ?></td>
-                        <td><?= h($self['work_review']) ?></td>
-                        <td><?= h($self['no_change_parts']) ?></td>
-                        <td><?= h($self['current_state']) ?></td>
-                        <td><?= h($self['next_two_weeks_work']) ?></td>
-                        <td><?= h($self['consult_topics']) ?></td>
-                        <td class="editable-self" data-index="<?= $index ?>"><span><?= h($self['consult_content']) ?></span></td>
-                        <td>
-                            <button type="submit" class="btn btn-success save-btn" style="display:none;">保存</button>
-                        </td>
+                        <?php foreach ([
+                            'date',
+                            'good_changes',
+                            'work_review',
+                            'no_change_parts',
+                            'current_state',
+                            'next_two_weeks_work',
+                            'consult_topics',
+                            'consult_content'
+                        ] as $field): ?>
+                            <td class="editable-self" data-field="<?= $field ?>" data-index="<?= $index ?>">
+                                <span><?= h($self[$field]) ?></span>
+                                <input type="hidden" name="selfData[<?= $index ?>][<?= $field ?>]" value="<?= h($self[$field]) ?>">
+                            </td>
+                        <?php endforeach; ?>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-success save-btn mt-1">保存</button>
     </div>
     <?= $this->Form->end() ?>
 
@@ -306,7 +322,11 @@
                         <td class="editable-difference" data-field="targets" data-index="<?= $index ?>"><span><?= h($diff['target1']) ?><br><?= h($diff['target2']) ?></span></td>
                         <td class="editable-difference" data-field="evaluations" data-index="<?= $index ?>"><span><?= h($diff['evaluation1']) ?><br><?= h($diff['evaluation2']) ?></span></td>
                         <td class="editable-difference" data-field="comments" data-index="<?= $index ?>"><span><?= h($diff['comment1']) ?><br><?= h($diff['comment2']) ?></span></td>
-                        <td><a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id]); ?>" class="btn btn-outline-primary btn-sm" target="_blank">画像比較確認</a></td>
+                        <td>
+                            <?php if($index == 0) : ?>
+                                <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id]); ?>" class="btn btn-outline-primary btn-sm" target="_blank">画像比較確認</a>
+                            <?php endif ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -340,7 +360,7 @@ $(document).ready(function() {
     };
 
     // General handler
-    $(document).on('click', '.editable, .editable-habit, .editable-purpose, .editable-mention, .editable-self', function() {
+    $(document).on('click', '.editable, .editable-habit, .editable-purpose, .editable-mention', function() {
         const $td = $(this);
         if ($td.find('input, select, textarea').length > 0) return;
         const field = $td.data('field');
@@ -413,6 +433,30 @@ $(document).ready(function() {
         $td.html(input);
         showSaveButton($td);
     });
+
+    $(document).on('click', '.editable-self', function () {
+        const $td = $(this);
+        const field = $td.data('field');
+        const index = $td.data('index');
+        const value = $td.find('span').text().trim();
+
+        if ($td.find('input:not([type="hidden"]), textarea').length > 0) return;
+
+        let input;
+
+        if (field === 'date') {
+            input = `<input type="date" name="selfData[${index}][${field}]" class="form-control" value="${value}">`;
+        } else {
+            input = `<textarea name="selfData[${index}][${field}]" class="form-control">${value}</textarea>`;
+        }
+
+        $td.find('span').hide();
+        $td.append(input);
+
+        // Show table-level save button (outside of the row)
+        $('.selfdata-save-btn').show();
+    });
+
 
     // Difference table editable
     $(document).on('click', '.editable-difference', function() {
