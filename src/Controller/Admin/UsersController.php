@@ -465,24 +465,23 @@ class UsersController extends AppController
     {
         $this->loadModel('ComparedImages');
 
-        $query = $this->ComparedImages->find()
-            ->where(['user_id' => $userId]);
-
-        // ✅ Safe access: avoid undefined index warning
         $param = $this->request->getQuery();
         $active = $this->request->getQuery('active');
 
+        $query = $this->ComparedImages->find()
+            ->where(['user_id' => $userId]);
+
         if ($active === '0') {
-            // Show only inactive (未送信) items
             $query->where(['active' => false]);
         }
 
         $query->order(['created' => 'desc']);
 
-        $comparedImages = $this->paginate($query);
+        $comparedImages = $query->all();
 
         $this->set(compact('comparedImages', 'param'));
     }
+
 
 
     /**
