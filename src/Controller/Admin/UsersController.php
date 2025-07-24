@@ -862,60 +862,57 @@ class UsersController extends AppController
 
     public function consults($userId = null)
     {
-        $user = $this->Users->find()
-            ->where(['id' => $userId, 'is_deleted' => 0])
-            ->first();
-
-        if (!$user) {
+        try {
+            $user = $this->Users->get($userId, ['conditions' => ['is_deleted' => 0]]);
+        } catch (\Cake\Datasource\Exception\RecordNotFoundException $e) {
             $this->Flash->error(__('ユーザーが見つかりませんでした。'));
             return $this->redirect(['action' => 'index']);
         }
-
+    
         if ($this->request->is(['post', 'put', 'patch'])) {
             $dataList = $this->request->getData('consults');
-
             $connection = $this->Consults->getConnection();
             $connection->begin();
-
+    
             try {
-                foreach ($dataList as $data) {
-                    if (!empty($data['id'])) {
-                        $consult = $this->Consults->get($data['id']);
-                    } else {
-                        $consult = $this->Consults->newEmptyEntity();
-                        $consult->user_id = $userId;
-                        $consult->date = new \Cake\I18n\FrozenDate();
-                        $consult->category = 2; // 個別コンサルティング固定
-                    }
-
-                    // ✅ Only update fields present in $data — don't overwrite with ''
-                    $fieldsToUpdate = [];
-                    foreach (['theme', 'instruction', 'note', 'next_step', 'staff_id'] as $field) {
-                        if (array_key_exists($field, $data)) {
-                            $fieldsToUpdate[$field] = $data[$field];
+                foreach ((array)$dataList as $data) {
+                    $consult = !empty($data['id'])
+                        ? $this->Consults->get($data['id'])
+                        : $this->Consults->newEntity(['user_id' => $userId]);
+    
+                    $fields = [];
+    
+                    foreach (['theme', 'instruction', 'note', 'next_step', 'staff_id', 'date', 'category'] as $field) {
+                        if (isset($data[$field]) && $data[$field] !== '') {
+                            $fields[$field] = ($field === 'date')
+                                ? new \Cake\I18n\FrozenDate($data[$field])
+                                : $data[$field];
                         }
                     }
-
-                    $consult = $this->Consults->patchEntity($consult, $fieldsToUpdate);
-
+    
+                    $this->Consults->patchEntity($consult, $fields);
+    
                     if (!$this->Consults->save($consult)) {
                         throw new \Exception(__('保存に失敗しました（テーマ: {0}）', $data['theme'] ?? '未入力'));
                     }
                 }
-
+    
                 $connection->commit();
-                $this->Flash->success(__('全てのコンサルデータを保存しました。'));
+                $this->Flash->success(__('保存しました。'));
             } catch (\Exception $e) {
                 $connection->rollback();
                 $this->Flash->error($e->getMessage());
             }
-
-            return $this->redirect(['action' => 'customerInformations', $userId]);
+    
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'customerInformations', $userId, '?' => $param]);
         }
-
+    
         $param = $this->request->getQuery();
         $this->set(compact('user', 'param'));
     }
+    
+
 
     public function selfData($id = null)
     {

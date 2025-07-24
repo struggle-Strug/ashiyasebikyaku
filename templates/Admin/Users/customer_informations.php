@@ -205,16 +205,15 @@
                     <input type="hidden" name="consults[<?= $index ?>][date]" value="<?= h($consultItem->date->format('Y-m-d')) ?>">
                     <input type="hidden" name="consults[<?= $index ?>][category]" value="<?= h($consultItem->category) ?>">
 
-                    <td><?= h($consultItem->date->format('Y/m/d')) ?></td>
-                    <td>
-                        <?php if ($consultItem->category == 1): ?>
-                            全体イベント
-                        <?php elseif ($consultItem->category == 2): ?>
-                            個別コンサルティング
-                        <?php else: ?>
-                            グループレッスン
-                        <?php endif ?>
+                    <td class="editable-consult" data-field="date" data-index="<?= $index ?>">
+                        <span><?= h($consultItem->date->format('Y/m/d')) ?></span>
                     </td>
+                    <td class="editable-consult" data-field="category" data-index="<?= $index ?>">
+                        <span>
+                            <?= $consultItem->category == 1 ? '全体イベント' : ($consultItem->category == 2 ? '個別コンサルティング' : 'グループレッスン') ?>
+                        </span>
+                    </td>
+
 
                     <td class="editable-consult" data-field="theme" data-index="<?= $index ?>">
                         <span><?= h($consultItem->theme) ?></span>
@@ -342,6 +341,7 @@
 $(document).ready(function() {
     const courses = <?= json_encode($courses) ?>;
     const staffs = <?= json_encode($staffs) ?>;
+    const eventType = <?= json_encode($eventType) ?>;
     const bodyOptions = ['◎', '◯', '△', '✕'];
 
     const showSaveButton = ($td) => {
@@ -422,7 +422,11 @@ $(document).ready(function() {
         const value = getCurrentValue($td);
         let input;
         if (field === 'date') {
-            input = `<input type="date" name="bodyData[${index}][${field}]" class="form-control" value="${value}">`;
+            const formatted = value.replace(/\//g, '-');
+            input = $(`<input type="date" class="form-control" value="${formatted}">`);
+            input.on('change', function () {
+                $(`input[name="consults[${index}][date]"]`).val(this.value);
+            });
         } else if (field === 'note') {
             input = `<input name="bodyData[${index}][note]" class="form-control" value="${value}">`;
         } else {
@@ -445,7 +449,11 @@ $(document).ready(function() {
         let input;
 
         if (field === 'date') {
-            input = `<input type="date" name="selfData[${index}][${field}]" class="form-control" value="${value}">`;
+            const formatted = value.replace(/\//g, '-');
+            input = $(`<input type="date" class="form-control" value="${formatted}">`);
+            input.on('change', function () {
+                $(`input[name="consults[${index}][date]"]`).val(this.value);
+            });
         } else {
             input = `<textarea name="selfData[${index}][${field}]" class="form-control">${value}</textarea>`;
         }
@@ -519,27 +527,49 @@ $(document).ready(function() {
 
     //lesson
     // Editable text fields
-    $(document).on('click', '.editable-consult', function() {
+    $(document).on('click', '.editable-consult', function () {
         const $td = $(this);
         const index = $td.data('index');
         const field = $td.data('field');
         const value = $td.find('span').text().trim();
 
-        // ✅ Ignore only visible input, allow hidden ones
-        if ($td.find('input:not([type="hidden"]), textarea').length > 0) return;
+        if ($td.find('input:not([type="hidden"]), select').length > 0) return;
 
-        const input = $('<input>', {
-            class: 'form-control',
-            value: value
-        });
+        let input;
 
-        input.on('input', function() {
-            $(`input[name="consults[${index}][${field}]"]`).val($(this).val());
-        });
+        if (field === 'date') {
+            const formatted = value.replace(/\//g, '-');
+            input = $(`<input type="date" class="form-control" value="${formatted}">`);
+            input.on('change', function () {
+                $(`input[name="consults[${index}][date]"]`).val(this.value);
+            });
+        } else if (field === 'category') {
+            input = $('<select class="form-control"></select>');
+            $.each(eventType, function (val, label) {
+                input.append($('<option>', {
+                    value: val,
+                    text: label,
+                    selected: label === value
+                }));
+            });
+            input.on('change', function () {
+                $(`input[name="consults[${index}][category]"]`).val(this.value);
+            });
+        } else {
+            // Default: editable text
+            input = $('<input>', {
+                class: 'form-control',
+                value: value
+            });
+            input.on('input', function () {
+                $(`input[name="consults[${index}][${field}]"]`).val($(this).val());
+            });
+        }
 
         $td.find('span').hide();
         $td.append(input);
     });
+
 
     // Editable staff select
     $(document).on('click', '.editable-staff', function() {
