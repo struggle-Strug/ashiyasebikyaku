@@ -416,7 +416,7 @@ class UsersController extends AppController
 
         $param = $this->request->getQuery();
 
-        $this->set(compact('messages', 'user', 'param'));
+        $this->set(compact('messages', 'user', 'param', 'staffId'));
     }
 
 
