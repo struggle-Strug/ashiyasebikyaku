@@ -7,35 +7,27 @@
     <?= $this->Form->create(null, [
         'url' => ['controller' => 'CustomerCsvs', 'action' => 'exportCustomerCsv'],
         'type' => 'get',
-        'class' => 'form-inline'
     ]) ?>
 
-    <div class="form-group mb-3">
-      <label for="year" class="form-label me-2">受講開始年月:</label>
-      <?= $this->Form->control('year', [
-        'label' => false,
-        'type' => 'number',
-        'class' => 'form-control me-2',
-        'min' => 2000,
-        'max' => date('Y'),
-        'placeholder' => '年'
-      ]) ?>
-      <?= $this->Form->control('month', [
-        'label' => false,
-        'type' => 'number',
-        'class' => 'form-control me-3',
-        'min' => 1,
-        'max' => 12,
-        'placeholder' => '月'
-      ]) ?>
+    <div class="row">
+      <div class="col-md-4 mt-2">
+        <label>測定日</label>
+        <div class="input-group">
+            <?= $this->Form->date('start_date', ['class' => 'form-control', 'placeholder' => '', 'default' => $param['start_date'] ?? '']) ?>
+            <div class="input-group-prepend">
+                <span class="input-group-text">
+                    〜
+                </span>
+            </div>
+            <?= $this->Form->date('end_date', ['class' => 'form-control', 'placeholder' => '', 'default' => $param['end_date'] ?? '']) ?>
+        </div>
+    </div>
 
-      <?= $this->Form->button('出力', ['class' => 'btn btn-primary']) ?>
+      <div class="col-md-12 text-right mt-3">
+        <?= $this->Form->button('CSV出力', ['class' => 'btn btn-primary']) ?>
+      </div>
     </div>
 
     <?= $this->Form->end() ?>
   </div>
 </div>
-
-<script>
-  // Optional: validation
-</script>

@@ -25,7 +25,7 @@ class ConsultsTable extends Table
 
         $this->belongsTo('Staffs', [
             'foreignKey' => 'staff_id',
-            'joinType' => 'LEFT',
+            'joinType' => 'INNER',
         ]);
     }
 
