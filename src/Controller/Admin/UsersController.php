@@ -767,6 +767,8 @@ class UsersController extends AppController
             }
         }
 
+
+
         if (count($errorMessage["error"]) > 0) {
             $isError = true;
             return $errorMessage;
@@ -791,6 +793,7 @@ class UsersController extends AppController
 
         // 申し込み日時（タイムスタンプから）
         $userData['start_datetime'] = !empty($rowData[11]) ? $this->parseDate($rowData[11]) : $this->getFirstDayOfNextMonth();
+        $userData['end_datetime'] = !empty($rowData[15]) ? $this->parseDate($rowData[15]) : null;
         $userData['staff_id'] = !empty($rowData[12]) ? $this->getStaffId(trim($rowData[12])) : $this->getStaffId('SHOCO');
         ;
         $userData['sextype'] = !empty($rowData[13]) ? $this->getGender(trim($rowData[13])) : 1;
