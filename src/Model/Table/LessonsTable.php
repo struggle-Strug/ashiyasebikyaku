@@ -23,7 +23,11 @@ class LessonsTable extends Table
         $this->setDisplayField('id');               // デフォルト表示フィールド
         $this->setPrimaryKey('id');                // プライマリキー
 
-        $this->addBehavior('Timestamp');           // created, modified 自動管理
+        $this->addBehavior('Timestamp');  
+        
+        $this->belongsTo('Users', [               // Users テーブルと紐付け
+            'foreignKey' => 'user_id',
+        ]);
 
         $this->belongsTo('Staffs', [               // Staffs テーブルと紐付け
             'foreignKey' => 'staff_id',

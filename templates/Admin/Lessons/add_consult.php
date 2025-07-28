@@ -32,13 +32,7 @@
                     <input type="hidden" name="consults[<?= $index ?>][category]" value="<?= h($consultItem->category) ?>">
 
                     <td><?= h($consultItem->date->format('Y/m/d')) ?></td>
-                    <td class="editable-category" data-field="category" data-index="<?= $index ?>">
-                        <span>
-                            <?= $listOptions[$consultItem->category] ?? '' ?>
-                        </span>
-                        <input type="hidden" name="consults[<?= $index ?>][category]" value="<?= h($consultItem->category) ?>">
-                    </td>
-
+                    <td><?= h($consultItem->category) ?></td>
 
                     <td class="editable" data-field="theme" data-index="<?= $index ?>">
                         <span><?= h($consultItem->theme) ?></span>

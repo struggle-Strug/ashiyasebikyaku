@@ -123,9 +123,10 @@
                             <a href="<?= $this->Url->build([
                                 'action' => 'addConsult',
                                 '?' => [
-                                    'name' => $row['user'],
+                                    'name' => $row['original_user'], // ✅ use clean name (no suffix)
                                     'staff' => $row['staff'],
                                     'event_date' => date('Y-m-d', strtotime($row['event_date'])),
+                                    'category' => $row['category']
                                 ]
                             ]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">登録</a>
                         </td>
