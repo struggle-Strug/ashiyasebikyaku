@@ -1,4 +1,15 @@
 <?php $this->assign('title', 'レッスン管理'); ?>
+<?php if (!empty($csvErrors)): ?>
+    <div class="csv-errors" style="margin-top: 1rem; border: 1px solid red; padding: 1em; background: #ffeaea; color: #a00;">
+        <strong>以下のCSVエラーが見つかりました:</strong>
+        <ul>
+            <?php foreach ($csvErrors as $error): ?>
+                <li><?= h($error) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
 
 <?= $this->Form->create(null, ['type' => 'get']) ?>
 <div class="card mb-3">
