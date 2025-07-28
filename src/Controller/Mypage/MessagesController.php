@@ -37,9 +37,12 @@ class MessagesController extends AppController
     public function index()
     {
         $messages = $this->Messages->find('all')
+            ->contain([
+                'Staffs'
+            ])
             ->where([
-                'user_id' => $this->Authentication->getIdentity()->id,
-                'is_deleted' => 0
+                'Messages.user_id' => $this->Authentication->getIdentity()->id,
+                'Messages.is_deleted' => 0
             ])
             ->all();
 

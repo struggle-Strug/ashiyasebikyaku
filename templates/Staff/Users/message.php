@@ -69,18 +69,19 @@
                             <?php endif; ?>
                             <?php if ($message->message): ?>
                                 <div class="message-text">
-                                    <!-- 削除ボタンフォーム -->
-                                    <div style="position: absolute; top: 5px; right: 5px;">
-                                        <?= $this->Form->create(null, [
-                                            'url' => ['action' => 'deleteMessage', $message->id],
-                                            'style' => 'display:inline-block;',
-                                            'onsubmit' => 'return confirm("このメッセージを削除しますか？");'
-                                        ]) ?>
-                                            <?= $this->Form->button('削除', ['class' => 'btn btn-sm btn-outline-danger delete-button', 'style' => 'border-radius: 20px;']) ?>
-                                        <?= $this->Form->end() ?>
-                                    </div>
+                                    <?php if ($message->staff_id == $staffId): ?>
+                                        <!-- 削除ボタンフォーム -->
+                                        <div style="position: absolute; top: 5px; right: 5px;">
+                                            <?= $this->Form->create(null, [
+                                                'url' => ['action' => 'deleteMessage', $message->id],
+                                                'style' => 'display:inline-block;',
+                                                'onsubmit' => 'return confirm("このメッセージを削除しますか？");'
+                                            ]) ?>
+                                                <?= $this->Form->button('削除', ['class' => 'btn btn-sm btn-outline-danger delete-button', 'style' => 'border-radius: 20px;']) ?>
+                                            <?= $this->Form->end() ?>
+                                        </div>
+                                    <?php endif ?>
                                     <div style="padding-top: 14px;">
-
                                         <?= $this->Link->linkify(h($message->message)) ?>
                                     </div>
                                 </div>
