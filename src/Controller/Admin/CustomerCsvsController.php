@@ -156,7 +156,7 @@ class CustomerCsvsController extends AppController
         
                     // ✅ Lesson / Consult
                     $consult?->date?->format('Y/m/d') ?? '',
-                    $consult?->category ? ['全体イベント', '個別コンサルティング', 'グループレッスン'][$consult->category - 1] ?? '' : '',
+                    $consult?->category ? $consult?->category ?? '' : '',
                     $consult?->theme ?? '',
                     $consult?->instruction ?? '',
                     $consult?->note ?? '',
