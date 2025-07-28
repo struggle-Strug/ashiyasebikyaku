@@ -76,10 +76,10 @@
 <div class="card mb-3">
     <div class="card-body">
         <div class="row">
-            <div class="col-md-6 mt-2">
-                <label>CSVファイルを選択</label>
-                <?= $this->Form->control('csv_file', ['type' => 'file', 'label' => false, 'class' => 'form-control']) ?>
-            </div>
+        <div class="form-group">
+            <label for="csv-file">CSVファイルを選択</label>
+            <?= $this->Form->file('csv_file', ['class' => 'form-control-file', 'accept' => '.csv', 'required' => true]) ?>
+        </div>
             <div class="col-md-6 mt-4">
                 <button type="submit" class="btn btn-success">CSV読み込み</button>
             </div>

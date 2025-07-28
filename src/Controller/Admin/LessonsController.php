@@ -33,35 +33,42 @@ class LessonsController extends AppController
     public function index()
     {
         $csvData = [];
+        $csvErrors = [];
         $param = $this->request->getQuery();
 
         if ($this->request->is('post') && !empty($this->request->getData('csv_file'))) {
             $file = $this->request->getData('csv_file');
+            $filename = $file->getClientFilename();
+            $mediaType = $file->getClientMediaType();
 
-            if ($file->getClientMediaType() === 'text/csv' || str_ends_with($file->getClientFilename(), '.csv')) {
-                $filename = 'uploaded_lessons.csv';
-                $filePath = WWW_ROOT . 'files' . DS . $filename;
+            if (
+                preg_match('/\.csv$/i', $filename) ||
+                in_array($mediaType, ['text/csv', 'application/vnd.ms-excel', 'application/octet-stream'])
+            ) {
+                $savedName = 'uploaded_lessons.csv';
+                $filePath = WWW_ROOT . 'files' . DS . $savedName;
 
-                // 保存先作成
                 $folder = new Folder(WWW_ROOT . 'files', true, 0755);
                 $file->moveTo($filePath);
 
-                // CSV読み込み (Shift_JIS対応)
                 $csv = new \SplFileObject($filePath, 'r');
                 $csv->setFlags(\SplFileObject::READ_CSV | \SplFileObject::SKIP_EMPTY);
                 $csv->setCsvControl(',');
 
                 $headerSkipped = false;
+                $rawRows = [];
+                $nameCounts = [];
+                $rowNum = 1;
 
+                // First pass: read and count user names
                 while (!$csv->eof()) {
                     $line = $csv->fgets();
+                    $rowNum++;
                     if (!$line) continue;
 
-                    // Shift_JIS → UTF-8 変換
                     $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
                     $row = str_getcsv($line);
 
-                    // ヘッダー行スキップ
                     if (!$headerSkipped) {
                         $headerSkipped = true;
                         continue;
@@ -69,40 +76,65 @@ class LessonsController extends AppController
 
                     if (empty($row[1]) || count($row) < 6) continue;
 
-                    // 検索フィルタ適用
                     if (!empty($param['event_date']) && strpos($row[1], $param['event_date']) === false) {
                         continue;
                     }
-                    if (!empty($param['staff_id']) && strpos($row[5], $param['staff_id']) === false) {
+                    if (!empty($param['staff_id']) && strpos($row[6], $param['staff_id']) === false) {
                         continue;
+                    }
+
+                    $userName = trim($row[3] ?? '');
+
+                    if ($userName === '') {
+                        $csvErrors[] = "行{$rowNum}: 名前が空欄です。";
+                    }
+
+                    $nameCounts[$userName] = ($nameCounts[$userName] ?? 0) + 1;
+
+                    $rawRows[] = $row;
+                }
+
+                // Second pass: build data with conditional suffix
+                $nameIndexTracker = [];
+
+                foreach ($rawRows as $row) {
+                    $userName = trim($row[3] ?? '');
+
+                    // If name appears only once → no suffix
+                    if ($nameCounts[$userName] === 1) {
+                        $displayName = $userName;
+                    } else {
+                        $nameIndexTracker[$userName] = ($nameIndexTracker[$userName] ?? 0) + 1;
+                        $suffix = $nameIndexTracker[$userName];
+                        $displayName = $userName . $suffix;
                     }
 
                     $csvData[] = [
                         'event_date' => $row[1] ?? '',
                         'category' => '',
                         'staff' => $row[6] ?? '',
-                        'user' => $row[3] ?? '',
+                        'user' => $displayName,
                     ];
                 }
 
-                $this->Flash->success('CSVを正常に読み込みました。');
+                $this->Flash->success('CSVを読み込みました（エラーがある場合は下に表示されます）。');
             } else {
                 $this->Flash->error('CSVファイルをアップロードしてください。');
             }
         }
 
-        // 講師リスト（検索用）
         $staffs = $this->Lessons->Staffs->find('list', [
             'keyField' => 'name',
             'valueField' => 'name',
             'conditions' => ['is_deleted' => 0],
         ])->toArray();
 
-        // 区分リスト（空でも一応渡す）
         $listOptions = Configure::read('ADMINLESSONOPTIONS');
 
-        $this->set(compact('csvData', 'param', 'staffs', 'listOptions'));
+        $this->set(compact('csvData', 'csvErrors', 'param', 'staffs', 'listOptions'));
     }
+
+
 
 
     public function addConsult()
