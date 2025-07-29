@@ -11,7 +11,19 @@
                 <?php foreach ($messages as $message): ?>
                     <?php if ($message->sender == '1') : // 利用者 ?>
                         <li class="self">
-                            <div class="msg">
+                            <div class="msg" style="position: relative;">
+                                <!-- 削除ボタンフォーム -->
+                                <div style="position: absolute; bottom: 5px; left: 10px;">
+                                    <?= $this->Form->create(null, [
+                                        'url' => ['action' => 'delete', $message->id],
+                                        'style' => 'display:inline-block;',
+                                        'onsubmit' => 'return confirm("このメッセージを削除しますか？");'
+                                    ]) ?>
+                                        <?= $this->Form->button('削除', [
+                                            'class' => 'btn btn-sm btn-outline-danger small delete-button',
+                                        ]) ?>
+                                    <?= $this->Form->end() ?>
+                                </div>
                                 <?php if ($message->file_path): ?>
                                     <?php if (strpos($message->file_type, 'image/') === 0): ?>
                                         <div class="message-attachment">
@@ -48,8 +60,11 @@
                         </li>
                     <?php elseif ($message->sender == '2') : // 講師 ?>
                         <li class="other">
-                            <div class="avatar">
-                                <img src="/img/face2.png">
+                            <div style="display: inline-block;">
+                                <div class="avatar" style="margin: auto;">
+                                    <img src="/img/face2.png">
+                                </div>
+                                <small><?= h($message->staff->name) ?></small>
                             </div>
                             <div class="msg msg-staff">
                                 <?php if ($message->file_path): ?>
@@ -158,6 +173,17 @@
 .message-text {
     margin-top: 10px;
 }
+
+.delete-button {
+    font-size: 1rem;
+    padding: 4px 6px;
+    line-height: 1.2;
+}
+
+.self .msg {
+    min-width: 180px;
+}
+
 </style>
 
 <script>
@@ -174,9 +200,14 @@
             }
         });
 
-        // Disable the send button after first click
-        $('form').on('submit', function () {
-            $('button[type="submit"]').prop('disabled', true).text('送信中...');
+         // メイン送信ボタンの送信中テキスト
+         $('form').on('submit', function () {
+            const $submitBtn = $(this).find('button[type="submit"]');
+            if ($submitBtn.hasClass('delete-button')) {
+                $submitBtn.prop('disabled', true).text('削除中...');
+            } else {
+                $submitBtn.prop('disabled', true).text('送信中...');
+            }
         });
     });
 

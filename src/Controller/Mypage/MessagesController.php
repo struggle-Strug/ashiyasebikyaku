@@ -37,9 +37,12 @@ class MessagesController extends AppController
     public function index()
     {
         $messages = $this->Messages->find('all')
+            ->contain([
+                'Staffs'
+            ])
             ->where([
-                'user_id' => $this->Authentication->getIdentity()->id,
-                'is_deleted' => 0
+                'Messages.user_id' => $this->Authentication->getIdentity()->id,
+                'Messages.is_deleted' => 0
             ])
             ->all();
 
@@ -149,4 +152,31 @@ class MessagesController extends AppController
             $this->Flash->error(__('データを送信できませんでした。'));
         }
     }
+
+
+     /**
+     * Delete method
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function delete($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+
+        $message = $this->Messages->get($id);
+        $userId = $this->Authentication->getIdentity()->id;
+
+        if ($message->user_id !== $userId || $message->sender !== '1') {
+            throw new \Cake\Http\Exception\ForbiddenException('削除権限がありません。');
+        }
+
+        if ($this->Messages->delete($message)) {
+            $this->Flash->success('メッセージを削除しました。');
+        } else {
+            $this->Flash->error('削除に失敗しました。');
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+
 }
