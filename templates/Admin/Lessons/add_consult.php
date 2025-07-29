@@ -5,7 +5,11 @@
         <h4>氏名: <?= h($user->last_name) ?> <?= h($user->first_name) ?></h4>
 
         <?= $this->Form->create(null, [
-            'url' => ['controller' => 'Lessons', 'action' => 'saveConsult', $user->id],
+            'url' => [
+                'controller' => 'Lessons',
+                'action' => 'saveConsult',
+                '?' => ['name' => $user->last_name . $user->first_name]
+            ],
             'type' => 'post'
         ]) ?>
         <table class="table table-bordered table-striped" id="consult-table">
@@ -28,15 +32,7 @@
                     <input type="hidden" name="consults[<?= $index ?>][category]" value="<?= h($consultItem->category) ?>">
 
                     <td><?= h($consultItem->date->format('Y/m/d')) ?></td>
-                    <td>
-                        <?php if ($consultItem->category == 1): ?>
-                            全体イベント
-                        <?php elseif ($consultItem->category == 2): ?>
-                            個別コンサルティング
-                        <?php else: ?>
-                            グループレッスン
-                        <?php endif ?>
-                    </td>
+                    <td><?= h($consultItem->category) ?></td>
 
                     <td class="editable" data-field="theme" data-index="<?= $index ?>">
                         <span><?= h($consultItem->theme) ?></span>
@@ -75,6 +71,7 @@
 <script>
 $(document).ready(function() {
     const staffs = <?= json_encode($staffs) ?>;
+    const listOptions = <?= json_encode($listOptions) ?>;
 
     // Editable text fields
     $(document).on('click', '.editable', function() {
@@ -98,6 +95,36 @@ $(document).ready(function() {
         $td.find('span').hide();
         $td.append(input);
     });
+
+    // Editable category (select)
+    $(document).on('click', '.editable-category', function () {
+        const $td = $(this);
+        const index = $td.data('index');
+        const field = $td.data('field');
+        const currentLabel = $td.find('span').text().trim();
+
+        if ($td.find('select').length > 0) return;
+
+        const select = $('<select>', {
+            class: 'form-control'
+        });
+
+        $.each(listOptions, function (value, label) {
+            select.append($('<option>', {
+                value: value,
+                text: label,
+                selected: label === currentLabel
+            }));
+        });
+
+        select.on('change', function () {
+            $(`input[name="consults[${index}][${field}]"]`).val($(this).val());
+        });
+
+        $td.find('span').hide();
+        $td.append(select);
+    });
+
 
     // Editable staff select
     $(document).on('click', '.editable-staff', function() {
@@ -136,9 +163,10 @@ $(document).ready(function() {
         const todayVal = '<?= date('Y-m-d') ?>';
         const newRow = `<tr>
             <input type="hidden" name="consults[${index}][date]" value="${todayVal}">
-            <input type="hidden" name="consults[${index}][category]" value="2">
             <td>${today}</td>
-            <td>個別コンサルティング</td>
+            <td class="editable-category" data-field="category" data-index="${index}">個別コンサルティング
+                <input type="hidden" name="consults[${index}][category]" value="2">
+            </td>
             <td class="editable" data-field="theme" data-index="${index}"><span></span>
                 <input type="hidden" name="consults[${index}][theme]" value="">
             </td>
