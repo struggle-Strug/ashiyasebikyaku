@@ -182,6 +182,14 @@
         font-size: 14px;
         padding: 6px 12px;
     }
+    #left-date-text {
+        left: 5%; /* 左側の中央 */
+    }
+
+    /* 右の日付は右側に配置 */
+    #right-date-text {
+        left: 55%; /* 右側の中央 */
+    }
 }
 </style>
 
