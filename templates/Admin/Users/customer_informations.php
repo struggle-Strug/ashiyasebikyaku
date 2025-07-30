@@ -174,12 +174,22 @@
                 <tbody>
                     <?php foreach ($bodyDatas as $index => $body): ?>
                         <tr>
-                            <td><input type="date" name="bodyData[<?= $index ?>][date]" class="form-control" value="<?= h($body->date) ?>"></td>
+                            <!-- Hidden ID field for updates -->
+                            <input type="hidden" name="bodyData[<?= $index ?>][id]" value="<?= $body->id ?>">
+
+                            <td>
+                                <input type="date" 
+                                    name="bodyData[<?= $index ?>][date]" 
+                                    class="form-control" 
+                                    value="<?= $body->date ? h($body->date->format('Y-m-d')) : '' ?>">
+                            </td>
                             <?php foreach (['ankle', 'instep', 'vertical_arch', 'horizontal_arch', 'toes'] as $field): ?>
                                 <td>
                                     <select name="bodyData[<?= $index ?>][<?= $field ?>]" class="form-control">
                                         <?php foreach (['◎', '◯', '△', '✕'] as $opt): ?>
-                                            <option value="<?= $opt ?>" <?= $opt === $body[$field] ? 'selected' : '' ?>><?= $opt ?></option>
+                                            <option value="<?= $opt ?>" <?= $opt === $body[$field] ? 'selected' : '' ?>>
+                                                <?= $opt ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </td>
@@ -248,21 +258,37 @@
                 <tbody>
                     <?php foreach ($consults as $index => $consultItem): ?>
                         <tr>
-                            <td><input type="date" name="consults[<?= $index ?>][date]" class="form-control" value="<?= h($consultItem->date->format('Y-m-d')) ?>"></td>
+                            <!-- Hidden ID field for updates -->
+                            <input type="hidden" name="consults[<?= $index ?>][id]" value="<?= $consultItem->id ?>">
+
+                            <td>
+                                <input type="date" 
+                                    name="consults[<?= $index ?>][date]" 
+                                    class="form-control" 
+                                    value="<?= $consultItem->date ? h($consultItem->date->format('Y-m-d')) : '' ?>">
+                            </td>
                             <td>
                                 <select name="consults[<?= $index ?>][category]" class="form-control">
                                     <?php foreach ($eventType as $val => $label): ?>
-                                        <option value="<?= $val ?>" <?= $consultItem->category == $val ? 'selected' : '' ?>><?= h($label) ?></option>
+                                        <option value="<?= $val ?>" <?= $consultItem->category == $val ? 'selected' : '' ?>>
+                                            <?= h($label) ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
                             <?php foreach (['theme', 'instruction', 'note', 'next_step'] as $field): ?>
-                                <td><textarea name="consults[<?= $index ?>][<?= $field ?>]" class="form-control"><?= h($consultItem->$field) ?></textarea></td>
+                                <td>
+                                    <textarea name="consults[<?= $index ?>][<?= $field ?>]" class="form-control">
+                                        <?= h($consultItem->$field) ?>
+                                    </textarea>
+                                </td>
                             <?php endforeach; ?>
                             <td>
                                 <select name="consults[<?= $index ?>][staff_id]" class="form-control">
                                     <?php foreach ($staffs as $id => $name): ?>
-                                        <option value="<?= $id ?>" <?= $consultItem->staff_id == $id ? 'selected' : '' ?>><?= h($name) ?></option>
+                                        <option value="<?= $id ?>" <?= $consultItem->staff_id == $id ? 'selected' : '' ?>>
+                                            <?= h($name) ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
@@ -274,6 +300,7 @@
         <button type="submit" class="btn btn-success mt-2">保存</button>
     </div>
     <?= $this->Form->end() ?>
+
 
     <!-- 7. 自己認識 -->
     <?= $this->Form->create(null, [
@@ -299,7 +326,12 @@
                 <tbody>
                     <?php foreach ($selfdata as $index => $self): ?>
                         <tr>
-                            <td><input type="date" name="selfData[<?= $index ?>][date]" class="form-control" value="<?= h($self['date']) ?>"></td>
+                            <td>
+                                <input type="date" 
+                                    name="selfdata[<?= $index ?>][date]" 
+                                    class="form-control" 
+                                    value="<?= $self->date ? h($self->date->format('Y-m-d')) : '' ?>">
+                            </td>
                             <?php foreach (['good_changes', 'work_review', 'no_change_parts', 'current_state', 'next_two_weeks_work', 'consult_topics', 'consult_content'] as $field): ?>
                                 <td><textarea name="selfData[<?= $index ?>][<?= $field ?>]" class="form-control"><?= h($self[$field]) ?></textarea></td>
                             <?php endforeach; ?>
@@ -334,6 +366,8 @@
                 <tbody>
                     <?php foreach ($differences as $index => $diff): ?>
                         <tr>
+                            <input type="hidden" name="differences[<?= $index ?>][id]" value="<?= $diff['id'] ?? '' ?>">
+
                             <td><input name="differences[<?= $index ?>][milestone]" class="form-control" value="<?= h($diff['milestone']) ?>"></td>
                             <td><input name="differences[<?= $index ?>][category]" class="form-control" value="<?= h($diff['category']) ?>"></td>
                             <td>
