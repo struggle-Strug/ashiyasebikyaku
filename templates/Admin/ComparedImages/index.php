@@ -105,4 +105,20 @@
             },
         },
     });
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Restore scroll
+    const savedScrollPos = sessionStorage.getItem("scrollPos");
+    if (savedScrollPos) {
+        window.scrollTo(0, parseInt(savedScrollPos));
+        sessionStorage.removeItem("scrollPos");
+    }
+
+    // Save scroll before leaving
+    document.querySelectorAll("a, button").forEach(el => {
+        el.addEventListener("click", () => {
+            sessionStorage.setItem("scrollPos", window.scrollY);
+        });
+    });
+});
 </script>

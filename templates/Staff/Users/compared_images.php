@@ -56,8 +56,10 @@
                         </div>
                     </div>
             <?php endforeach ?>
-
         </div>
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]); ?>"><i class="fas fa-arrow-circle-left"></i> 戻る</a>
     </div>
 </div>
 
@@ -65,3 +67,21 @@
 <div class="col-md-12 text-center">
     <?= $this->element('pagination'); ?>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Restore scroll
+    const savedScrollPos = sessionStorage.getItem("scrollPos");
+    if (savedScrollPos) {
+        window.scrollTo(0, parseInt(savedScrollPos));
+        sessionStorage.removeItem("scrollPos");
+    }
+
+    // Save scroll before leaving
+    document.querySelectorAll("a, button").forEach(el => {
+        el.addEventListener("click", () => {
+            sessionStorage.setItem("scrollPos", window.scrollY);
+        });
+    });
+});
+</script>

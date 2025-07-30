@@ -586,7 +586,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
     }
 
@@ -601,7 +602,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信取り消し完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
 
     }
