@@ -71,14 +71,9 @@ class CustomerCsvsController extends AppController
             ])
             ->all();
 
-        $this->response = $this->response
-            ->withDownload("顧客カルテ_{$startDate->format('Ymd')}_{$endDate->format('Ymd')}.csv")
-            ->withType('csv');
+        $output = fopen('php://temp', 'r+');
 
-        $csv = fopen('php://output', 'w');
-
-        // ヘッダー
-        fputcsv($csv, [
+        fputcsv($output, [
             '受講生ID', '基本情報_氏名', '基本情報_カナ', '基本情報_コース名', '基本情報_生年月日', '基本情報_住所', '基本情報_開始日', '基本情報_担当講師',
             '生活習慣_職業', '生活習慣_食事習慣', '生活習慣_睡眠', '生活習慣_ストレス要因', '生活習慣_運動歴', '生活習慣_既往歴', '生活習慣_注意点',
             '目標設定_メール', '目標設定_名前', '目標設定_現在の悩み(容姿面)', '目標設定_現在の悩み(機能面)', '目標設定_期間中の目標(容姿面)', '目標設定_期間中の目標(機能面)', '目標設定_未来のセルフイメージ', '目標設定_次の2週間でやるワーク', '目標設定_個別コンサルで相談したいこと', 
@@ -92,8 +87,8 @@ class CustomerCsvsController extends AppController
         foreach ($users as $user) {
             $habit = $user->habits[0] ?? null;
             $purpose = $user->purposes[0] ?? null;
-        
-            // Common part: includes everything before bodydata
+            $mention = $user->mentions[0] ?? null;
+
             $base = [
                 $user->id,
                 $user->last_name . ' ' . $user->first_name,
@@ -103,7 +98,6 @@ class CustomerCsvsController extends AppController
                 $user->zipcode . ' ' . $user->prefecture . ' ' . $user->city . ' ' . $user->address,
                 $user->start_datetime?->format('Y/m/d') ?? '',
                 $user->staff->name ?? '',
-        
                 $habit?->occupation ?? '',
                 $habit?->eating_habits ?? '',
                 $habit?->sleep ?? '',
@@ -111,7 +105,6 @@ class CustomerCsvsController extends AppController
                 $habit?->exercise_history ?? '',
                 $habit?->medical_history ?? '',
                 $habit?->other_notes ?? '',
-        
                 $purpose?->email ?? '',
                 $purpose?->name ?? '',
                 $purpose?->current_concerns_appearance ?? '',
@@ -122,9 +115,7 @@ class CustomerCsvsController extends AppController
                 $purpose?->next_two_weeks_work ?? '',
                 $purpose?->consulting_topics ?? ''
             ];
-        
-            $mention = $user->mentions[0] ?? null;
-        
+
             $max = max(
                 count($user->body_datas),
                 count($user->consults),
@@ -132,15 +123,16 @@ class CustomerCsvsController extends AppController
                 count($user->differences),
                 1
             );
-        
+
             for ($i = 0; $i < $max; $i++) {
                 $body = $user->body_datas[$i] ?? null;
                 $consult = $user->consults[$i] ?? null;
                 $self = $user->self_datas[$i] ?? null;
                 $diff = $user->differences[$i] ?? null;
-        
-                $row = array_merge($base, [
-                    // ✅ BodyData (7 fields)
+
+                $baseRow = ($i === 0) ? $base : array_fill(0, count($base), '');
+
+                $row = array_merge($baseRow, [
                     $body?->date?->format('Y/m/d') ?? '',
                     $body?->ankle ?? '',
                     $body?->instep ?? '',
@@ -148,22 +140,16 @@ class CustomerCsvsController extends AppController
                     $body?->horizontal_arch ?? '',
                     $body?->toes ?? '',
                     $body?->note ?? '',
-        
-                    // ✅ Mention (3 fields - correctly placed *after* bodydata)
                     $mention?->personality_tendency ?? '',
                     $mention?->motivation_source ?? '',
                     $mention?->dropout_risk ?? '',
-        
-                    // ✅ Lesson / Consult
                     $consult?->date?->format('Y/m/d') ?? '',
-                    $consult?->category ? $consult?->category ?? '' : '',
+                    $consult?->category ?? '',
                     $consult?->theme ?? '',
                     $consult?->instruction ?? '',
                     $consult?->note ?? '',
                     $consult?->next_step ?? '',
                     $consult?->staff->name ?? '',
-        
-                    // ✅ Self Data
                     $self?->date?->format('Y/m/d') ?? '',
                     $self?->good_changes ?? '',
                     $self?->work_review ?? '',
@@ -172,22 +158,25 @@ class CustomerCsvsController extends AppController
                     $self?->next_two_weeks_work ?? '',
                     $self?->consult_topics ?? '',
                     $self?->consult_content ?? '',
-        
-                    // ✅ Differences
                     $diff?->milestone ?? '',
                     $diff?->category ?? '',
                     trim($diff?->target1 . "\n" . $diff?->target2),
                     trim($diff?->evaluation1 . "\n" . $diff?->evaluation2),
                     trim($diff?->comment1 . "\n" . $diff?->comment2),
                 ]);
-        
-                fputcsv($csv, $row);
+
+                fputcsv($output, $row);
             }
         }
-        
-        
 
-        fclose($csv);
-        return $this->response;
+        rewind($output);
+        $csvData = stream_get_contents($output);
+        fclose($output);
+
+        return $this->response
+            ->withDownload("顧客カルテ_{$startDate->format('Ymd')}_{$endDate->format('Ymd')}.csv")
+            ->withType('csv')
+            ->withStringBody($csvData);
     }
+
 }
