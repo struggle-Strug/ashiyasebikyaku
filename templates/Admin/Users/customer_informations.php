@@ -63,7 +63,7 @@
                             <input name="city" class="form-control mb-1" value="<?= h($user->city) ?>" placeholder="市区町村">
                             <input name="address" class="form-control" value="<?= h($user->address) ?>" placeholder="住所詳細">
                         </td>
-                        <td><input type="date" name="start_datetime" class="form-control" value="<?= date('Y-m-d', strtotime($user->start_datetime)) ?>"></td>
+                        <td><input type="date" name="start_datetime" class="form-control" value="<?=$user->start_datetime ? date('Y-m-d', strtotime($user->start_datetime)) : "" ?>"></td>
                         <td>
                             <select name="staff_id" class="form-control">
                                 <?php foreach ($staffs as $id => $name): ?>
