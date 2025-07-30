@@ -515,7 +515,7 @@ class UsersController extends AppController
 
         $query->order(['created' => 'desc']);
 
-        $comparedImages = $this->paginate($query);
+        $comparedImages = $query->all();
 
         $this->set(compact('comparedImages', 'param'));
     }

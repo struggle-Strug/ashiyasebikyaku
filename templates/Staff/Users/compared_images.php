@@ -63,11 +63,6 @@
     </div>
 </div>
 
-
-<div class="col-md-12 text-center">
-    <?= $this->element('pagination'); ?>
-</div>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     // Restore scroll
