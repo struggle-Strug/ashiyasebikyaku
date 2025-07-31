@@ -675,6 +675,14 @@ class UsersController extends AppController
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
 
+            if (isset($data['start_datetime']) && !empty($data['start_datetime'])) {
+                if (is_string($data['start_datetime'])) {
+                    $data['start_datetime'] = new \Cake\I18n\FrozenTime($data['start_datetime']);
+                }
+            } else {
+                $data['start_datetime'] = new \Cake\I18n\FrozenTime();
+            }
+
             $user = $this->Users->patchEntity($user, $data);
 
             if ($this->Users->save($user)) {
@@ -684,7 +692,26 @@ class UsersController extends AppController
 
                 return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
             }
-            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+            
+            // エラーの詳細を出力
+            $errorMessage = 'データを登録できませんでした。';
+            if ($user->getErrors()) {
+                $errorMessage .= '<br><br>エラー詳細:<br>';
+                foreach ($user->getErrors() as $field => $errors) {
+                    if (is_array($errors)) {
+                        foreach ($errors as $rule => $message) {
+                            if (is_string($message)) {
+                                $errorMessage .= '・' . h($field) . ': ' . h($message) . '<br>';
+                            } else {
+                                $errorMessage .= '・' . h($field) . ': ' . h(json_encode($message)) . '<br>';
+                            }
+                        }
+                    } else {
+                        $errorMessage .= '・' . h($field) . ': ' . h($errors) . '<br>';
+                    }
+                }
+            }
+            $this->Flash->error($errorMessage, ['escape' => false]);
         }
 
         // スタッフを配列で取得
