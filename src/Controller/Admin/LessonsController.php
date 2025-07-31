@@ -86,7 +86,7 @@ class LessonsController extends AppController
                 $tempData = [];
                 $rowNum = 1;
                 $sameNameCounters = [];
-
+                
                 while (!$csv->eof()) {
                     $line = $csv->fgets();
                     $rowNum++;
@@ -100,7 +100,10 @@ class LessonsController extends AppController
                         continue;
                     }
 
-                    if (empty($row[1]) || count($row) < 16) continue;
+                    if (empty($row[1]) || count($row) < 16) {
+                        $this->Flash->error('ファイルが空または不正確です。');
+                        return $this->redirect($this->referer());
+                    }
 
                     $eventDate = trim($row[1] ?? '');
                     $userName = trim($row[3] ?? '');
@@ -179,7 +182,10 @@ class LessonsController extends AppController
                         }
                         $connection->commit();
                         $csvData = $tempData;
-                        $this->Flash->success('CSVを正常に読み込み、新しいレッスンデータを保存しました。');
+                        $this->Flash->success(sprintf(
+                            'CSVを正常に読み込み、新しいレッスンデータを%d件登録しました。',
+                            count($csvData)
+                        ));
                     } catch (\Exception $e) {
                         $connection->rollback();
                         $this->Flash->error('データ保存中にエラーが発生しました: ' . $e->getMessage());
