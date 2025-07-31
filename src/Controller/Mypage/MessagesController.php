@@ -4,10 +4,6 @@ declare(strict_types=1);
 namespace App\Controller\Mypage;
 
 use App\Controller\AppController;
-use Cake\ORM\Query;
-use Cake\ORM\TableRegistry;
-
-use App\Mailer\AppMailer;
 use Cake\Mailer\MailerAwareTrait;
 
 use Cake\I18n\Time;
