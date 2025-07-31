@@ -9,6 +9,7 @@ use Cake\ORM\Query;
 use Cake\Core\Configure;
 use DateTime;
 use PHPUnit\TextUI\CliArguments\Configuration;
+use Cake\Mailer\MailerAwareTrait;
 
 /**
  * Users Controller
@@ -18,12 +19,15 @@ use PHPUnit\TextUI\CliArguments\Configuration;
  */
 class UsersController extends AppController
 {
+
+    use MailerAwareTrait;
+
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
 
         $user = $this->Authentication->getIdentity();
-        if($user && $user->role_id == 1) {
+        if ($user && $user->role_id == 1) {
             $this->Flash->error('このページへのアクセス権がありません。');
             return $this->redirect(['controller' => 'UploadMovies', 'action' => 'index']);
         }
@@ -41,9 +45,10 @@ class UsersController extends AppController
         $this->loadModel('SelfDatas');
         $this->loadModel('Differences');
         $this->loadModel('Consults');
+        $this->loadModel('Staffs');
     }
 
-    
+
     /**
      * Index method
      *
@@ -52,24 +57,24 @@ class UsersController extends AppController
     public function index()
     {
         $query = $this->Users->find('all')
-        ->contain([
-            'Messages' => function (Query $q) {
+            ->contain([
+                'Messages' => function (Query $q) {
                     return $q->where([
                         'Messages.sender IN' => ['1', '2'],
                         'Messages.is_admin_read' => false
                     ]);
                 },
-            'Staffs',
-            'ComparedImages' => function (Query $q) {
-                return $q->where(['ComparedImages.active' => false]);
-            },
-        ])
-        ->where([
-            'Users.is_deleted' => 0
-        ])
-        ->order([
-            'Users.id' => 'desc'
-        ]);
+                'Staffs',
+                'ComparedImages' => function (Query $q) {
+                    return $q->where(['ComparedImages.active' => false]);
+                },
+            ])
+            ->where([
+                'Users.is_deleted' => 0
+            ])
+            ->order([
+                'Users.id' => 'desc'
+            ]);
 
         // 検索
         $param = $this->request->getQuery();
@@ -124,9 +129,9 @@ class UsersController extends AppController
     {
         // Get the user with the highest ID
         $lastUser = $this->Users->find()
-        ->select(['id'])
-        ->orderDesc('id')
-        ->first();
+            ->select(['id'])
+            ->orderDesc('id')
+            ->first();
 
         $nextMemberNumber = $lastUser ? $lastUser->id + 3000000 + 1 : 1;
 
@@ -181,11 +186,11 @@ class UsersController extends AppController
     public function edit($id = null)
     {
         $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
+            ->where([
+                'id' => $id,
+                'is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -241,11 +246,11 @@ class UsersController extends AppController
     public function delete($id = null)
     {
         $user = $this->Users->find('all')
-        ->where([
-            'id' => $id,
-            'is_deleted' => 0
-        ])
-        ->first();
+            ->where([
+                'id' => $id,
+                'is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
@@ -270,18 +275,18 @@ class UsersController extends AppController
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
-        ->where([
-            'Users.id' => $userId,
-            'Users.is_deleted' => 0
-        ])
-        ->first();
+            ->where([
+                'Users.id' => $userId,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
 
         if (!$user) {
             return $this->redirect(['action' => 'index']);
         }
 
-         // 既読にする
-         $this->Users->Messages->updateAll(
+        // 既読にする
+        $this->Users->Messages->updateAll(
             [
                 'is_admin_read' => true
             ],
@@ -293,15 +298,15 @@ class UsersController extends AppController
         );
 
         $messages = $this->Users->Messages->find('all')
-        ->contain([
-            'Users',
-            'Staffs'
-        ])
-        ->where([
-            'Messages.user_id' => $user->id,
-            'Messages.is_deleted' => 0
-        ])
-        ->all();
+            ->contain([
+                'Users',
+                'Staffs'
+            ])
+            ->where([
+                'Messages.user_id' => $user->id,
+                'Messages.is_deleted' => 0
+            ])
+            ->all();
 
         $this->set(compact('messages', 'user'));
     }
@@ -392,18 +397,18 @@ class UsersController extends AppController
     {
         if ($this->request->is('post')) {
             $file = $this->request->getData('csv_file');
-            
+
             if ($file && $file->getError() === UPLOAD_ERR_OK) {
                 $filename = $file->getClientFilename();
                 $extension = pathinfo($filename, PATHINFO_EXTENSION);
-                
+
                 if (strtolower($extension) !== 'csv') {
                     $this->Flash->error(__('CSVファイルを選択してください。'));
                     return;
                 }
-                
+
                 $result = $this->importCsvData($file);
-                
+
                 if ($result['success']) {
                     $this->Flash->success(__('CSVインポートが完了しました。成功: {0}件, エラー: {1}件', $result['success_count'], $result['error_count']));
                     return $this->redirect(['action' => 'index']);
@@ -422,7 +427,7 @@ class UsersController extends AppController
                 $this->Flash->error(__('ファイルのアップロードに失敗しました。'));
             }
         }
-        
+
         // スタッフを配列で取得
         $staffs = $this->Users->Staffs->find('list', [
             'keyField' => 'id',
@@ -431,7 +436,7 @@ class UsersController extends AppController
                 'is_deleted' => 0
             ]
         ])->toArray();
-        
+
         $param = $this->request->getQuery();
         $this->set(compact('staffs', 'param'));
     }
@@ -445,7 +450,7 @@ class UsersController extends AppController
     {
         $filename = 'users_import_template.csv';
         $filepath = WWW_ROOT . 'uploads' . DS . $filename;
-        
+
         // ファイルが存在するかチェック
         if (!file_exists($filepath)) {
             $this->Flash->error(__('テンプレートファイルが見つかりません。'));
@@ -509,7 +514,7 @@ class UsersController extends AppController
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
         $this->set(compact('comparedImage', 'users', 'param'));
     }
-    
+
 
     /**
      * Delete method
@@ -574,7 +579,8 @@ class UsersController extends AppController
      * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function customerInformations($id = null){
+    public function customerInformations($id = null)
+    {
         $user = $this->Users->find('all')
             ->contain(['Staffs'])
             ->where([
@@ -588,20 +594,20 @@ class UsersController extends AppController
         }
 
         $habit = $this->Habits->find('all')
-        ->where([
-            'user_id' => $id,
-        ])
-        ->first();
+            ->where([
+                'user_id' => $id,
+            ])
+            ->first();
 
         if (!$habit) {
             $habit = $this->Habits->newEntity(['user_id' => $id]);
         }
 
         $purpose = $this->Purposes->find('all')
-        ->where([
-            'user_id' => $id,
-        ])
-        ->first();
+            ->where([
+                'user_id' => $id,
+            ])
+            ->first();
 
         if (!$purpose) {
             $purpose = $this->Purposes->newEntity(['user_id' => $id]);
@@ -613,10 +619,10 @@ class UsersController extends AppController
             ->toArray();
 
         $mention = $this->Mentions->find('all')
-        ->where([
-            'user_id' => $id,
-        ])
-        ->first();
+            ->where([
+                'user_id' => $id,
+            ])
+            ->first();
 
         if (!$mention) {
             $mention = $this->Mentions->newEntity(['user_id' => $id]);
@@ -659,7 +665,29 @@ class UsersController extends AppController
         $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'eventType', 'habit', 'purpose', 'bodyDatas', 'mention', 'consults', 'selfdata', 'differences'));
     }
 
-    public function customerMain($id = null){
+    private function sendEmail($user)
+    {
+
+        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "karute", []]);
+        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ryota0246@gmail.com", "karute", []]);
+        $staff = $this->Staffs->find('all')
+            ->where([
+                'id' => $user->staff_id,
+            ])
+            ->first();
+        if ($staff) {
+            if ($staff->email) {
+                $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", $staff->email, "karute", []]);
+            } else {
+                $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
+            }
+        } else {
+            $this->Flash->error(__('担当講師が設定されていません'));
+        }
+    }
+
+    public function customerMain($id = null)
+    {
         $user = $this->Users->find('all')
             ->contain(['Staffs'])
             ->where([
@@ -687,12 +715,13 @@ class UsersController extends AppController
 
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('更新しました。'));
+                $this->sendEmail($user);
 
                 $param = $this->request->getQuery();
 
                 return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
             }
-            
+
             // エラーの詳細を出力
             $errorMessage = 'データを登録できませんでした。';
             if ($user->getErrors()) {
@@ -735,39 +764,40 @@ class UsersController extends AppController
         $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
     }
 
-    public function habits($id = null) 
+    public function habits($id = null)
     {
         $habit = $this->Habits->find('all')
             ->where(['user_id' => $id])
             ->first();
-    
+
         $user = $this->Users->find('all')
             ->where(['id' => $id, 'is_deleted' => 0])
             ->first();
-    
+
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
-    
+
             if (!$habit) {
                 $habit = $this->Habits->newEmptyEntity();
                 $data['user_id'] = $id;  // user_id をセットし忘れない
             }
-    
+
             $habit = $this->Habits->patchEntity($habit, $data);
-    
+
             $param = $this->request->getQuery();
             if ($this->Habits->save($habit)) {
                 $this->Flash->success(__('更新しました。'));
-    
-    
+                $this->sendEmail($user);
+
+
                 return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
             return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
         }
-    
+
         $param = $this->request->getQuery();
-    
+
         $this->set(compact('user', 'habit', 'param'));
     }
 
@@ -776,34 +806,35 @@ class UsersController extends AppController
         $purpose = $this->Purposes->find('all')
             ->where(['user_id' => $id])
             ->first();
-    
+
         $user = $this->Users->find('all')
             ->where(['id' => $id, 'is_deleted' => 0])
             ->first();
-    
+
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
-    
+
             if (!$purpose) {
                 $purpose = $this->Purposes->newEmptyEntity();
                 $data['user_id'] = $id;  // user_id をセットし忘れない
             }
-    
+
             $purpose = $this->Purposes->patchEntity($purpose, $data);
-    
+
             $param = $this->request->getQuery();
             if ($this->Purposes->save($purpose)) {
                 $this->Flash->success(__('更新しました。'));
-    
-    
+                $this->sendEmail($user);
+
+
                 return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
             return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
         }
-    
+
         $param = $this->request->getQuery();
-    
+
         $this->set(compact('user', 'purpose', 'param'));
     }
 
@@ -836,6 +867,7 @@ class UsersController extends AppController
             }
 
             $this->Flash->success(__('ボディデータを保存しました。'));
+            $this->sendEmail($user);
             return $this->redirect(['action' => 'customerInformations', $id]);
         }
 
@@ -876,6 +908,7 @@ class UsersController extends AppController
 
             if ($this->Mentions->save($mention)) {
                 $this->Flash->success(__('更新しました。'));
+                $this->sendEmail($user);
 
                 $param = $this->request->getQuery();
 
@@ -905,7 +938,7 @@ class UsersController extends AppController
             $connection->begin();
 
             try {
-                foreach ((array)$dataList as $data) {
+                foreach ((array) $dataList as $data) {
                     if (!empty($data['id'])) {
                         // --- Update existing consult ---
                         $consult = $this->Consults->get($data['id']);
@@ -932,6 +965,7 @@ class UsersController extends AppController
                 }
 
                 $connection->commit();
+                $this->sendEmail($user);
                 $this->Flash->success(__('保存しました。'));
             } catch (\Exception $e) {
                 $connection->rollback();
@@ -997,6 +1031,7 @@ class UsersController extends AppController
         }
 
         $this->Flash->success('自己データを保存しました。');
+        $this->sendEmail($user);
         return $this->redirect(['action' => 'customerInformations', $id]);
     }
 
@@ -1005,12 +1040,13 @@ class UsersController extends AppController
         $this->request->allowMethod(['post', 'put']);
 
         $data = $this->request->getData('differences');
+        $user = $this->Users->get($userId);
         if (!$data) {
             $this->Flash->error('データが送信されませんでした。');
             return $this->redirect(['action' => 'customerInformations', $userId]);
         }
 
-        foreach ((array)$data as $item) {
+        foreach ((array) $data as $item) {
             if (!empty($item['id'])) {
                 // --- Update existing difference ---
                 $difference = $this->Differences->get($item['id']);
@@ -1022,8 +1058,14 @@ class UsersController extends AppController
 
             $fieldsToUpdate = [];
             foreach ([
-                'milestone', 'category', 'target1', 'target2',
-                'evaluation1', 'evaluation2', 'comment1', 'comment2'
+                'milestone',
+                'category',
+                'target1',
+                'target2',
+                'evaluation1',
+                'evaluation2',
+                'comment1',
+                'comment2'
             ] as $field) {
                 if (array_key_exists($field, $item)) {
                     $fieldsToUpdate[$field] = $item[$field];
@@ -1039,6 +1081,7 @@ class UsersController extends AppController
         }
 
         $this->Flash->success('成果差分が保存されました。');
+        $this->sendEmail($user);
         return $this->redirect(['action' => 'customerInformations', $userId]);
     }
 
@@ -1058,18 +1101,18 @@ class UsersController extends AppController
         $errors = [];
 
         $lastUser = $this->Users->find()
-        ->select(['id'])
-        ->orderDesc('id')
-        ->first();
+            ->select(['id'])
+            ->orderDesc('id')
+            ->first();
 
         $nextMemberNumber = $lastUser ? $lastUser->id + 3000000 + 1 : 1;
-        
+
         // データベース接続を取得
         $connection = $this->Users->getConnection();
-        
+
         // トランザクション開始
         $connection->begin();
-        
+
         try {
             // CSVファイルを読み込み
             $handle = fopen($file->getStream()->getMetadata('uri'), 'r');
@@ -1077,13 +1120,13 @@ class UsersController extends AppController
                 $connection->rollback();
                 return ['success' => false, 'success_count' => 0, 'error_count' => 0, 'errors' => ['ファイルを開けませんでした。']];
             }
-            
+
             // BOMを除去
             $bom = fread($handle, 3);
             if ($bom !== "\xEF\xBB\xBF") {
                 rewind($handle);
             }
-            
+
             // ヘッダー行を読み込み
             $headers = fgetcsv($handle);
             if (!$headers) {
@@ -1091,24 +1134,24 @@ class UsersController extends AppController
                 $connection->rollback();
                 return ['success' => false, 'success_count' => 0, 'error_count' => 0, 'errors' => ['CSVファイルの形式が正しくありません。']];
             }
-            
+
             $lineNumber = 1;
             $hasErrors = false;
             $memberNumber = $nextMemberNumber;
-            
+
             while (($data = fgetcsv($handle)) !== false) {
                 $lineNumber++;
-                
+
                 if (count($data) !== count($headers)) {
                     $errorCount++;
                     $errors[] = "行{$lineNumber}: カラム数が一致しません。";
                     $hasErrors = true;
                     continue;
                 }
-                
+
                 // データの検証と変換
                 $userData = $this->validateAndTransformCsvData($data, $lineNumber, $memberNumber);
-                
+
                 if (isset($userData['error'])) {
                     $errorCount++;
                     $errors[] = $userData['error'];
@@ -1117,12 +1160,12 @@ class UsersController extends AppController
                 }
 
                 $memberNumber++;
-                
+
                 // ユーザーの保存
                 try {
                     $user = $this->Users->newEmptyEntity();
                     $user = $this->Users->patchEntity($user, $userData);
-                    
+
                     if ($this->Users->save($user)) {
                         $successCount++;
                     } else {
@@ -1136,9 +1179,9 @@ class UsersController extends AppController
                     $hasErrors = true;
                 }
             }
-            
+
             fclose($handle);
-            
+
             // エラーがある場合はロールバック
             if ($hasErrors) {
                 $connection->rollback();
@@ -1149,17 +1192,17 @@ class UsersController extends AppController
                     'errors' => $errors
                 ];
             }
-            
+
             // 成功時はコミット
             $connection->commit();
-            
+
             return [
                 'success' => true,
                 'success_count' => $successCount,
                 'error_count' => $errorCount,
                 'errors' => $errors
             ];
-            
+
         } catch (\Exception $e) {
             // 予期しないエラーが発生した場合もロールバック
             $connection->rollback();
@@ -1182,7 +1225,7 @@ class UsersController extends AppController
     private function validateAndTransformCsvData($rowData, $lineNumber, $memberNumber)
     {
         $userData = [];
-        
+
         // メールアドレスの重複チェック
         $existingUser = $this->Users->find()
             ->where(['email' => $rowData[1]])
@@ -1204,7 +1247,7 @@ class UsersController extends AppController
         }
 
 
-        
+
         // データの変換 - 新しいCSV構造に合わせて修正
         $userData['member_number'] = $memberNumber;
         $userData['email'] = trim($rowData[1]);
@@ -1220,7 +1263,7 @@ class UsersController extends AppController
         $userData['course_id'] = !empty($rowData[10]) ? $this->getCourseId(trim($rowData[10])) : null;
         // 申し込み日時（タイムスタンプから）
         $userData['start_datetime'] = $this->getFirstDayOfNextMonth();
-        
+
         // デフォルト値の設定
         $userData['uuid'] = substr(bin2hex(random_bytes(30)), 0, 30);
         $userData['password'] = $this->getNextMonthString(); // 来月のYYYYMM形式をパスワードに設定
@@ -1229,10 +1272,10 @@ class UsersController extends AppController
         $userData['staff_plan'] = 0;
         $userData['is_deleted'] = 0;
         $userData['is_light_plan_first_event'] = 0;
-        
+
         // 担当講師のデフォルト設定
         $userData['staff_id'] = $this->getStaffId('SHOCO');
-        
+
         return $userData;
     }
 
@@ -1256,30 +1299,30 @@ class UsersController extends AppController
     private function parseDate($dateString)
     {
         $formats = ['Y-m-d', 'Y/m/d', 'd/m/Y', 'm/d/Y'];
-        
+
         foreach ($formats as $format) {
             $date = \DateTime::createFromFormat($format, $dateString);
             if ($date !== false) {
                 return new \Cake\I18n\FrozenDate($date);
             }
         }
-        
+
         return null;
     }
 
     private function createManagementNumber()
     {
         $lastUser = $this->Users->find('all')
-        ->order(['CAST(member_number AS UNSIGNED)' => 'DESC'])
-        ->first();
+            ->order(['CAST(member_number AS UNSIGNED)' => 'DESC'])
+            ->first();
 
         if (!$lastUser) {
             return '1';
         }
 
-        $lastNumber = (int)$lastUser->member_number;
-        $newNumber = (string)($lastNumber + 1);
-        
+        $lastNumber = (int) $lastUser->member_number;
+        $newNumber = (string) ($lastNumber + 1);
+
         return $newNumber;
     }
 
@@ -1293,7 +1336,7 @@ class UsersController extends AppController
                 ->where(['name' => 'SHOCO', 'is_deleted' => 0])
                 ->first();
         }
-        
+
         return $staff->id;
     }
 
@@ -1309,16 +1352,16 @@ class UsersController extends AppController
         if (empty($datetimeString)) {
             return new \Cake\I18n\FrozenTime();
         }
-        
+
         $formats = ['Y-m-d H:i:s', 'Y-m-d H:i', 'Y/m/d H:i:s', 'Y/m/d H:i'];
-        
+
         foreach ($formats as $format) {
             $datetime = \DateTime::createFromFormat($format, $datetimeString);
             if ($datetime !== false) {
                 return new \Cake\I18n\FrozenTime($datetime);
             }
         }
-        
+
         return null;
     }
 
