@@ -37,9 +37,9 @@ class LessonsTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->date('start_data')                      // 開催日（必須）
-            ->requirePresence('start_data', 'create')
-            ->notEmptyDate('start_data');
+            ->date('start_date')                      // 開催日（必須）
+            ->requirePresence('start_date', 'create')
+            ->notEmptyDate('start_date');
 
         $validator
             ->scalar('category')                   // 区分（例: 実践レッスン）

@@ -21,7 +21,8 @@ use Cake\ORM\Entity;
 class Lesson extends Entity
 {
     protected $_accessible = [
-        'start_data' => true,
+        'start_date' => true,
+        'user_id' => true,
         'category' => true,
         'staff_id' => true,
         'applicant_name' => true,
