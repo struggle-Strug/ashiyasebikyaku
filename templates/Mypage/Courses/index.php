@@ -122,11 +122,11 @@
                     <div class="timeline-panel">
                         <div class="timeline-heading">
                             <h5 class="card-title" style="margin-bottom:5px"><span class="label label-primary">４</span>
-                            目標設定シートの作成</h5>
+                            目標設定シートの作成（初回）</h5>
                         </div>
                         <div class="timeline-body">
                             <p class="description" style="margin-bottom:10px">
-                                <small>受講開始前までに目標作成シートを作成し、事務局へ提出をお願いします</small>
+                                <small>受講開始前までに<a href="<?= $this->Url->build(['controller' => 'Purposes', 'action' => 'index']); ?>">目標設定シートの作成</a>を作成し、事務局へ提出をお願いします</small>
                             </p>
                         </div>
                     </div>

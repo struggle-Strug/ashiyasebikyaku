@@ -127,6 +127,13 @@
                             <p>初めての方へ</p>
                         </a>
                     </li>
+                    <li class="<?php if ($this->request->getParam('controller') == 'Purposes')
+                        echo 'active'; ?>">
+                        <a href="<?= $this->Url->build(['controller' => 'Purposes', 'action' => 'index']); ?>">
+                            <i class="fa-solid fa-check"></i>
+                            <p>目標設定シート</p>
+                        </a>
+                    </li>
                     <li class="<?php if ($this->request->getParam('controller') == 'Videos')
                         echo 'active'; ?>">
                         <a href="<?= $this->Url->build(['controller' => 'Videos', 'action' => 'index']); ?>">

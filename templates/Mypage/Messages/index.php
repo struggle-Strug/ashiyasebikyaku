@@ -60,8 +60,11 @@
                         </li>
                     <?php elseif ($message->sender == '2') : // 講師 ?>
                         <li class="other">
-                            <div class="avatar">
-                                <img src="/img/face2.png">
+                            <div style="display: inline-block;">
+                                <div class="avatar" style="margin: auto;">
+                                    <img src="/img/face2.png">
+                                </div>
+                                <small><?= h($message->staff->name) ?></small>
                             </div>
                             <div class="msg msg-staff">
                                 <?php if ($message->file_path): ?>
