@@ -27,37 +27,28 @@
         <?= $this->Form->button('CSV作成', ['class' => 'btn btn-primary']) ?>
       </div>
     </div>
-    <div class="card mt-3 shadow-sm">
-      <div class="card-header bg-light">
-          <h5 class="mb-0">
-              <i class="fa fa-file-csv text-warning"></i> 生成済みCSVファイル
-          </h5>
-      </div>
-      <div class="card-body">
-          <?php if (empty($files)): ?>
-              <div class="alert alert-info mb-0">
-                  <i class="fa fa-info-circle"></i> 現在、ダウンロード可能なCSVはありません。
-              </div>
-          <?php else: ?>
+    <?php if (!empty($generatedFiles)): ?>
+      <div class="card mt-3 shadow-sm">
+          <div class="card-header bg-light">
+              <h5 class="mb-0">
+                  <i class="fa fa-file-csv text-warning"></i> 生成済みCSVファイル
+              </h5>
+          </div>
+          <div class="card-body">
               <div class="list-group">
-                  <?php foreach ($files as $file): ?>
+                  <?php foreach ($generatedFiles as $file): ?>
                       <div class="list-group-item d-flex justify-content-between align-items-center">
-                          <div>
-                              <i class="fa fa-file-alt text-success"></i>
-                              <span class="ml-2"><?= h($file) ?></span>
-                          </div>
+                          <span><i class="fa fa-file-alt text-success"></i> <?= h($file) ?></span>
                           <a href="<?= $this->Url->build(['action' => 'downloadExportFile', $file]) ?>"
                             class="btn btn-outline-primary btn-sm">
-                              <i class="fa fa-download"></i> ダウンロード
+                            <i class="fa fa-download"></i> ダウンロード
                           </a>
                       </div>
                   <?php endforeach; ?>
               </div>
-          <?php endif; ?>
+          </div>
       </div>
-  </div>
-
-
+    <?php endif; ?>
     <?= $this->Form->end() ?>
   </div>
 </div>
