@@ -32,7 +32,15 @@ class CustomerCsvsController extends AppController
     public function index()
     {
         $param = $this->request->getQuery();
-        $this->set(compact('param'));
+
+        $exportDir = WWW_ROOT . 'files' . DS . 'exports' . DS;
+        $files = [];
+
+        if (is_dir($exportDir)) {
+            $files = array_values(array_diff(scandir($exportDir), ['.', '..']));
+        }
+
+        $this->set(compact('param', 'files'));
     }
 
     public function exportCustomerCsv()
@@ -211,6 +219,19 @@ class CustomerCsvsController extends AppController
         return $this->redirect($this->referer());
     }
     
+    public function downloadExportFile($filename)
+    {
+        $filePath = WWW_ROOT . 'files' . DS . 'exports' . DS . $filename;
 
+        if (!file_exists($filePath)) {
+            $this->Flash->error('指定されたファイルは存在しません。');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        return $this->response->withFile(
+            $filePath,
+            ['download' => true, 'name' => $filename]
+        );
+    }
 
 }
