@@ -31,118 +31,205 @@ class LessonsController extends AppController
     }
 
     public function index()
-{
-    $csvData = [];
-    $csvErrors = [];
-    $param = $this->request->getQuery();
+    {
+        $csvData = [];
+        $csvErrors = [];
+        $param = $this->request->getQuery();
 
-    if ($this->request->is('post') && !empty($this->request->getData('csv_file'))) {
-        $file = $this->request->getData('csv_file');
-        $filename = $file->getClientFilename();
-        $mediaType = $file->getClientMediaType();
+        // CSV upload logic remains the same
+        if ($this->request->is('post') && !empty($this->request->getData('csv_file'))) {
+            $file = $this->request->getData('csv_file');
+            $filename = $file->getClientFilename();
+            $mediaType = $file->getClientMediaType();
 
-        if (
-            preg_match('/\.csv$/i', $filename) ||
-            in_array($mediaType, ['text/csv', 'application/vnd.ms-excel', 'application/octet-stream'])
-        ) {
-            $savedName = 'uploaded_lessons.csv';
-            $filePath = WWW_ROOT . 'files' . DS . $savedName;
+            if (
+                preg_match('/\.csv$/i', $filename) ||
+                in_array($mediaType, ['text/csv', 'application/vnd.ms-excel', 'application/octet-stream'])
+            ) {
+                $savedName = 'uploaded_lessons.csv';
+                $filePath = WWW_ROOT . 'files' . DS . $savedName;
 
-            $folder = new Folder(WWW_ROOT . 'files', true, 0755);
-            $file->moveTo($filePath);
+                $folder = new Folder(WWW_ROOT . 'files', true, 0755);
+                $file->moveTo($filePath);
 
-            $csv = new \SplFileObject($filePath, 'r');
-            $csv->setFlags(\SplFileObject::READ_CSV | \SplFileObject::SKIP_EMPTY);
-            $csv->setCsvControl(',');
+                $csv = new \SplFileObject($filePath, 'r');
+                $csv->setFlags(\SplFileObject::READ_CSV | \SplFileObject::SKIP_EMPTY);
+                $csv->setCsvControl(',');
 
-            $allUsers = $this->Lessons->Users->find()
-                ->select(['id', 'last_name', 'first_name'])
-                ->where(['is_deleted' => 0])
-                ->enableHydration(false)
-                ->toArray();
+                $allUsers = $this->Lessons->Users->find()
+                    ->select(['Users.id', 'Users.last_name', 'Users.first_name', 'Users.staff_id'])
+                    ->contain([
+                        'Staffs' => function ($q) {
+                            return $q->select(['Staffs.id', 'Staffs.name']);
+                        }
+                    ])
+                    ->where(['Users.is_deleted' => 0])
+                    ->all();
 
-            $userMap = [];
-            foreach ($allUsers as $user) {
-                $fullName = $user['last_name'] . $user['first_name'];
-                $userMap[$fullName][] = $user;
-            }
-
-            $headerSkipped = false;
-            $tempData = [];
-            $rowNum = 1;
-            $sameNameCounters = [];
-
-            while (!$csv->eof()) {
-                $line = $csv->fgets();
-                $rowNum++;
-                if (!$line) continue;
-
-                $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
-                $row = str_getcsv($line);
-
-                if (!$headerSkipped) {
-                    $headerSkipped = true;
-                    continue;
+                $userMap = [];
+                foreach ($allUsers as $user) {
+                    $fullName = preg_replace('/\s+/u', '', $user->last_name . $user->first_name);
+                    $userMap[$fullName][] = $user;
                 }
 
-                if (empty($row[1]) || count($row) < 16) continue;
+                $allStaffs = $this->Lessons->Staffs->find()
+                    ->select(['id', 'name'])
+                    ->where(['is_deleted' => 0])
+                    ->all();
 
-                if (!empty($param['event_date']) && strpos($row[1], $param['event_date']) === false) {
-                    continue;
-                }
-                if (!empty($param['staff_id']) && strpos($row[6], $param['staff_id']) === false) {
-                    continue;
-                }
-
-                $userName = trim($row[3] ?? '');
-                $category = isset($row[15]) ? trim($row[15]) : '';
-
-                if ($userName === '') {
-                    $csvErrors[] = "行{$rowNum}: 名前が空欄です。";
+                $staffMap = [];
+                foreach ($allStaffs as $staff) {
+                    $staffMap[trim($staff->name) . '先生'] = $staff->id;
                 }
 
-                if ($category === '') {
-                    $csvErrors[] = "行{$rowNum}: 区分が空欄です。";
+                $headerSkipped = false;
+                $tempData = [];
+                $rowNum = 1;
+                $sameNameCounters = [];
+                
+                while (!$csv->eof()) {
+                    $line = $csv->fgets();
+                    $rowNum++;
+                    if (!$line) continue;
+
+                    $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
+                    $row = str_getcsv($line);
+
+                    if (!$headerSkipped) {
+                        $headerSkipped = true;
+                        continue;
+                    }
+
+                    if (empty($row[1]) || count($row) < 16) {
+                        $this->Flash->error('ファイルが空または不正確です。');
+                        return $this->redirect($this->referer());
+                    }
+
+                    $eventDate = trim($row[1] ?? '');
+                    $userName = trim($row[3] ?? '');
+                    $staffName = trim($row[6] ?? '');
+                    $category = isset($row[15]) ? trim($row[15]) : '';
+
+                    if ($userName === '') {
+                        $csvErrors[] = "行" . ($rowNum - 1) . ": 名前が空欄です。";
+                    }
+                    if ($category === '') {
+                        $csvErrors[] = "行" . ($rowNum - 1) . ": 区分が空欄です。";
+                    }
+
+                    $normalizedUserName = preg_replace('/\s+/u', '', $userName);
+                    $userId = null;
+                    $validStaff = false;
+                    $staffId = $staffMap[$staffName] ?? null;
+
+                    if (!isset($userMap[$normalizedUserName])) {
+                        $csvErrors[] = "行" . ($rowNum - 1) . ": ユーザー「{$userName}」はデータが存在しません。";
+                    } else {
+                        $matchedUsers = $userMap[$normalizedUserName];
+                        foreach ($matchedUsers as $u) {
+                            if (!empty($u->staff_id) &&
+                                !empty($u->staff) &&
+                                $u->staff->name . "先生" === $staffName) {
+                                $validStaff = true;
+                                $userId = $u->id;
+                                break;
+                            }
+                        }
+
+                        if (!$validStaff) {
+                            $csvErrors[] = "行" . ($rowNum - 1) . ": 講師「{$staffName}」はユーザー「{$userName}」の担当講師ではありません。";
+                        }
+                    }
+
+                    $normalizedDate = null;
+                    if (!empty($eventDate)) {
+                        $normalizedDate = FrozenDate::parseDate(str_replace('/', '-', $eventDate), 'yyyy-MM-dd');
+                    }
+
+                    $displayName = $userName;
+                    if (isset($userMap[$normalizedUserName]) && count($userMap[$normalizedUserName]) > 1) {
+                        $sameNameCounters[$normalizedUserName] = ($sameNameCounters[$normalizedUserName] ?? 0) + 1;
+                        $displayName .= $sameNameCounters[$normalizedUserName];
+                    }
+
+                    $categoryMap = [
+                        "実践レッスン" => 1,
+                        "脳バグレッスン" => 2,
+                        "個別コンサル" => 3,
+                    ];
+                    
+                    $mappedCategory = $categoryMap[$category] ?? null; 
+
+                    $tempData[] = [
+                        'user_id' => $userId,
+                        'start_date' => $normalizedDate,
+                        'category' => $mappedCategory,
+                        'staff_id' => $staffId,
+                        'applicant_name' => $displayName,
+                    ];
                 }
 
-                $displayName = $userName;
-                if (isset($userMap[$userName]) && count($userMap[$userName]) > 1) {
-                    $sameNameCounters[$userName] = ($sameNameCounters[$userName] ?? 0) + 1;
-                    $displayName .= $sameNameCounters[$userName];
+                if (empty($csvErrors)) {
+                    $connection = $this->Lessons->getConnection();
+                    $connection->begin();
+                    try {
+                        foreach ($tempData as $data) {
+                            if (empty($data['user_id']) || empty($data['staff_id'])) {
+                                continue;
+                            }
+                            $lesson = $this->Lessons->newEntity($data);
+                            $this->Lessons->saveOrFail($lesson);
+                        }
+                        $connection->commit();
+                        $csvData = $tempData;
+                        $this->Flash->success(sprintf(
+                            'CSVを正常に読み込み、新しいレッスンデータを%d件登録しました。',
+                            count($csvData)
+                        ));
+                    } catch (\Exception $e) {
+                        $connection->rollback();
+                        $this->Flash->error('データ保存中にエラーが発生しました: ' . $e->getMessage());
+                    }
                 }
-
-                $tempData[] = [
-                    'event_date' => $row[1] ?? '',
-                    'category' => $category,
-                    'staff' => $row[6] ?? '',
-                    'user' => $displayName,
-                    'original_user' => $userName,
-                ];
-            }
-
-            if (empty($csvErrors)) {
-                $csvData = $tempData;
-                $this->Flash->success('CSVを正常に読み込みました。');
             } else {
-                $this->Flash->error('CSVにエラーがあります。修正して再度アップロードしてください。');
+                $this->Flash->error('CSVファイルをアップロードしてください。');
             }
-        } else {
-            $this->Flash->error('CSVファイルをアップロードしてください。');
         }
+
+        $staffs = $this->Lessons->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => ['is_deleted' => 0],
+        ])->toArray();
+
+        $listOptions = Configure::read('ADMINLESSONOPTIONS');
+
+        $conditions = [];
+
+        if (!empty($param['event_date'])) {
+            $conditions['Lessons.start_date'] = FrozenDate::parseDate($param['event_date'], 'yyyy-MM-dd');
+        }
+        if (!empty($param['category'])) {
+            $conditions['Lessons.category'] = $param['category'];
+        }
+        if (!empty($param['staff_id'])) {
+            $conditions['Lessons.staff_id'] = $param['staff_id'];
+        }
+
+        $query = $this->Lessons->find('all')
+            ->contain(['Users', 'Staffs'])
+            ->where($conditions)
+            ->order(['Lessons.start_date' => 'desc']);
+
+        $this->paginate = [
+            'limit' => 20,
+            'order' => ['Lessons.start_date' => 'desc'],
+        ];
+
+        $lessons = $this->paginate($query);
+
+        $this->set(compact('csvData', 'csvErrors', 'lessons', 'param', 'staffs', 'listOptions'));
     }
-
-    $staffs = $this->Lessons->Staffs->find('list', [
-        'keyField' => 'name',
-        'valueField' => 'name',
-        'conditions' => ['is_deleted' => 0],
-    ])->toArray();
-
-    $listOptions = Configure::read('ADMINLESSONOPTIONS');
-
-    $this->set(compact('csvData', 'csvErrors', 'param', 'staffs', 'listOptions'));
-}
-
-
 
     public function addConsult()
     {

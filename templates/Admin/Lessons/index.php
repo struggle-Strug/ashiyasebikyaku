@@ -99,7 +99,6 @@
 </div>
 <?= $this->Form->end() ?>
 
-<?php if (!empty($csvData)): ?>
 <div class="card">
     <div class="card-body">
         <table class="table table-bordered table-striped">
@@ -113,19 +112,19 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($csvData as $row): ?>
+                <?php foreach ($lessons as $row): ?>
                     <tr>
-                        <td><?= h(date('Y-m-d', strtotime($row['event_date']))) ?></td>
-                        <td><?= h($row['category']) ?></td>
-                        <td><?= h($row['staff']) ?></td>
-                        <td><?= h($row['user']) ?></td>
+                        <td><?= h(date('Y-m-d', strtotime($row['start_date']))) ?></td>
+                        <td><?= h($listOptions[$row['category']]) ?></td>
+                        <td><?= h($row->staff->name) ?></td>
+                        <td><?= h($row->user->last_name) ?> <?= h($row->user->first_name) ?></td>
                         <td>
                             <a href="<?= $this->Url->build([
                                 'action' => 'addConsult',
                                 '?' => [
-                                    'name' => $row['original_user'], // ✅ use clean name (no suffix)
-                                    'staff' => $row['staff'],
-                                    'event_date' => date('Y-m-d', strtotime($row['event_date'])),
+                                    'name' => $row->user->last_name . $row->user->first_name,
+                                    'staff' => $row->staff->name,
+                                    'event_date' => date('Y-m-d', strtotime($row['start_date'])),
                                     'category' => $row['category']
                                 ]
                             ]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">登録</a>
@@ -135,9 +134,10 @@
             </tbody>
         </table>
     </div>
+    <div class="card-footer clearfix">
+        <?= $this->element('pagination'); ?>
+    </div>
 </div>
-<?php endif; ?>
-<!-- /.card -->
 <?= $this->Form->end() ?>
 <script>
 </script>
