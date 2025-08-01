@@ -269,7 +269,7 @@
                             </td>
                             <td>
                                 <select name="consults[<?= $index ?>][category]" class="form-control">
-                                    <?php foreach ($eventType as $val => $label): ?>
+                                    <?php foreach (["1" => '実践レッスン', "2" => '脳バグレッスン', "3" => '個別コンサル'] as $val => $label): ?>
                                         <option value="<?= $val ?>" <?= $consultItem->category == $val ? 'selected' : '' ?>>
                                             <?= h($label) ?>
                                         </option>
@@ -278,9 +278,7 @@
                             </td>
                             <?php foreach (['theme', 'instruction', 'note', 'next_step'] as $field): ?>
                                 <td>
-                                    <textarea name="consults[<?= $index ?>][<?= $field ?>]" class="form-control">
-                                        <?= h($consultItem->$field) ?>
-                                    </textarea>
+                                    <textarea name="consults[<?= $index ?>][<?= $field ?>]" class="form-control"><?= h($consultItem->$field) ?></textarea>
                                 </td>
                             <?php endforeach; ?>
                             <td>
