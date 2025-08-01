@@ -668,7 +668,7 @@ class UsersController extends AppController
     private function sendEmail($user)
     {
         // 固定のメールアドレスに送信
-        // $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "karute", ["user" => $user]]);
+        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "karute", ["user" => $user]]);
         $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ryota0246@gmail.com", "karute", ["user" => $user]]);
         
         // すべてのスタッフにメールを送信（メールアドレスが設定されている場合のみ）

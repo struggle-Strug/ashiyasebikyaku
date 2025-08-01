@@ -237,7 +237,7 @@ class LessonsController extends AppController
     private function sendEmail($user)
     {
         // 固定のメールアドレスに送信
-        // $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "karute", ["user" => $user]]);
+        $this->getMailer('App')->send('sendGridEmail', ["【レッスン管理】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "consults", ["user" => $user]]);
         $this->getMailer('App')->send('sendGridEmail', ["【レッスン管理】美脚セルフデザインプログラム", "ryota0246@gmail.com", "consults", ["user" => $user]]);
         
         // すべてのスタッフにメールを送信（メールアドレスが設定されている場合のみ）
