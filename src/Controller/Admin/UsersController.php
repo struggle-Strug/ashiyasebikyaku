@@ -499,6 +499,12 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
+        $user = $this->Users->find('all')
+        ->where([
+            'Users.id' => $comparedImage->user_id,
+            'Users.is_deleted' => 0
+        ])
+        ->first();
         if ($this->request->is(['patch', 'post', 'put'])) {
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
             if ($this->ComparedImages->save($comparedImage)) {
@@ -509,7 +515,7 @@ class UsersController extends AppController
             $this->Flash->error(__('コメントを更新できませんでした。'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users', 'param'));
+        $this->set(compact('comparedImage', 'users', 'param', 'user'));
     }
     
 
