@@ -667,22 +667,23 @@ class UsersController extends AppController
 
     private function sendEmail($user)
     {
-
-        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "karute", []]);
-        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ryota0246@gmail.com", "karute", []]);
-        $staff = $this->Staffs->find('all')
+        // 固定のメールアドレスに送信
+        // $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "karute", ["user" => $user]]);
+        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ryota0246@gmail.com", "karute", ["user" => $user]]);
+        
+        // すべてのスタッフにメールを送信（メールアドレスが設定されている場合のみ）
+        $allStaffs = $this->Staffs->find('all')
             ->where([
-                'id' => $user->staff_id,
+                'is_deleted' => 0,
+                'email IS NOT' => null,
+                'email !=' => ''
             ])
-            ->first();
-        if ($staff) {
-            if ($staff->email) {
-                $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", $staff->email, "karute", []]);
-            } else {
-                $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
+            ->all();
+        
+        foreach ($allStaffs as $staff) {
+            if (!empty($staff->email)) {
+                $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", $staff->email, "karute", ["user" => $user]]);
             }
-        } else {
-            $this->Flash->error(__('担当講師が設定されていません'));
         }
     }
 
