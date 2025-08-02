@@ -19,6 +19,8 @@ use Cake\Filesystem\File;
  */
 class LessonsController extends AppController
 {
+    use MailerAwareTrait;
+
     public function initialize(): void
     {
         parent::initialize();
@@ -28,6 +30,7 @@ class LessonsController extends AppController
         $this->loadModel('EventEntries');
         $this->loadModel('Users');
         $this->loadModel('Consults');
+        $this->loadModel('Staffs');
     }
 
     public function index()
@@ -231,6 +234,28 @@ class LessonsController extends AppController
         $this->set(compact('csvData', 'csvErrors', 'lessons', 'param', 'staffs', 'listOptions'));
     }
 
+    private function sendEmail($user)
+    {
+        // 固定のメールアドレスに送信
+        $this->getMailer('App')->send('sendGridEmail', ["【レッスン管理】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "consults", ["user" => $user]]);
+        $this->getMailer('App')->send('sendGridEmail', ["【レッスン管理】美脚セルフデザインプログラム", "ryota0246@gmail.com", "consults", ["user" => $user]]);
+        
+        // すべてのスタッフにメールを送信（メールアドレスが設定されている場合のみ）
+        $allStaffs = $this->Staffs->find('all')
+            ->where([
+                'is_deleted' => 0,
+                'email IS NOT' => null,
+                'email !=' => ''
+            ])
+            ->all();
+        
+        foreach ($allStaffs as $staff) {
+            if (!empty($staff->email)) {
+                $this->getMailer('App')->send('sendGridEmail', ["【レッスン管理】美脚セルフデザインプログラム", $staff->email, "consults", ["user" => $user]]);
+            }
+        }
+    }
+
     public function addConsult($id = null)
     {
         $name = $this->request->getQuery('name');   // CSVから来る: 例「山田太郎」
@@ -281,6 +306,7 @@ class LessonsController extends AppController
 
                 if ($this->Consults->save($newConsult)) {
                     $this->Flash->success("{$eventDate} のコンサルデータを作成しました。");
+                    $this->sendEmail($user);
                     $consults[] = $newConsult;
                 } else {
                     $this->Flash->error('初期コンサルデータの作成に失敗しました。');
