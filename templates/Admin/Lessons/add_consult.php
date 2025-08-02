@@ -58,10 +58,18 @@
                 <?php endforeach ?>
             </tbody>
         </table>
-
-        <div class="text-right mt-2">
-            <button type="button" class="btn btn-secondary" id="add-row">行追加</button>
-            <button type="submit" class="btn btn-success ml-2">保存</button>
+        
+        <div class="d-flex justify-content-between align-items-center mt-2">
+            <div>
+                <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index']) ?>" id="back-btn">
+                    <i class="fas fa-arrow-circle-left"></i> 戻る
+                </a>
+            </div>
+            <div>
+                <button type="button" class="btn btn-secondary" id="add-row">行追加</button>
+                <button type="button" class="btn btn-danger ml-2" id="remove-row">行削除</button>
+                <button type="submit" class="btn btn-success ml-2">保存</button>
+            </div>
         </div>
 
         <?= $this->Form->end() ?>
@@ -161,11 +169,11 @@ $(document).ready(function() {
         const index = table.find('tr').length;
         const today = '<?= date('Y/m/d') ?>';
         const todayVal = '<?= date('Y-m-d') ?>';
-        const newRow = `<tr>
+        const newRow = `<tr class="new-row">
             <input type="hidden" name="consults[${index}][date]" value="${todayVal}">
             <td>${today}</td>
-            <td class="editable-category" data-field="category" data-index="${index}">個別コンサルティング
-                <input type="hidden" name="consults[${index}][category]" value="2">
+            <td class="editable-category" data-field="category" data-index="${index}">
+                <input type="hidden" name="consults[${index}][category]" value="">
             </td>
             <td class="editable" data-field="theme" data-index="${index}"><span></span>
                 <input type="hidden" name="consults[${index}][theme]" value="">
@@ -185,5 +193,14 @@ $(document).ready(function() {
         </tr>`;
         table.append(newRow);
     });
+
+    $('#remove-row').on('click', function() {
+        const table = $('#consult-table tbody');
+        const newRows = table.find('tr.new-row');
+        if (newRows.length > 0) {
+            newRows.last().remove();
+        }
+    });
+
 });
 </script>
