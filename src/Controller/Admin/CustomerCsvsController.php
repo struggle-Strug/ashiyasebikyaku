@@ -32,6 +32,7 @@ class CustomerCsvsController extends AppController
     public function index()
     {
         $param = $this->request->getQuery();
+
         $this->set(compact('param'));
     }
 
@@ -41,12 +42,12 @@ class CustomerCsvsController extends AppController
         $end = $this->request->getQuery('end_date');
 
         $listOptions = Configure::read('ADMINLESSONOPTIONS');
-    
+
         if (!$start || !$end) {
             $this->Flash->error('開始日と終了日を指定してください。');
             return $this->redirect($this->referer());
         }
-    
+
         try {
             $startDate = new FrozenDate($start);
             $endDate = new FrozenDate($end);
@@ -54,7 +55,7 @@ class CustomerCsvsController extends AppController
             $this->Flash->error('日付の形式が正しくありません。');
             return $this->redirect($this->referer());
         }
-    
+
         $users = $this->Users->find()
             ->where([
                 'Users.is_deleted' => 0,
@@ -72,18 +73,20 @@ class CustomerCsvsController extends AppController
                 'Differences'
             ])
             ->all();
-    
+
         $exportDir = WWW_ROOT . 'files' . DS . 'exports' . DS;
         if (!is_dir($exportDir)) {
             mkdir($exportDir, 0775, true);
         }
-    
+
         $timestamp = date('Ymd_His');
-    
+        $generatedFiles = [];
+
         /** ───────────────
          * 1️⃣ Main CSV for all users
          * ─────────────── */
-        $mainFile = fopen($exportDir . "顧客カルテ一覧_{$timestamp}.csv", 'w+');
+        $mainFileName = "顧客カルテ一覧_{$timestamp}.csv";
+        $mainFile = fopen($exportDir . $mainFileName, 'w+');
         fputcsv($mainFile, [
             '受講生ID', '氏名', 'カナ', 'コース', '生年月日',
             '住所', '開始日', '担当講師',
@@ -93,11 +96,11 @@ class CustomerCsvsController extends AppController
             '期間中の目標(容姿面)', '期間中の目標(機能面)', '未来のセルフイメージ',
             '次の2週間でやるワーク', '個別コンサルで相談したいこと'
         ]);
-    
+
         foreach ($users as $user) {
             $habit = $user->habits[0] ?? null;
             $purpose = $user->purposes[0] ?? null;
-    
+
             fputcsv($mainFile, [
                 $user->id,
                 $user->last_name . $user->first_name,
@@ -126,15 +129,17 @@ class CustomerCsvsController extends AppController
             ]);
         }
         fclose($mainFile);
-    
+        $generatedFiles[] = $mainFileName;
+
         /** ───────────────
          * 2️⃣ Individual CSVs for each user
          * ─────────────── */
         foreach ($users as $user) {
             $userName = $user->last_name . $user->first_name;
-    
+
             // 身体データ
-            $bodyFile = fopen($exportDir . "{$userName}_身体データ_{$timestamp}.csv", 'w+');
+            $bodyName = "{$userName}_身体データ_{$timestamp}.csv";
+            $bodyFile = fopen($exportDir . $bodyName, 'w+');
             fputcsv($bodyFile, ['日付', '足首', '足の甲', '縦アーチ', '横アーチ', '足指', '備考']);
             foreach ($user->body_datas as $body) {
                 fputcsv($bodyFile, [
@@ -148,9 +153,11 @@ class CustomerCsvsController extends AppController
                 ]);
             }
             fclose($bodyFile);
-    
+            $generatedFiles[] = $bodyName;
+
             // レッスン
-            $lessonFile = fopen($exportDir . "{$userName}_レッスン指導履歴_{$timestamp}.csv", 'w+');
+            $lessonName = "{$userName}_レッスン指導履歴_{$timestamp}.csv";
+            $lessonFile = fopen($exportDir . $lessonName, 'w+');
             fputcsv($lessonFile, ['開催日時', '区分', 'テーマ', '指導内容', '注意点', '申し送り事項', '担当講師']);
             foreach ($user->consults as $consult) {
                 fputcsv($lessonFile, [
@@ -164,9 +171,11 @@ class CustomerCsvsController extends AppController
                 ]);
             }
             fclose($lessonFile);
-    
+            $generatedFiles[] = $lessonName;
+
             // 自己認識
-            $selfFile = fopen($exportDir . "{$userName}_自己認識結果_{$timestamp}.csv", 'w+');
+            $selfName = "{$userName}_自己認識結果_{$timestamp}.csv";
+            $selfFile = fopen($exportDir . $selfName, 'w+');
             fputcsv($selfFile, [
                 '登録日', 'A.良い変化・成長', 'B.前回ワーク振り返り', 
                 'C.まだ変化なし', 'D.今の状態', 'E.次の2週間ワーク', 
@@ -185,9 +194,11 @@ class CustomerCsvsController extends AppController
                 ]);
             }
             fclose($selfFile);
-    
+            $generatedFiles[] = $selfName;
+
             // 差異結果
-            $diffFile = fopen($exportDir . "{$userName}_差異結果_{$timestamp}.csv", 'w+');
+            $diffName = "{$userName}_差異結果_{$timestamp}.csv";
+            $diffFile = fopen($exportDir . $diffName, 'w+');
             fputcsv($diffFile, [
                 'マイルストーン', '成果カテゴリ', '標準達成目安1', '標準達成目安2',
                 '評価1', '評価2', 'コメント1', 'コメント2'
@@ -205,12 +216,29 @@ class CustomerCsvsController extends AppController
                 ]);
             }
             fclose($diffFile);
+            $generatedFiles[] = $diffName;
         }
-    
-        $this->Flash->success('タイムスタンプ付きのカルテCSVを出力しました。files/exports フォルダを確認してください。');
-        return $this->redirect($this->referer());
-    }
-    
 
+        // Send to view
+        $this->set('generatedFiles', $generatedFiles);
+        $this->Flash->success('CSVファイルを生成しました。以下からダウンロードできます。');
+        $this->render('index');
+    }
+
+    
+    public function downloadExportFile($filename)
+    {
+        $filePath = WWW_ROOT . 'files' . DS . 'exports' . DS . $filename;
+
+        if (!file_exists($filePath)) {
+            $this->Flash->error('指定されたファイルは存在しません。');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        return $this->response->withFile(
+            $filePath,
+            ['download' => true, 'name' => $filename]
+        );
+    }
 
 }

@@ -1,0 +1,1 @@
+<?= h($user->last_name . $user->first_name) ?>さんのレッスン・コンサル時の指導履歴が更新されました。

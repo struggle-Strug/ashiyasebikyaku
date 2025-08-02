@@ -1,1 +1,1 @@
-顧客カルテが更新されました。
+<?= h($user->last_name . $user->first_name) ?>さんのカルテが更新されました。
