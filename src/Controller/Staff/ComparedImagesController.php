@@ -69,7 +69,7 @@ class ComparedImagesController extends AppController
             $comparedImages = $query->all();
         } else {
             $param['user_id'] = '';
-            $comparedImages = null;
+            $comparedImages = $query->all();
         }
 
         $users = $this->WeeklyReports->Users->find('list', [
