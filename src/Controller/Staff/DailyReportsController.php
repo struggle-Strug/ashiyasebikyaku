@@ -80,7 +80,7 @@ class DailyReportsController extends AppController
             'Users'
         ])
         ->where([
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
+            'Users.is_deleted' => 0,
         ])
         ->order([
             'DailyReports.report_date' => 'desc'
@@ -112,7 +112,6 @@ class DailyReportsController extends AppController
                 return $q->get('fullname');
             },
             'conditions' => [
-                'staff_id' => $this->Authentication->getIdentity()->id,
                 'is_deleted' => 0
             ],
             'order' => [
