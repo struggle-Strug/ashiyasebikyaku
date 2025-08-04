@@ -82,8 +82,6 @@ class ComparedImagesController extends AppController
             $param['user_id'] = '';
         }
 
-        debug($param);
-
         if (!empty($param['user_name'])) {
             $users = $this->ComparedImages->Users->find('all')
                 ->where([
