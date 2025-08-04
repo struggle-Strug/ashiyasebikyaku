@@ -65,6 +65,34 @@
   border: none;
 }
 
+/* 新しいスタイル: 表示画像用の背景色オーバーレイ */
+.image-display-container {
+  position: relative;
+  display: inline-block;
+}
+
+.image-background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  z-index: 1;
+}
+
+.target-overlay {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
+.subject-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
 </style>
 <?= $this->Form->end() ?>
 <div style="font-size: 24px; font-weight: bold;">画像選択</div>
@@ -72,12 +100,18 @@
     <div class="card-body">
         <div style="display: flex">
             <div id="target_image_display" style="width: 100px; height: 180px; margin-top: 24px; margin-bottom: 24px; margin-right: 24px;">
-                <div style="font-weight: bold; ">アフター画像</div>
-                <img src="" id="target_image_url" alt="target_image" style="max-width:100px; display: none; " />
+                <div style="font-weight: bold;">アフター画像</div>
+                <div class="image-display-container">
+                    <img src="" id="target_image_url" alt="target_image" style="max-width:100px; display: none;" />
+                    <div id="target_display_overlay" class="image-background-overlay target-overlay"></div>
+                </div>
             </div>
-            <div id="subject_image_display" style="width: 100px; height: 180px;  margin-top: 24px; margin-bottom: 24px; margin-right: 24px;">
-                <div style="font-weight: bold; ">ビフォー画像</div>
-                <img src="" id="subject_image_url" alt="subject_image" style="max-width:100px; display: none; " />
+            <div id="subject_image_display" style="width: 100px; height: 180px; margin-top: 24px; margin-bottom: 24px; margin-right: 24px;">
+                <div style="font-weight: bold;">ビフォー画像</div>
+                <div class="image-display-container">
+                    <img src="" id="subject_image_url" alt="subject_image" style="max-width:100px; display: none;" />
+                    <div id="subject_display_overlay" class="image-background-overlay subject-overlay"></div>
+                </div>
             </div>
         </div>
 
@@ -169,6 +203,31 @@
             }
         }
 
+        // 表示画像のオーバーレイを更新する関数
+        function updateDisplayOverlays() {
+            const targetOverlay = document.getElementById("target_display_overlay");
+            const subjectOverlay = document.getElementById("subject_display_overlay");
+            const targetImage = document.getElementById("target_image_url");
+            const subjectImage = document.getElementById("subject_image_url");
+
+            // アフター画像のオーバーレイ
+            if (selectedImageInfo.target.image_url !== "" && targetImage.style.display !== "none") {
+                targetOverlay.style.width = targetImage.offsetWidth + "px";
+                targetOverlay.style.height = targetImage.offsetHeight + "px";
+                targetOverlay.style.display = "flex";
+            } else {
+                targetOverlay.style.display = "none";
+            }
+
+            // ビフォー画像のオーバーレイ
+            if (selectedImageInfo.subject.image_url !== "" && subjectImage.style.display !== "none") {
+                subjectOverlay.style.width = subjectImage.offsetWidth + "px";
+                subjectOverlay.style.height = subjectImage.offsetHeight + "px";
+                subjectOverlay.style.display = "flex";
+            } else {
+                subjectOverlay.style.display = "none";
+            }
+        }
 
         function initLoad() {
             const target_image_url = "<?= $param["target_image"] ?>"
@@ -181,15 +240,27 @@
             selectedImageInfo.subject.id = subject_image_id
 
             if (target_image_url !== "") {
-                document.getElementById("target_image_url").style.display = "block"
-                document.getElementById("target_image_url").src = target_image_url
+                const targetImage = document.getElementById("target_image_url");
+                targetImage.style.display = "block";
+                targetImage.src = target_image_url;
+                
+                // 画像読み込み完了後にオーバーレイを更新
+                targetImage.onload = function() {
+                    updateDisplayOverlays();
+                };
             }
 
             if (subject_image_url !== "") {
-                document.getElementById("subject_image_url").style.display = "block";
-                document.getElementById("subject_image_url").src = subject_image_url
-
+                const subjectImage = document.getElementById("subject_image_url");
+                subjectImage.style.display = "block";
+                subjectImage.src = subject_image_url;
+                
+                // 画像読み込み完了後にオーバーレイを更新
+                subjectImage.onload = function() {
+                    updateDisplayOverlays();
+                };
             }
+
             Array.from(document.getElementsByClassName("image")).forEach(element => {
                 if (element.dataset.image === target_image_url) {
                     const mask = document.getElementById("mask_" + element.dataset.id);
@@ -278,26 +349,42 @@
 
                     if (selectedImageInfo.subject.id !== "") {
                         const mask = document.getElementById("mask_" + selectedImageInfo.subject.id);
-                        document.getElementById("subject_image_url").style.display = "block"
+                        const subjectImage = document.getElementById("subject_image_url");
+                        subjectImage.style.display = "block";
+                        
+                        // 画像読み込み完了後にオーバーレイとマスクを更新
+                        subjectImage.onload = function() {
+                            updateDisplayOverlays();
+                        };
+                        
                         mask.style.width = document.getElementById(selectedImageInfo.subject.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.subject.id).height + "px";
                         mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                         mask.style.display = "flex"
                         mask.textContent = "ビフォー";
                     } else {
-                        document.getElementById("subject_image_url").style.display = "none"
+                        document.getElementById("subject_image_url").style.display = "none";
+                        updateDisplayOverlays();
                     }
 
                     if (selectedImageInfo.target.id !== "") {
                         const mask = document.getElementById("mask_" + selectedImageInfo.target.id);
-                        document.getElementById("target_image_url").style.display = "block"
+                        const targetImage = document.getElementById("target_image_url");
+                        targetImage.style.display = "block";
+                        
+                        // 画像読み込み完了後にオーバーレイとマスクを更新
+                        targetImage.onload = function() {
+                            updateDisplayOverlays();
+                        };
+                        
                         mask.style.width = document.getElementById(selectedImageInfo.target.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.target.id).height + "px";
                         mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                         mask.style.display = "flex"
                         mask.textContent = "アフター"
                     } else {
-                        document.getElementById("target_image_url").style.display = "none"
+                        document.getElementById("target_image_url").style.display = "none";
+                        updateDisplayOverlays();
                     }
 
                 })
