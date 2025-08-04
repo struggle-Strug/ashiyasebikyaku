@@ -19,12 +19,7 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
-            </div>
-            <div class="col-md-3 mt-2">
-                <div class="input-group">
-                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id'], 'style' => 'margin-top: 1.75rem;']) ?>
-                </div>
+                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
             </div>
             <input type="text" name="target_image" id="target_image" style="display: none;"
                 value="<?= $param['target_image'] ?>" />
@@ -81,8 +76,6 @@
                 <table class="table table-bordered table-striped overflow-y: scroll">
                     <thead>
                         <tr>
-                        <th nowrap style="min-width:120px">会員名</th>
-                        <th nowrap style="min-width:120px">測定日</th>
                             <?php foreach ($photoName as $key => $name): ?>
                                 <th nowrap style="min-width:120px">
                                     <?= h($name) ?>
@@ -93,8 +86,6 @@
                     <tbody>
                         <?php foreach ($weeklyReports as $key => $weeklyReport): ?>
                             <tr>
-                            <td><?= $weeklyReport->user->last_name . ' ' . $weeklyReport->user->first_name ?></td>
-                            <td><?= $weeklyReport->report_date->format('Y年m月d日') ?></td>
                                 <?php foreach ($weeklyReport->photos as $photo): ?>
                                     <td>
                                         <?php if ($photo->image_url): ?>
