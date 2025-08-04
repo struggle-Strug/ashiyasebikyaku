@@ -34,9 +34,9 @@
                                     <div style="margin: 4px">
                                         <a href="<?= $this->Url->build(['action' => 'editComment', $comparedImage->id, '?' => $param]) ?>" class="btn btn-outline-primary btn-sm">コメント編集</a>
                                         <?php if ($comparedImage->active): ?>
-                                            <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                            <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
                                         <?php else: ?>
-                                            <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                            <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
                                         <?php endif ?>
                                     </div>
                                     <div style="margin: 4px">
@@ -56,7 +56,26 @@
                         </div>
                     </div>
             <?php endforeach ?>
-
         </div>
     </div>
+    <div class="card-footer">
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]); ?>"><i class="fas fa-arrow-circle-left"></i> 戻る</a>
+    </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Restore scroll
+    const savedScrollPos = sessionStorage.getItem("scrollPos");
+    if (savedScrollPos) {
+        window.scrollTo(0, parseInt(savedScrollPos));
+        sessionStorage.removeItem("scrollPos");
+    }
+
+    // Save scroll before leaving
+    document.querySelectorAll("a, button").forEach(el => {
+        el.addEventListener("click", () => {
+            sessionStorage.setItem("scrollPos", window.scrollY);
+        });
+    });
+});
+</script>
