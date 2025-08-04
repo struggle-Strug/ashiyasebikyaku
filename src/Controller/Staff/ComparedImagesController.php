@@ -45,9 +45,6 @@ class ComparedImagesController extends AppController
             ->contain([
                 'Users',
             ])
-            ->where([
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
-            ])
             ->order([
                 'ComparedImages.created' => 'desc'
             ]);
@@ -72,34 +69,6 @@ class ComparedImagesController extends AppController
         } else {
             $param['user_id'] = '';
             $comparedImages = $query->all();
-        }
-
-        if (!empty($param['user_name'])) {
-            $users = $this->ComparedImages->Users->find('all')
-                ->where([
-                    'OR' => [
-                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    ]
-                ])
-                ->extract('id')
-                ->toArray();
-        } else {
-            $param['user_name'] = '';
-        }
-
-        if (!empty($param['user_name']) && !empty($users)) {
-            $query->where(['ComparedImages.user_id IN' => $users]);
-            $comparedImages = $query->all();
-        } else if (!empty($param['user_name']) && empty($users)) {
-            $comparedImages = null;
-        } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
-            $param['user_name'] = '';
-            $comparedImages = null;
-        } else {
-            $param['user_name'] = '';
         }
 
         $users = $this->WeeklyReports->Users->find('list', [
@@ -164,8 +133,7 @@ class ComparedImagesController extends AppController
                 }
             ])
             ->where([
-                'WeeklyReports.is_draft' => 0,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'WeeklyReports.is_draft' => 0
             ])
             ->order([
                 'WeeklyReports.report_date' => 'desc'
@@ -203,37 +171,10 @@ class ComparedImagesController extends AppController
         // 会員
         if (!empty($param['user_id'])) {
             $query->where(['WeeklyReports.user_id' => $param['user_id']]);
+            $weeklyReports = $query->all();
         } else {
             $param['user_id'] = '';
-        }
-
-        if (!empty($param['user_name'])) {
-            $users = $this->WeeklyReports->Users->find('all')
-                ->where([
-                    'OR' => [
-                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    ]
-                ])->toArray();
-        } else {
-            $param['user_name'] = '';
-        }
-
-
-        if (!empty($param['user_name']) && !empty($users)) {
-            $userIds = array_column($users, 'id');
-            $query->where(['WeeklyReports.user_id IN' => $userIds]);
-            $weeklyReports = $query->all();
-        } else if (!empty($param['user_name']) && empty($users)) {
             $weeklyReports = null;
-        } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date']) && empty($param['target_image_id']) && empty($param['subject_image_id']) && empty($param['target_image']) && empty($param['subject_image'])) {
-            $param['user_name'] = '';
-            $weeklyReports = null;
-        } else {
-            $param['user_name'] = '';
-            $weeklyReports = $query->all();
         }
 
         $users = $this->WeeklyReports->Users->find('list', [
@@ -273,8 +214,6 @@ class ComparedImagesController extends AppController
         $param = $this->request->getQuery();
         $targetImage = $this->Photos->find("all");
         $subjectImage = $this->Photos->find("all");
-        $targetImageDate = "";
-        $subjectImageDate = "";
         $staff = $this->Authentication->getIdentity()->id;
         if (!empty($param["target_id"])) {
             $targetImage = $targetImage->where([
@@ -289,7 +228,6 @@ class ComparedImagesController extends AppController
                     if ($weeklyReport) {
                         $comparedImage->user_id = $weeklyReport->user_id;
                         $param['user'] = $weeklyReport->user_id;
-                        $targetImageDate = $weeklyReport->report_date;
                     }
                 }
         } else {
@@ -301,16 +239,11 @@ class ComparedImagesController extends AppController
                 "id" => $param["subject_id"]
             ])
                 ->first();
-            if ($subjectImage) {
-                $weeklyReport = $this->WeeklyReports->find()
-                    ->where(['id' => $subjectImage->weekly_report_id])
-                    ->first();
-                $subjectImageDate = $weeklyReport->report_date;
-            }
         } else {
             $subjectImage = null;
         }
-        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'staff', 'targetImageDate', 'subjectImageDate'));
+
+        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'staff'));
     }
 
     public function uploadComparedImage()
