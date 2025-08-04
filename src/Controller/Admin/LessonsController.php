@@ -256,7 +256,7 @@ class LessonsController extends AppController
         }
     }
 
-    public function addConsult()
+    public function addConsult($id = null)
     {
         $name = $this->request->getQuery('name');   // CSVから来る: 例「山田太郎」
         $staffName = $this->request->getQuery('staff');
@@ -264,6 +264,21 @@ class LessonsController extends AppController
         $category = $this->request->getQuery('category');
         $user = null;
         $consults = [];
+
+        // 1️⃣ 対象のレッスンがあれば is_open を true に更新
+        if (!empty($id)) {
+            $lesson = $this->Lessons->find()
+                ->where(['id' => $id])
+                ->first();
+
+            if ($lesson) {
+                $lesson->is_open = true;
+                if ($this->Lessons->save($lesson)) {
+                } else {
+                    $this->Flash->error("レッスン ID {$id} の更新に失敗しました。");
+                }
+            }
+        }
 
         // ユーザー検索（姓+名の結合で照合）
         if (!empty($name)) {
@@ -309,7 +324,9 @@ class LessonsController extends AppController
         // 区分リスト
         $listOptions = Configure::read('ADMINLESSONOPTIONS');
 
-        $this->set(compact('user', 'consults', 'staffs', 'listOptions', 'eventDate', 'staffName'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'consults', 'staffs', 'listOptions', 'eventDate', 'staffName', 'param'));
     }
 
 

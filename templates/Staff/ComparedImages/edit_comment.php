@@ -21,7 +21,7 @@
 
         <div class="row">
             <div class="col-md-12 text-right mt-2">
-                <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>">
+                <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', $user->id, '?' => $param]) ?>">
                     <i class="fas fa-arrow-circle-left"></i> 戻る
                 </a>
                 <button type="submit" class="btn btn-primary ml-2">

@@ -87,7 +87,7 @@ class WeeklyReportsController extends AppController
             }
         ])
         ->where([
-            'Users.staff_id' => $this->Authentication->getIdentity()->id,
+            'Users.is_deleted' => 0,
             'WeeklyReports.is_draft' => 0
         ])
         ->order([
@@ -125,7 +125,6 @@ class WeeklyReportsController extends AppController
                 return $q->get('fullname');
             },
             'conditions' => [
-                'staff_id' => $this->Authentication->getIdentity()->id,
                 'is_deleted' => 0
             ],
             'order' => [

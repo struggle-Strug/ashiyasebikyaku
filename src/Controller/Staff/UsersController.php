@@ -126,7 +126,6 @@ class UsersController extends AppController
         $user = $this->Users->find('all')
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -160,8 +159,9 @@ class UsersController extends AppController
 
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('更新しました。'));
+                $param = $this->request->getQuery();
 
-                return $this->redirect(['action' => 'index']);
+                return $this->redirect(['action' => 'index', '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
@@ -191,7 +191,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -225,7 +224,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -273,7 +271,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -319,7 +316,7 @@ class UsersController extends AppController
      * @return \Cake\Http\Response|null|void Redirects to index.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function pointDelete($id = null)
+    public function pointDelete($userId = null, $id = null)
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
@@ -332,7 +329,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -515,7 +511,7 @@ class UsersController extends AppController
 
         $query->order(['created' => 'desc']);
 
-        $comparedImages = $this->paginate($query);
+        $comparedImages = $query->all();
 
         $this->set(compact('comparedImages', 'param'));
     }
@@ -535,6 +531,12 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
+        $user = $this->Users->find('all')
+        ->where([
+            'Users.id' => $comparedImage->user_id,
+            'Users.is_deleted' => 0
+        ])
+        ->first();
         if ($this->request->is(['patch', 'post', 'put'])) {
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
             if ($this->ComparedImages->save($comparedImage)) {
@@ -545,7 +547,7 @@ class UsersController extends AppController
             $this->Flash->error(__('コメントを更新できませんでした。'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users', 'param', 'staff'));
+        $this->set(compact('comparedImage', 'users', 'param', 'staff', 'user'));
     }
     
 
@@ -586,7 +588,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
     }
 
@@ -601,7 +604,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信取り消し完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
 
     }

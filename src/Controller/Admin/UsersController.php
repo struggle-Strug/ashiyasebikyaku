@@ -308,7 +308,9 @@ class UsersController extends AppController
             ])
             ->all();
 
-        $this->set(compact('messages', 'user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('messages', 'user', 'param'));
     }
 
     /**
@@ -502,6 +504,12 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
+        $user = $this->Users->find('all')
+        ->where([
+            'Users.id' => $comparedImage->user_id,
+            'Users.is_deleted' => 0
+        ])
+        ->first();
         if ($this->request->is(['patch', 'post', 'put'])) {
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
             if ($this->ComparedImages->save($comparedImage)) {
@@ -512,7 +520,7 @@ class UsersController extends AppController
             $this->Flash->error(__('コメントを更新できませんでした。'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users', 'param'));
+        $this->set(compact('comparedImage', 'users', 'param', 'user'));
     }
 
 
@@ -553,7 +561,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
     }
 
@@ -568,7 +577,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信取り消し完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
 
     }
@@ -1153,9 +1163,11 @@ class UsersController extends AppController
                 // データの検証と変換
                 $userData = $this->validateAndTransformCsvData($data, $lineNumber, $memberNumber);
 
-                if (isset($userData['error'])) {
+                if (isset($userData['error']) && count($userData['error']) > 0) {
                     $errorCount++;
-                    $errors[] = $userData['error'];
+                    foreach ($userData['error'] as $error) {
+                        $errors[] = $error;
+                    }
                     $hasErrors = true;
                     continue;
                 }
@@ -1226,30 +1238,83 @@ class UsersController extends AppController
     private function validateAndTransformCsvData($rowData, $lineNumber, $memberNumber)
     {
         $userData = [];
+        $isError = false;
+        $errorMessage = ["error" => []];
 
         // メールアドレスの重複チェック
         $existingUser = $this->Users->find()
             ->where(['email' => $rowData[1]])
             ->first();
         if ($existingUser) {
-            return ['error' => "行{$lineNumber}: メールアドレスが既に登録されています。"];
+            $errorMessage["error"][] = "行{$lineNumber}: メールアドレスが既に登録されています。";
         }
 
         if ($rowData[1] == '') {
-            return ['error' => "行{$lineNumber}: メールアドレスが空です。"];
+            $errorMessage["error"][] = "行{$lineNumber}: メールアドレスが空です。";
         }
 
         if ($rowData[2] == '') {
-            return ['error' => "行{$lineNumber}: 姓が空です。"];
+            $errorMessage["error"][] = "行{$lineNumber}: 姓が空です。";
+        }
+
+        if ($rowData[3] == '') {
+            $errorMessage["error"][] = "行{$lineNumber}: 姓（カナ）が空です。";
         }
 
         if ($rowData[4] == '') {
-            return ['error' => "行{$lineNumber}: 名が空です。"];
+            $errorMessage["error"][] = "行{$lineNumber}: 名が空です。";
+        }
+
+        if ($rowData[5] == '') {
+            $errorMessage["error"][] = "行{$lineNumber}: 名（カナ）が空です。";
+        }
+
+        if ($rowData[6] == '') {
+            $errorMessage["error"][] = "行{$lineNumber}: 電話番号が空です。";
+        }
+
+        if ($rowData[7] == '') {
+            $errorMessage["error"][] = "行{$lineNumber}: 生年月日が空です。";
+        }
+
+        if ($rowData[8] == '') {
+            $errorMessage["error"][] = "行{$lineNumber}: 郵便番号が空です。";
+        } else {
+            if (!preg_match('/^\d{7}$/', $rowData[8])) {
+                $errorMessage["error"][] = "行{$lineNumber}: 郵便番号は7桁の数字で正しく記載してください。";
+            }
+        }
+
+        if ($rowData[9] == '') {
+            $errorMessage["error"][] = "行{$lineNumber}: 住所が空です。";
+        }
+
+        if ($rowData[10] == '') {
+            $errorMessage["error"][] = "行{$lineNumber}: プログラムが空です。";
+        }
+        
+        if ($rowData[13]) {
+            if ($rowData[13] != '男性' && $rowData[13] != '女性') {
+                $errorMessage["error"][] = "行{$lineNumber}: 性別が正しくありません。男性か女性を入力してください。";
+            }
+        }
+
+        if ($rowData[11]) {
+            if (!preg_match('/^\d{4}\/\d{2}\/\d{2}$/', $rowData[11])) {
+                $errorMessage["error"][] = "行{$lineNumber}: プログラム開始日の形式が正しくありません。YYYY/MM/DDの形式で入力してください。";
+            }
         }
 
 
 
+        if (count($errorMessage["error"]) > 0) {
+            $isError = true;
+            return $errorMessage;
+        }
+
+
         // データの変換 - 新しいCSV構造に合わせて修正
+        $userData['is_continue'] = 0;
         $userData['member_number'] = $memberNumber;
         $userData['email'] = trim($rowData[1]);
         $userData['last_name'] = trim($rowData[2]);
@@ -1257,25 +1322,23 @@ class UsersController extends AppController
         $userData['first_name'] = trim($rowData[4]);
         $userData['first_name_kana'] = trim($rowData[5]);
         $userData['tel'] = !empty($rowData[6]) ? trim($rowData[6]) : null;
-        $userData['birthday'] = $this->parseDate($rowData[7]);
-        $userData['zipcode'] = !empty($rowData[8]) ? trim($rowData[8]) : null;
+        $userData['birthday'] = !empty($rowData[7]) ? $this->parseDate($rowData[7]) : null;
+        $userData['zipcode'] = !empty($rowData[8]) ? str_replace('-', '', trim($rowData[8])) : null;
         $userData['address'] = !empty($rowData[9]) ? trim($rowData[9]) : null;
         $userData['note'] = "";
         $userData['course_id'] = !empty($rowData[10]) ? $this->getCourseId(trim($rowData[10])) : null;
-        // 申し込み日時（タイムスタンプから）
-        $userData['start_datetime'] = $this->getFirstDayOfNextMonth();
 
+        $userData['start_datetime'] = !empty($rowData[11]) ? $this->parseDate($rowData[11]) : $this->getFirstDayOfNextMonth();
+        $userData['end_datetime'] = !empty($rowData[15]) ? $this->parseDate($rowData[15]) : null;
+        $userData['staff_id'] = !empty($rowData[12]) ? $this->getStaffId(trim($rowData[12])) : $this->getStaffId('SHOCO');
+        $userData['sextype'] = !empty($rowData[13]) ? $this->getGender(trim($rowData[13])) : 1;
         // デフォルト値の設定
         $userData['uuid'] = substr(bin2hex(random_bytes(30)), 0, 30);
-        $userData['password'] = $this->getNextMonthString(); // 来月のYYYYMM形式をパスワードに設定
-        $userData['is_continue'] = 1;
+        $userData['password'] = !empty($rowData[14]) ? trim($rowData[14]) : $this->getNextMonthString();
         $userData['light_plan'] = 0;
         $userData['staff_plan'] = 0;
         $userData['is_deleted'] = 0;
         $userData['is_light_plan_first_event'] = 0;
-
-        // 担当講師のデフォルト設定
-        $userData['staff_id'] = $this->getStaffId('SHOCO');
 
         return $userData;
     }
@@ -1289,6 +1352,17 @@ class UsersController extends AppController
             }
         }
         return 2;
+    }
+
+    private function getGender($gender)
+    {
+        if ($gender == '男性') {
+            return 2;
+        } elseif ($gender == '女性') {
+            return 1;
+        } else {
+            return 1;
+        }
     }
 
     /**
