@@ -119,15 +119,18 @@
                         <td><?= h($row->staff->name) ?></td>
                         <td><?= h($row->user->last_name) ?> <?= h($row->user->first_name) ?></td>
                         <td>
-                            <a href="<?= $this->Url->build([
-                                'action' => 'addConsult',
-                                '?' => [
-                                    'name' => $row->user->last_name . $row->user->first_name,
-                                    'staff' => $row->staff->name,
-                                    'event_date' => date('Y-m-d', strtotime($row['start_date'])),
-                                    'category' => $row['category']
-                                ]
-                            ]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">登録</a>
+                          <?php if($row->is_open == 0) : ?>
+                              <a href="<?= $this->Url->build([
+                                  'action' => 'addConsult',
+                                  $row->id,
+                                  '?' => [
+                                      'name' => $row->user->last_name . $row->user->first_name,
+                                      'staff' => $row->staff->name,
+                                      'event_date' => date('Y-m-d', strtotime($row['start_date'])),
+                                      'category' => $row['category']
+                                  ]
+                              ]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">登録</a>
+                            <?php endif ?>
                         </td>
                     </tr>
                 <?php endforeach ?>
