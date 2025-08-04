@@ -126,7 +126,6 @@ class UsersController extends AppController
         $user = $this->Users->find('all')
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -191,7 +190,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -225,7 +223,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -273,7 +270,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
@@ -319,7 +315,7 @@ class UsersController extends AppController
      * @return \Cake\Http\Response|null|void Redirects to index.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function pointDelete($id = null)
+    public function pointDelete($userId = null, $id = null)
     {
         // ユーザー情報の確認
         $user = $this->Users->find('all')
@@ -332,7 +328,6 @@ class UsersController extends AppController
             ])
             ->where([
                 'Users.id' => $userId,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
                 'Users.is_deleted' => 0
             ])
             ->first();
