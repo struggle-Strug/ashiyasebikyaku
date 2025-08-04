@@ -346,12 +346,12 @@
 <?php if ($targetImage["created"] === null): ?>
 <input type="hidden" value="" id="target-image-date">
 <?php else: ?>
-    <input type="hidden" value="<?= $targetImage["created"]->format('Y年m月d日') ?>" id="target-image-date">
+    <input type="hidden" value="<?= $targetImageDate->format('Y年m月d日') ?>" id="target-image-date">
 <?php endif ?>
 <?php if ($subjectImage["created"] === null): ?>
 <input type="hidden" value="" id="subject-image-date">
 <?php else: ?>
-    <input type="hidden" value="<?= $subjectImage["created"]->format('Y年m月d日') ?>" id="subject-image-date">
+    <input type="hidden" value="<?= $subjectImageDate->format('Y年m月d日') ?>" id="subject-image-date">
 <?php endif ?>
 
 <script defer>
