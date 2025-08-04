@@ -67,12 +67,6 @@
                                         <div class="modal-body" style="position: relative;">
                                             <video style="width: 100%; height: auto;" id="video" autoplay
                                                 playsinline></video>
-                                            <!-- <video  controls
-                                                style="width: 100%; height: auto; display: none;"></video> -->
-                                            <img id="photo"
-                                                style="position: absolute; top: 0; left: 0; object-fit: fill; width: 100%; height: 100%"
-                                                src="/img/weekly-reports-img/weekly-report-<?= $requestPhotoNumber ?>.png">
-                                            <div><?= $captureComment[$requestPhotoNumber] ?></div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-primary" id="switchCamera">カメラ切り替え</button>
@@ -116,10 +110,6 @@
                                         <div class="modal-body" style="position: relative;">
                                             <video style="width: 100%; height: auto;" id="video" autoplay
                                                 playsinline></video>
-                                            <img id="photo"
-                                                style="position: absolute; top: 0; left: 0; object-fit: fill; width: 100%; height: 100%"
-                                                src="/img/weekly-reports-img/weekly-report-<?= $requestPhotoNumber ?>.png">
-                                            <div><?= $captureComment[$requestPhotoNumber] ?></div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-primary" id="switchCamera">カメラ切り替え</button>
