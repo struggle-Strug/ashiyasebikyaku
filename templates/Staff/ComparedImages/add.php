@@ -39,11 +39,13 @@
 <style>
 
 .uniform-image {
-  width: 100px;
+  height: 100px;   /* 高さを固定 */
+  width: auto;     /* 横幅は自動調整 */
   display: block;
   margin: 0;
   padding: 0;
   border: none;
+  object-fit: contain; /* アスペクト比を維持 */
 }
 
 </style>
@@ -94,7 +96,7 @@
                                             <?php else: ?>
                                                 <div style="position: relative;" data-image="<?= $photo->image_url ?>"
                                                     data-date="<?= $photo->created ?>">
-                                                    <img src="<?= $photo->image_url ?>" class="selectElem image uniform-image" style="max-width:100%;"
+                                                    <img src="<?= $photo->image_url ?>" class="selectElem image uniform-image"
                                                         data-image="<?= $photo->image_url ?>" data-date="<?= $photo->created ?>"
                                                         data-id="<?= $photo->id ?>" id="<?= $photo->id ?>">
                                                     <div id="mask_<?= $photo->id ?>" data-image="<?= $photo->image_url ?>"
