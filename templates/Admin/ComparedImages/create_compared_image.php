@@ -355,6 +355,9 @@
 
 <script defer>
 $(function () {
+if (window.__COMPARED_EDITOR_INITIALIZED__) return;
+window.__COMPARED_EDITOR_INITIALIZED__ = true;
+
 // イベントタイプを定義
 var start_event = 'ontouchstart' in window ? "touchstart" : "mousedown";
 var move_event = 'ontouchstart' in window ? "touchmove" : "mousemove";
@@ -1585,6 +1588,14 @@ function uploadImageToServer(pngDataUrl) {
     formData.append('user_name', user_name);
 
     const nextURL = "/admin/compared-images?start_report_date=&end_report_date=&user_id=" + user + "&user_name=" + user_name;
+
+    function cleanupEditor() {
+        $('.comment-box').remove();
+        $('#unifiedDrawingCanvas').empty();
+        currentPathElement = null;
+        selectedComment = null;
+        window.linetoStr = '';
+    }
     
     $.ajax({
         type: 'POST',
@@ -1598,6 +1609,7 @@ function uploadImageToServer(pngDataUrl) {
         processData: false,
         success: function (data, dataType) {
             document.getElementById("error").innerHTML = data;
+            cleanupEditor(); 
             location.href = nextURL;
         },
         error: function (e) {
