@@ -19,8 +19,12 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+                <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
             </div>
+            <div class="col-md-3 mt-2">
+                <div class="input-group">
+                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id'], 'style' => 'margin-top: 1.75rem;']) ?>
+                </div>            </div>
             <input type="text" name="target_image" id="target_image" style="display: none;"
                 value="<?= $param['target_image'] ?>" />
             <input type="text" name="subject_image" id="subject_image" style="display: none;"
