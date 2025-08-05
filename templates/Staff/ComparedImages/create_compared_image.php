@@ -346,12 +346,12 @@
 <?php if ($targetImage["created"] === null): ?>
 <input type="hidden" value="" id="target-image-date">
 <?php else: ?>
-    <input type="hidden" value="<?= $targetImageDate->format('Y年m月d日') ?>" id="target-image-date">
+    <input type="hidden" value="<?= $targetImage["created"]->format('Y年m月d日') ?>" id="target-image-date">
 <?php endif ?>
 <?php if ($subjectImage["created"] === null): ?>
 <input type="hidden" value="" id="subject-image-date">
 <?php else: ?>
-    <input type="hidden" value="<?= $subjectImageDate->format('Y年m月d日') ?>" id="subject-image-date">
+    <input type="hidden" value="<?= $subjectImage["created"]->format('Y年m月d日') ?>" id="subject-image-date">
 <?php endif ?>
 
 <script defer>
@@ -1577,15 +1577,13 @@ function uploadImageToServer(pngDataUrl) {
     const target_image = "<?= $param["target_id"] ?>"
     const subject_image = "<?= $param["subject_id"] ?>"
     const user = "<?= $param["user"] ?>"
-    const user_name = "<?= $param["user_name"] ?>"
     formData.append('image', pngDataUrl);
     formData.append('staff_id', staff_id);
     formData.append('staff_comment', comment);
     formData.append('target_image', target_image);
     formData.append('subject_image', subject_image);
     formData.append('user_id', user);
-    formData.append('user_name', user_name);
-    const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user + "&user_name=" + user_name;
+    const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user;
     $.ajax({
         type: 'POST',
                 url: "<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'uploadComparedImage', 'prefix' => 'Staff']); ?>",
