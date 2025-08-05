@@ -207,6 +207,19 @@ $(document).ready(function() {
         
         sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify(scrollData));
     }
+
+    function scrollToTop() {
+        // ページ全体をトップにスクロール
+        $('html, body').scrollTop(0);
+        
+        // テーブルコンテナもトップにスクロール
+        tableContainer.scrollTop(0);
+        
+        // 保存されたスクロール位置をクリア
+        sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+    }
+
+
     
     // Function to restore scroll position
     function restoreScrollPosition() {
@@ -259,7 +272,8 @@ $(document).ready(function() {
     
     // Save scroll position when clicking pagination links
     $('.pagination a').on('click', function() {
-        saveScrollPosition();
+        // ページネーションクリック時はスクロールをトップに移動
+        scrollToTop();
     });
     
     // Save scroll position when submitting search form
