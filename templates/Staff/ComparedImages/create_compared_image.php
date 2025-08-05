@@ -275,7 +275,7 @@
     </div>
     
     <!-- 統合された描画エリア -->
-    <div class="unified-drawing-container p-sm-2 p-md-4" id="unified-container">
+    <div class="unified-drawing-container" id="unified-container">
         <!-- 画像表示エリア -->
         <div class="image-display-area">
             <!-- 左の画像セクション -->

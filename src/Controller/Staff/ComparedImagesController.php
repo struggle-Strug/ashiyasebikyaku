@@ -72,6 +72,34 @@ class ComparedImagesController extends AppController
             $comparedImages = $query->all();
         }
 
+        if (!empty($param['user_name'])) {
+            $users = $this->ComparedImages->Users->find('all')
+                ->where([
+                    'OR' => [
+                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
+                    ]
+                ])
+                ->extract('id')
+                ->toArray();
+        } else {
+            $param['user_name'] = '';
+        }
+
+        if (!empty($param['user_name']) && !empty($users)) {
+            $query->where(['ComparedImages.user_id IN' => $users]);
+            $comparedImages = $query->all();
+        } else if (!empty($param['user_name']) && empty($users)) {
+            $comparedImages = $query->all();
+        } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
+            $param['user_name'] = '';
+            $comparedImages = $query->all();
+        } else {
+            $param['user_name'] = '';
+        }
+
         $users = $this->WeeklyReports->Users->find('list', [
             'keyField' => 'id',
             'valueField' => function ($q) {
