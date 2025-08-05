@@ -53,13 +53,13 @@
                                     <div style="margin: 4px">
                                         <a href="<?= $this->Url->build(['action' => 'editComment', $comparedImage->id, '?' => $param]) ?>" class="btn btn-outline-primary btn-sm">コメント編集</a>
                                         <?php if ($comparedImage->active): ?>
-                                            <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                            <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
                                         <?php else: ?>
-                                            <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                            <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
                                         <?php endif ?>
                                     </div>
                                     <div style="margin: 4px">
-                                        <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                        <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?>
                                     </div>
                                 </div>
                             </h5>
@@ -104,5 +104,40 @@
                 slidesPerView: 2,
             },
         },
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.querySelector(".table-responsive-md");
+
+        if (container) {
+            const savedScroll = sessionStorage.getItem("innerScrollPos");
+            if (savedScroll !== null) {
+                container.scrollTop = parseInt(savedScroll, 10);
+            }
+
+            container.addEventListener("scroll", function () {
+                sessionStorage.setItem("innerScrollPos", container.scrollTop);
+            });
+        }
+
+        document.querySelectorAll("a, button").forEach(el => {
+            el.addEventListener("click", () => {
+                const c = document.querySelector(".table-responsive-md");
+                if (c) sessionStorage.setItem("innerScrollPos", c.scrollTop);
+            });
+        });
+    });
+
+    window.addEventListener("pageshow", function () {
+        const container = document.querySelector(".table-responsive-md");
+        if (container) {
+            const savedScroll = sessionStorage.getItem("innerScrollPos");
+            if (savedScroll !== null) {
+                // Use a small delay to wait for content render
+                setTimeout(() => {
+                    container.scrollTop = parseInt(savedScroll, 10);
+                }, 50);
+            }
+        }
     });
 </script>

@@ -308,7 +308,9 @@ class UsersController extends AppController
             ])
             ->all();
 
-        $this->set(compact('messages', 'user'));
+        $param = $this->request->getQuery();
+
+        $this->set(compact('messages', 'user', 'param'));
     }
 
     /**
@@ -502,6 +504,12 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
+        $user = $this->Users->find('all')
+        ->where([
+            'Users.id' => $comparedImage->user_id,
+            'Users.is_deleted' => 0
+        ])
+        ->first();
         if ($this->request->is(['patch', 'post', 'put'])) {
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
             if ($this->ComparedImages->save($comparedImage)) {
@@ -512,7 +520,7 @@ class UsersController extends AppController
             $this->Flash->error(__('コメントを更新できませんでした。'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users', 'param'));
+        $this->set(compact('comparedImage', 'users', 'param', 'user'));
     }
 
 
@@ -553,7 +561,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
     }
 
@@ -568,7 +577,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信取り消し完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
 
     }

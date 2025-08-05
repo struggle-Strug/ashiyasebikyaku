@@ -58,11 +58,13 @@
 }
 
 .uniform-image {
-  width: 100px;
+  height: 100px;   /* 高さを固定 */
+  width: auto;     /* 横幅は自動調整 */
   display: block;
   margin: 0;
   padding: 0;
   border: none;
+  object-fit: contain; /* アスペクト比を維持 */
 }
 
 /* 新しいスタイル: 表示画像用の背景色オーバーレイ */
