@@ -356,6 +356,8 @@
 
 <script defer>
 $(function () {
+if (window.__COMPARED_EDITOR_INITIALIZED__) return;
+window.__COMPARED_EDITOR_INITIALIZED__ = true;
 // イベントタイプを定義
 var start_event = 'ontouchstart' in window ? "touchstart" : "mousedown";
 var move_event = 'ontouchstart' in window ? "touchmove" : "mousemove";
@@ -1584,6 +1586,13 @@ function uploadImageToServer(pngDataUrl) {
     formData.append('subject_image', subject_image);
     formData.append('user_id', user);
     const nextURL = "/staff/compared-images?start_report_date=&end_report_date=&user_id=" + user;
+    function cleanupEditor() {
+        $('.comment-box').remove();
+        $('#unifiedDrawingCanvas').empty();
+        currentPathElement = null;
+        selectedComment = null;
+        window.linetoStr = '';
+    }
     $.ajax({
         type: 'POST',
                 url: "<?= $this->Url->build(['controller' => 'ComparedImages', 'action' => 'uploadComparedImage', 'prefix' => 'Staff']); ?>",
@@ -1596,6 +1605,7 @@ function uploadImageToServer(pngDataUrl) {
         processData: false,
         success: function (data, dataType) {
             document.getElementById("error").innerHTML = data;
+            cleanupEditor();
             location.href = nextURL;
         },
         error: function (e) {
