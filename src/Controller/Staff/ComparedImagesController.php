@@ -34,6 +34,7 @@ class ComparedImagesController extends AppController
         parent::initialize();
         $this->loadModel('WeeklyReports'); // ユーザーテーブルを読み込む
         $this->loadModel('Photos');
+        $this->loadModel('Users');
     }
     public function index()
     {
@@ -44,9 +45,6 @@ class ComparedImagesController extends AppController
         $query = $this->ComparedImages->find('all')
             ->contain([
                 'Users',
-            ])
-            ->where([
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
             ])
             ->order([
                 'ComparedImages.created' => 'desc'
@@ -164,8 +162,7 @@ class ComparedImagesController extends AppController
                 }
             ])
             ->where([
-                'WeeklyReports.is_draft' => 0,
-                'Users.staff_id' => $this->Authentication->getIdentity()->id,
+                'WeeklyReports.is_draft' => 0
             ])
             ->order([
                 'WeeklyReports.report_date' => 'desc'
@@ -203,37 +200,10 @@ class ComparedImagesController extends AppController
         // 会員
         if (!empty($param['user_id'])) {
             $query->where(['WeeklyReports.user_id' => $param['user_id']]);
+            $weeklyReports = $query->all();
         } else {
             $param['user_id'] = '';
-        }
-
-        if (!empty($param['user_name'])) {
-            $users = $this->WeeklyReports->Users->find('all')
-                ->where([
-                    'OR' => [
-                        'Users.last_name LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.first_name LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.last_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                        'Users.first_name_kana LIKE' => '%' . $param['user_name'] . '%',
-                    ]
-                ])->toArray();
-        } else {
-            $param['user_name'] = '';
-        }
-
-
-        if (!empty($param['user_name']) && !empty($users)) {
-            $userIds = array_column($users, 'id');
-            $query->where(['WeeklyReports.user_id IN' => $userIds]);
-            $weeklyReports = $query->all();
-        } else if (!empty($param['user_name']) && empty($users)) {
             $weeklyReports = null;
-        } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date']) && empty($param['target_image_id']) && empty($param['subject_image_id']) && empty($param['target_image']) && empty($param['subject_image'])) {
-            $param['user_name'] = '';
-            $weeklyReports = null;
-        } else {
-            $param['user_name'] = '';
-            $weeklyReports = $query->all();
         }
 
         $users = $this->WeeklyReports->Users->find('list', [
@@ -273,8 +243,6 @@ class ComparedImagesController extends AppController
         $param = $this->request->getQuery();
         $targetImage = $this->Photos->find("all");
         $subjectImage = $this->Photos->find("all");
-        $targetImageDate = "";
-        $subjectImageDate = "";
         $staff = $this->Authentication->getIdentity()->id;
         if (!empty($param["target_id"])) {
             $targetImage = $targetImage->where([
@@ -289,7 +257,6 @@ class ComparedImagesController extends AppController
                     if ($weeklyReport) {
                         $comparedImage->user_id = $weeklyReport->user_id;
                         $param['user'] = $weeklyReport->user_id;
-                        $targetImageDate = $weeklyReport->report_date;
                     }
                 }
         } else {
@@ -301,16 +268,11 @@ class ComparedImagesController extends AppController
                 "id" => $param["subject_id"]
             ])
                 ->first();
-            if ($subjectImage) {
-                $weeklyReport = $this->WeeklyReports->find()
-                    ->where(['id' => $subjectImage->weekly_report_id])
-                    ->first();
-                $subjectImageDate = $weeklyReport->report_date;
-            }
         } else {
             $subjectImage = null;
         }
-        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'staff', 'targetImageDate', 'subjectImageDate'));
+
+        $this->set(compact('param', 'targetImage', 'subjectImage', 'comparedImage', 'staff'));
     }
 
     public function uploadComparedImage()
@@ -391,6 +353,12 @@ class ComparedImagesController extends AppController
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
+        $user = $this->Users->find('all')
+        ->where([
+            'Users.id' => $comparedImage->user_id,
+            'Users.is_deleted' => 0
+        ])
+        ->first();
         if ($this->request->is(['patch', 'post', 'put'])) {
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
             if ($this->ComparedImages->save($comparedImage)) {
@@ -401,7 +369,7 @@ class ComparedImagesController extends AppController
             $this->Flash->error(__('コメントを更新できませんでした。'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users', 'param', 'staff'));
+        $this->set(compact('comparedImage', 'users', 'param', 'staff', 'user'));
     }
 
     /**
@@ -427,7 +395,9 @@ class ComparedImagesController extends AppController
         } else {
             $this->Flash->error(__('比較画像が削除されませんでした。'));
         }
-        return $this->redirect(['action' => 'index']);
+        $param = $this->request->getQuery();
+
+        return $this->redirect(['action' => 'index', '?' => $param]);
     }
 
     public function setActive($id = null) {
@@ -463,7 +433,9 @@ class ComparedImagesController extends AppController
             $this->Flash->error(__('送信に失敗しました。'));
         }
 
-        return $this->redirect(['action' => 'index']);
+        $param = $this->request->getQuery();
+
+        return $this->redirect(['action' => 'index', '?' => $param]);
     }
 
     public function setNotActive($id = null) {
@@ -476,7 +448,9 @@ class ComparedImagesController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信取り消し完了いたしました。'));
-            return $this->redirect(['action' => 'index']);
+            $param = $this->request->getQuery();
+
+            return $this->redirect(['action' => 'index', '?' => $param]);
         }
         
     }

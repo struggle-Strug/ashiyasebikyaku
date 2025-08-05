@@ -40,7 +40,7 @@ class UsersController extends AppController
             ->contain([
                 'Messages' => function (Query $q) {
                     return $q->where([
-                        'Messages.sender' => '1',
+                        'Messages.sender IN' => ['1', '3'],
                     ]);
                 },
                 'UserPoints' => function (Query $q) {
@@ -159,8 +159,9 @@ class UsersController extends AppController
 
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('更新しました。'));
+                $param = $this->request->getQuery();
 
-                return $this->redirect(['action' => 'index']);
+                return $this->redirect(['action' => 'index', '?' => $param]);
             }
             $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
         }
@@ -386,16 +387,17 @@ class UsersController extends AppController
 
         $connection->execute(
             "UPDATE messages 
-            SET is_read = JSON_ARRAY_APPEND(is_read, '$', :staffId)
-            WHERE user_id = :userId
-            AND sender = '1'
-            AND (is_read IS NULL OR NOT JSON_CONTAINS(is_read, :staffIdJson))",
+             SET is_read = JSON_ARRAY_APPEND(is_read, '$', :staffId)
+             WHERE user_id = :userId
+               AND sender IN ('1', '3')
+               AND (is_read IS NULL OR NOT JSON_CONTAINS(is_read, :staffIdJson))",
             [
                 'staffId' => $staffId,
                 'userId' => $user->id,
                 'staffIdJson' => $staffIdJson
             ]
         );
+        
 
         // メッセージを取得
         $messages = $this->Users->Messages->find('all')
@@ -510,7 +512,7 @@ class UsersController extends AppController
 
         $query->order(['created' => 'desc']);
 
-        $comparedImages = $this->paginate($query);
+        $comparedImages = $query->all();
 
         $this->set(compact('comparedImages', 'param'));
     }
@@ -530,6 +532,12 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
+        $user = $this->Users->find('all')
+        ->where([
+            'Users.id' => $comparedImage->user_id,
+            'Users.is_deleted' => 0
+        ])
+        ->first();
         if ($this->request->is(['patch', 'post', 'put'])) {
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
             if ($this->ComparedImages->save($comparedImage)) {
@@ -540,7 +548,7 @@ class UsersController extends AppController
             $this->Flash->error(__('コメントを更新できませんでした。'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users', 'param', 'staff'));
+        $this->set(compact('comparedImage', 'users', 'param', 'staff', 'user'));
     }
     
 
@@ -581,7 +589,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
     }
 
@@ -596,7 +605,8 @@ class UsersController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信取り消し完了いたしました。'));
-            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id]);
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'comparedImages', $comparedImage->user_id, '?' => $param]);
         }
 
     }
