@@ -94,10 +94,10 @@ class ComparedImagesController extends AppController
             $query->where(['ComparedImages.user_id IN' => $users]);
             $comparedImages = $query->all();
         } else if (!empty($param['user_name']) && empty($users)) {
-            $comparedImages = null;
+            $comparedImages = $query->all();
         } else if (empty($param['user_id']) && empty($param['user_name']) && empty($param['start_report_date']) && empty($param['end_report_date'])) {
             $param['user_name'] = '';
-            $comparedImages = null;
+            $comparedImages = $query->all();
         } else {
             $param['user_name'] = '';
         }
