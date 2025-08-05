@@ -40,7 +40,7 @@ class UsersController extends AppController
             ->contain([
                 'Messages' => function (Query $q) {
                     return $q->where([
-                        'Messages.sender' => '1',
+                        'Messages.sender IN' => ['1', '3'],
                     ]);
                 },
                 'UserPoints' => function (Query $q) {
@@ -387,16 +387,17 @@ class UsersController extends AppController
 
         $connection->execute(
             "UPDATE messages 
-            SET is_read = JSON_ARRAY_APPEND(is_read, '$', :staffId)
-            WHERE user_id = :userId
-            AND sender = '1'
-            AND (is_read IS NULL OR NOT JSON_CONTAINS(is_read, :staffIdJson))",
+             SET is_read = JSON_ARRAY_APPEND(is_read, '$', :staffId)
+             WHERE user_id = :userId
+               AND sender IN ('1', '3')
+               AND (is_read IS NULL OR NOT JSON_CONTAINS(is_read, :staffIdJson))",
             [
                 'staffId' => $staffId,
                 'userId' => $user->id,
                 'staffIdJson' => $staffIdJson
             ]
         );
+        
 
         // メッセージを取得
         $messages = $this->Users->Messages->find('all')
