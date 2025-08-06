@@ -95,7 +95,7 @@ class LessonsController extends AppController
                     $rowNum++;
                     if (!$line) continue;
 
-                    // $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
+                    $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
                     $row = str_getcsv($line);
 
                     if (!$headerSkipped) {
@@ -111,7 +111,7 @@ class LessonsController extends AppController
                     $eventDate = trim($row[1] ?? '');
                     $userName = trim($row[3] ?? '');
                     $staffName = trim($row[6] ?? '');
-                    $category = isset($row[14]) ? trim($row[14]) : '';
+                    $category = isset($row[15]) ? trim($row[15]) : '';
 
                     if ($userName === '') {
                         $csvErrors[] = "行" . ($rowNum - 1) . ": 名前が空欄です。";

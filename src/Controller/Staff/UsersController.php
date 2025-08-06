@@ -32,6 +32,13 @@ class UsersController extends AppController
         parent::initialize();
         $this->loadModel('Staffs');
         $this->loadModel('ComparedImages');
+        $this->loadModel('Habits');
+        $this->loadModel('Purposes');
+        $this->loadModel('BodyDatas');
+        $this->loadModel('Mentions');
+        $this->loadModel('SelfDatas');
+        $this->loadModel('Differences');
+        $this->loadModel('Consults');
     }
 
     public function index()
@@ -631,6 +638,519 @@ class UsersController extends AppController
         }
 
         return $this->redirect(['action' => 'message', $message['user_id']]);
+    }
+
+    /**
+     * 
+     * @param string|null $id user id.
+     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function customerInformations($id = null)
+    {
+        $user = $this->Users->find('all')
+            ->contain(['Staffs'])
+            ->where([
+                'Users.id' => $id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'customerInformations']);
+        }
+
+        $habit = $this->Habits->find('all')
+            ->where([
+                'user_id' => $id,
+            ])
+            ->first();
+
+        if (!$habit) {
+            $habit = $this->Habits->newEntity(['user_id' => $id]);
+        }
+
+        $purpose = $this->Purposes->find('all')
+            ->where([
+                'user_id' => $id,
+            ])
+            ->first();
+
+        if (!$purpose) {
+            $purpose = $this->Purposes->newEntity(['user_id' => $id]);
+        }
+
+        $bodyDatas = $this->BodyDatas->find('all')
+            ->where(['user_id' => $id])
+            ->order(['date' => 'ASC'])
+            ->toArray();
+
+        $mention = $this->Mentions->find('all')
+            ->where([
+                'user_id' => $id,
+            ])
+            ->first();
+
+        if (!$mention) {
+            $mention = $this->Mentions->newEntity(['user_id' => $id]);
+        }
+
+        $consults = $this->Consults->find()
+            ->where(['user_id' => $id])
+            ->all()
+            ->toList();
+
+        $selfdata = $this->SelfDatas->find('all')
+            ->where(['user_id' => $id])
+            ->order(['date' => 'ASC'])
+            ->toArray();
+
+        $differences = $this->Differences->find('all')
+            ->where(['user_id' => $id])
+            ->toArray();
+
+        // スタッフを配列で取得
+        $staffs = $this->Users->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => [
+                'is_deleted' => 0
+            ]
+        ])->toArray();
+
+        // 都道府県情報
+        $prefectures = Configure::read("PREFECTURES");
+
+        $param = $this->request->getQuery();
+
+        $courses = Configure::read("COURSE");
+
+        $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
+
+        $eventType = Configure::read("EVENT_TYPE");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses', 'bodyDataOptions', 'eventType', 'habit', 'purpose', 'bodyDatas', 'mention', 'consults', 'selfdata', 'differences'));
+    }
+
+    private function sendEmail($user)
+    {
+        // 固定のメールアドレスに送信
+        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "karute", ["user" => $user]]);
+        $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", "ryota0246@gmail.com", "karute", ["user" => $user]]);
+        
+        // すべてのスタッフにメールを送信（メールアドレスが設定されている場合のみ）
+        $allStaffs = $this->Staffs->find('all')
+            ->where([
+                'is_deleted' => 0,
+                'email IS NOT' => null,
+                'email !=' => ''
+            ])
+            ->all();
+        
+        foreach ($allStaffs as $staff) {
+            if (!empty($staff->email)) {
+                $this->getMailer('App')->send('sendGridEmail', ["【顧客カルテ】美脚セルフデザインプログラム", $staff->email, "karute", ["user" => $user]]);
+            }
+        }
+    }
+
+    public function customerMain($id = null)
+    {
+        $user = $this->Users->find('all')
+            ->contain(['Staffs'])
+            ->where([
+                'Users.id' => $id,
+                'Users.is_deleted' => 0
+            ])
+            ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            if (isset($data['start_datetime']) && !empty($data['start_datetime'])) {
+                if (is_string($data['start_datetime'])) {
+                    $data['start_datetime'] = new \Cake\I18n\FrozenTime($data['start_datetime']);
+                }
+            } else {
+                $data['start_datetime'] = new \Cake\I18n\FrozenTime();
+            }
+
+            $user = $this->Users->patchEntity($user, $data);
+
+            if ($this->Users->save($user)) {
+                $this->Flash->success(__('更新しました。'));
+                $this->sendEmail($user);
+
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+
+            // エラーの詳細を出力
+            $errorMessage = 'データを登録できませんでした。';
+            if ($user->getErrors()) {
+                $errorMessage .= '<br><br>エラー詳細:<br>';
+                foreach ($user->getErrors() as $field => $errors) {
+                    if (is_array($errors)) {
+                        foreach ($errors as $rule => $message) {
+                            if (is_string($message)) {
+                                $errorMessage .= '・' . h($field) . ': ' . h($message) . '<br>';
+                            } else {
+                                $errorMessage .= '・' . h($field) . ': ' . h(json_encode($message)) . '<br>';
+                            }
+                        }
+                    } else {
+                        $errorMessage .= '・' . h($field) . ': ' . h($errors) . '<br>';
+                    }
+                }
+            }
+            $this->Flash->error($errorMessage, ['escape' => false]);
+        }
+
+        // スタッフを配列で取得
+        $staffs = $this->Users->Staffs->find('list', [
+            'keyField' => 'id',
+            'valueField' => 'name',
+            'conditions' => [
+                'is_deleted' => 0
+            ]
+        ])->toArray();
+
+        // 都道府県情報
+        $prefectures = Configure::read("PREFECTURES");
+
+        $param = $this->request->getQuery();
+
+        $courses = Configure::read("COURSE");
+
+        $bodyDataOptions = Configure::read("BODYDATAOPTIONS");
+
+        $this->set(compact('user', 'staffs', 'prefectures', 'param', 'courses'));
+    }
+
+    public function habits($id = null)
+    {
+        $habit = $this->Habits->find('all')
+            ->where(['user_id' => $id])
+            ->first();
+
+        $user = $this->Users->find('all')
+            ->where(['id' => $id, 'is_deleted' => 0])
+            ->first();
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            if (!$habit) {
+                $habit = $this->Habits->newEmptyEntity();
+                $data['user_id'] = $id;  // user_id をセットし忘れない
+            }
+
+            $habit = $this->Habits->patchEntity($habit, $data);
+
+            $param = $this->request->getQuery();
+            if ($this->Habits->save($habit)) {
+                $this->Flash->success(__('更新しました。'));
+                $this->sendEmail($user);
+
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+            return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+        }
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'habit', 'param'));
+    }
+
+    public function purpose($id = null)
+    {
+        $purpose = $this->Purposes->find('all')
+            ->where(['user_id' => $id])
+            ->first();
+
+        $user = $this->Users->find('all')
+            ->where(['id' => $id, 'is_deleted' => 0])
+            ->first();
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            if (!$purpose) {
+                $purpose = $this->Purposes->newEmptyEntity();
+                $data['user_id'] = $id;  // user_id をセットし忘れない
+            }
+
+            $purpose = $this->Purposes->patchEntity($purpose, $data);
+
+            $param = $this->request->getQuery();
+            if ($this->Purposes->save($purpose)) {
+                $this->Flash->success(__('更新しました。'));
+                $this->sendEmail($user);
+
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+            return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+        }
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'purpose', 'param'));
+    }
+
+    public function bodyData($id = null)
+    {
+        $user = $this->Users->find()
+            ->where(['id' => $id, 'is_deleted' => 0])
+            ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->request->is(['post', 'put', 'patch'])) {
+            $dataList = $this->request->getData('bodyData');
+
+            foreach ($dataList as $data) {
+                if (!empty($data['id'])) {
+                    $bodyData = $this->BodyDatas->get($data['id']);
+                    $bodyData = $this->BodyDatas->patchEntity($bodyData, $data);
+                } else {
+                    $bodyData = $this->BodyDatas->newEntity($data);
+                    $bodyData->user_id = $id;
+                }
+
+                if (!$this->BodyDatas->save($bodyData)) {
+                    $this->Flash->error(__('ボディデータの保存に失敗しました。'));
+                    return $this->redirect(['action' => 'customerInformations', $id]);
+                }
+            }
+
+            $this->Flash->success(__('ボディデータを保存しました。'));
+            $this->sendEmail($user);
+            return $this->redirect(['action' => 'customerInformations', $id]);
+        }
+
+        $param = $this->request->getQuery();
+        $this->set(compact('user', 'param'));
+    }
+
+
+    public function mention($id = null)
+    {
+        $user = $this->Users->find('all')
+            ->where([
+                'id' => $id,
+                'is_deleted' => 0
+            ])
+            ->first();
+
+        if (!$user) {
+            return $this->redirect(['action' => 'index']);
+        }
+
+        // Mentions テーブルから取得
+        $mention = $this->Mentions->find('all')
+            ->where([
+                'user_id' => $id
+            ])
+            ->first();
+
+        // なければ newEntity
+        if (!$mention) {
+            $mention = $this->Mentions->newEntity(['user_id' => $id]);
+        }
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+
+            $mention = $this->Mentions->patchEntity($mention, $data);
+
+            if ($this->Mentions->save($mention)) {
+                $this->Flash->success(__('更新しました。'));
+                $this->sendEmail($user);
+
+                $param = $this->request->getQuery();
+
+                return $this->redirect(['action' => 'customerInformations', $user->id, '?' => $param]);
+            }
+
+            $this->Flash->error(__('データを登録できませんでした。入力内容を見直してください。'));
+        }
+
+        $param = $this->request->getQuery();
+
+        $this->set(compact('user', 'mention', 'param'));
+    }
+
+    public function consults($userId = null)
+    {
+        try {
+            $user = $this->Users->get($userId, ['conditions' => ['is_deleted' => 0]]);
+        } catch (\Cake\Datasource\Exception\RecordNotFoundException $e) {
+            $this->Flash->error(__('ユーザーが見つかりませんでした。'));
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->request->is(['post', 'put', 'patch'])) {
+            $dataList = $this->request->getData('consults');
+            $connection = $this->Consults->getConnection();
+            $connection->begin();
+
+            try {
+                foreach ((array) $dataList as $data) {
+                    if (!empty($data['id'])) {
+                        // --- Update existing consult ---
+                        $consult = $this->Consults->get($data['id']);
+                    } else {
+                        // --- Insert new consult ---
+                        $consult = $this->Consults->newEntity();
+                        $consult->user_id = $userId;
+                    }
+
+                    $fields = [];
+                    foreach (['theme', 'instruction', 'note', 'next_step', 'staff_id', 'date', 'category'] as $field) {
+                        if (isset($data[$field]) && $data[$field] !== '') {
+                            $fields[$field] = ($field === 'date')
+                                ? new \Cake\I18n\FrozenDate($data[$field])
+                                : $data[$field];
+                        }
+                    }
+
+                    $this->Consults->patchEntity($consult, $fields);
+
+                    if (!$this->Consults->save($consult)) {
+                        throw new \Exception(__('保存に失敗しました（テーマ: {0}）', $data['theme'] ?? '未入力'));
+                    }
+                }
+
+                $connection->commit();
+                $this->sendEmail($user);
+                $this->Flash->success(__('保存しました。'));
+            } catch (\Exception $e) {
+                $connection->rollback();
+                $this->Flash->error($e->getMessage());
+            }
+
+            $param = $this->request->getQuery();
+            return $this->redirect(['action' => 'customerInformations', $userId, '?' => $param]);
+        }
+
+        $param = $this->request->getQuery();
+        $this->set(compact('user', 'param'));
+    }
+
+    public function selfData($id = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
+
+        $user = $this->Users->get($id);
+        if (!$user) {
+            $this->Flash->error('ユーザーが見つかりませんでした。');
+            return $this->redirect(['action' => 'customerInformations']);
+        }
+
+        $selfDataTable = $this->getTableLocator()->get('SelfDatas');
+        $data = $this->request->getData();
+
+        // Define editable fields
+        $editableFields = [
+            'date',
+            'good_changes',
+            'work_review',
+            'no_change_parts',
+            'current_state',
+            'next_two_weeks_work',
+            'consult_topics',
+            'consult_content'
+        ];
+
+        // Fetch existing selfData rows
+        $existing = $selfDataTable->find()
+            ->where(['user_id' => $id])
+            ->order(['date' => 'ASC'])
+            ->indexBy('id') // Allows quick lookup
+            ->toArray();
+
+        if (isset($data['selfData'])) {
+            foreach ($data['selfData'] as $row) {
+                if (empty($row['id']) || !isset($existing[$row['id']])) {
+                    continue;
+                }
+
+                $entity = $existing[$row['id']];
+
+                foreach ($editableFields as $field) {
+                    if (array_key_exists($field, $row)) {
+                        $entity->$field = $row[$field];
+                    }
+                }
+
+                $selfDataTable->save($entity);
+            }
+        }
+
+        $this->Flash->success('自己データを保存しました。');
+        $this->sendEmail($user);
+        return $this->redirect(['action' => 'customerInformations', $id]);
+    }
+
+    public function differences($userId = null)
+    {
+        $this->request->allowMethod(['post', 'put']);
+
+        $data = $this->request->getData('differences');
+        $user = $this->Users->get($userId);
+        if (!$data) {
+            $this->Flash->error('データが送信されませんでした。');
+            return $this->redirect(['action' => 'customerInformations', $userId]);
+        }
+
+        foreach ((array) $data as $item) {
+            if (!empty($item['id'])) {
+                // --- Update existing difference ---
+                $difference = $this->Differences->get($item['id']);
+            } else {
+                // --- Insert new difference ---
+                $difference = $this->Differences->newEmptyEntity();
+                $difference->user_id = $userId;
+            }
+
+            $fieldsToUpdate = [];
+            foreach ([
+                'milestone',
+                'category',
+                'target1',
+                'target2',
+                'evaluation1',
+                'evaluation2',
+                'comment1',
+                'comment2'
+            ] as $field) {
+                if (array_key_exists($field, $item)) {
+                    $fieldsToUpdate[$field] = $item[$field];
+                }
+            }
+
+            $difference = $this->Differences->patchEntity($difference, $fieldsToUpdate);
+
+            if (!$this->Differences->save($difference)) {
+                $this->Flash->error('保存中にエラーが発生しました。');
+                return $this->redirect(['action' => 'customerInformations', $userId]);
+            }
+        }
+
+        $this->Flash->success('成果差分が保存されました。');
+        $this->sendEmail($user);
+        return $this->redirect(['action' => 'customerInformations', $userId]);
     }
 }
 
