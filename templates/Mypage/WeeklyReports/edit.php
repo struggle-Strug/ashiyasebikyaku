@@ -82,7 +82,7 @@
                             <a href="javascript:void(0)" class="btn btn-default" id="select-image">写真または動画を選択</a>
 
                             <input type="file" id="image_file" name="image_file"
-                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime,image/jpeg,image/x-png"
+                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime,video/webm,image/jpeg,image/x-png"
                                 style="display:none">
 
                         <?php else: ?>
@@ -191,7 +191,7 @@
             var fileList = document.getElementById("image_file").files;
             file_type = fileList[0].type;
 
-            if (file_type == 'video/mp4' || file_type == 'video/m4v' || file_type == 'video/3gpp' || file_type == 'video/quicktime') {
+            if (file_type == 'video/mp4' || file_type == 'video/m4v' || file_type == 'video/3gpp' || file_type == 'video/quicktime' || file_type == 'video/webm') {
                 $("#selected-movie").show();
                 $("#recordedVideo").attr('src', URL.createObjectURL(fileList[0]));
                 $("#recordedVideo").get(0).play();
@@ -310,11 +310,17 @@
 
         function getSupportedMimeType() {
             const types = [
+                // HEVC対応を追加（iPhone Safari対応）
+                'video/mp4;codecs=hevc',
+                'video/mp4;codecs=h265',
+                'video/quicktime;codecs=hevc',
+                'video/quicktime;codecs=h265',
+                // 既存の対応形式
+                'video/mp4',
+                'video/quicktime',
                 'video/webm;codecs=vp9',
                 'video/webm;codecs=vp8',
                 'video/webm',
-                'video/mp4',
-                'video/quicktime',
                 'video/x-matroska'
             ];
             
@@ -328,12 +334,12 @@
 
         function getFileExtension(mimeType) {
             const extensions = {
-                'video/webm': 'webm',
                 'video/mp4': 'mp4',
                 'video/quicktime': 'mov',
+                'video/webm': 'webm',
                 'video/x-matroska': 'mkv'
             };
-            return extensions[mimeType.split(';')[0]] || 'webm';
+            return extensions[mimeType.split(';')[0]] || 'mp4';
         }
 
         function stopVideoStream(stream) {

@@ -391,7 +391,7 @@
                             </td>
                             <td>
                                 <?php if($index == 0) : ?>
-                                    <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
+                                    <a target="_blank" href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
                                 <?php endif ?>
                             </td>
                         </tr>
@@ -445,6 +445,9 @@ $(document).ready(function() {
                 <td>
                     <textarea name="differences[${index}][comment1]" class="form-control mb-1"></textarea>
                     <textarea name="differences[${index}][comment2]" class="form-control"></textarea>
+                </td>
+                <td>
+                 <a target="_blank" href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
                 </td>
             </tr>`);
     });
