@@ -95,7 +95,7 @@ class LessonsController extends AppController
                     $rowNum++;
                     if (!$line) continue;
 
-                    $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
+                    // $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
                     $row = str_getcsv($line);
 
                     if (!$headerSkipped) {
