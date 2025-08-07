@@ -95,7 +95,7 @@ class LessonsController extends AppController
                     $rowNum++;
                     if (!$line) continue;
 
-                    $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
+                    // $line = mb_convert_encoding($line, 'UTF-8', 'SJIS-win');
                     $row = str_getcsv($line);
 
                     if (!$headerSkipped) {
@@ -129,20 +129,13 @@ class LessonsController extends AppController
                         $csvErrors[] = "行" . ($rowNum - 1) . ": ユーザー「{$userName}」はデータが存在しません。";
                     } else {
                         $matchedUsers = $userMap[$normalizedUserName];
-                        foreach ($matchedUsers as $u) {
-                            if (!empty($u->staff_id) &&
-                                !empty($u->staff) &&
-                                $u->staff->name . "先生" === $staffName) {
-                                $validStaff = true;
-                                $userId = $u->id;
-                                break;
-                            }
-                        }
-
-                        if (!$validStaff) {
-                            $csvErrors[] = "行" . ($rowNum - 1) . ": 講師「{$staffName}」はユーザー「{$userName}」の担当講師ではありません。";
-                        }
+                        $userId = $matchedUsers[0]->id;
                     }
+                    
+                    if (is_null($staffId)) {
+                        $csvErrors[] = "行" . ($rowNum - 1) . ": 講師「{$staffName}」はデータベースに存在しません。";
+                    }
+                    
 
                     $normalizedDate = null;
                     if (!empty($eventDate)) {
