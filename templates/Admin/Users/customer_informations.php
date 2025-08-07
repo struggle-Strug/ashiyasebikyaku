@@ -350,6 +350,7 @@
     <div class="card-body">
         <h4>8.標準モデルとの差異結果</h4>
         <button type="button" id="add-difference-row" class="btn btn-outline-primary btn-sm">＋ 追加</button>
+        <a target="_blank" href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
         <div class="table-responsive">
             <table class="table table-bordered table-striped" id="difference-table">
                 <thead>
@@ -359,7 +360,6 @@
                         <th>標準達成目安</th>
                         <th>評価</th>
                         <th>評価コメント</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -388,11 +388,6 @@
                             <td>
                                 <textarea name="differences[<?= $index ?>][comment1]" class="form-control mb-1"><?= h($diff['comment1']) ?></textarea>
                                 <textarea name="differences[<?= $index ?>][comment2]" class="form-control"><?= h($diff['comment2']) ?></textarea>
-                            </td>
-                            <td>
-                                <?php if($index == 0) : ?>
-                                    <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
-                                <?php endif ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

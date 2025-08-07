@@ -141,6 +141,24 @@
                                 </p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="<?= $this->Url->build(['controller' => 'Lessons', 'action' => 'index']); ?>"
+                                class="nav-link <?php if ($this->request->getParam('controller') == 'Lessons') echo 'active'; ?>">
+                                <i class="nav-icon fa-solid fa-book"></i>
+                                <p>
+                                    レッスン管理
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="<?= $this->Url->build(['controller' => 'CustomerCsvs', 'action' => 'index']); ?>"
+                                class="nav-link <?php if ($this->request->getParam('controller') == 'CustomerCsvs') echo 'active'; ?>">
+                                <i class="nav-icon fa-solid fa-file-excel"></i>
+                                <p>
+                                    顧客カルテCSV
+                                </p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->

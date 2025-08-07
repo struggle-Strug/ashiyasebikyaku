@@ -173,6 +173,9 @@
                                 <?php endif ?>
                             </div>
                         </td>
+                        <td nowrap>
+                            <a href="<?= $this->Url->build(['action' => 'customerInformations', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">カルテ</a>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
