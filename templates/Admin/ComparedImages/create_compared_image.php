@@ -942,7 +942,7 @@ function handleDrawingStart(event) {
                 "id": Math.random().toString(32).substring(2),
                 "d": `M ${startX} ${startY} `,
                 "fill": "none",
-                "stroke": lineColor,
+                "stroke": "#ff0000",
                 "stroke-width": lineWidth,
                 "stroke-linecap": "round"
             };
