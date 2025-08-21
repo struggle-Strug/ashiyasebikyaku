@@ -67,8 +67,8 @@ class DailyReportsController extends AppController
             $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
 
             if ($this->DailyReports->save($dailyReport)) {
-                $this->getMailer('App')->send('sendGridEmail', ["【日報】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "daily_report", ['today' => $formattedDateTime]]);
-                $this->getMailer('App')->send('sendGridEmail', ["【日報】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "daily_report_operation", ['reportUrl' => $fullUrl, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【日報】美脚セルフデザインプログラム", $this->Authentication->getIdentity()->email, "daily_report", ['today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【日報】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "daily_report_operation", ['reportUrl' => $fullUrl, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
                 $staff = $this->Staffs->find('all')
                     ->where([
                         'id' => $this->Authentication->getIdentity()->staff_id,
@@ -76,7 +76,7 @@ class DailyReportsController extends AppController
                     ->first();
                 if ($staff) {
                     if ($staff->email) {
-                        $this->getMailer('App')->send('sendGridEmail', ["【日報】脚やせ美脚リバースエイジングプログラム", $staff->email, "daily_report_operation", ['reportUrl' => $fullUrlStaff, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
+                        $this->getMailer('App')->send('sendGridEmail', ["【日報】美脚セルフデザインプログラム", $staff->email, "daily_report_operation", ['reportUrl' => $fullUrlStaff, 'name' => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, 'today' => $formattedDateTime]]);
                     } else {
                         $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
                     }

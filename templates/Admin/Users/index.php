@@ -66,7 +66,9 @@
                             <th nowrap>利用終了日時</th>
                             <th nowrap>担当講師</th>
                             <th nowrap>コミュニケーション<br>ツール</th>
+                            <th nowrap>画像比較確認</th>
                             <th style="width:150px"></th>
+                            <th nowrap>顧客情報</th>
                         </tr>
                     </tr>
                 </thead>
@@ -86,11 +88,11 @@
                                 $today = new DateTime();
                                 $isPaused = false;
                                 
-                                if ($user->pause_start && $user->pause_end && $user->course_id == 3) {
+                                if ($user->pause_start && $user->pause_end) {
                                     $pauseStart = new DateTime($user->pause_start);
                                     $pauseEnd = new DateTime($user->pause_end);
                                     
-                                    if ($today >= $pauseStart && $today <= $pauseEnd && $user->course_id == 3) {
+                                    if ($today >= $pauseStart && $today <= $pauseEnd) {
                                         $isPaused = true;
                                     }
                                 }
@@ -136,8 +138,19 @@
                             </div>
                         </td>
                         <td nowrap>
+                            <a href="<?= $this->Url->build(['action' => 'comparedImages', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">画像比較確認</a>
+                            <div>
+                                <?php if ($user->compared_images) : ?>
+                                    <span class="right badge badge-danger">未送信</span>
+                                <?php endif ?>
+                            </div>
+                        </td>
+                        <td nowrap>
                             <a href="<?= $this->Url->build(['action' => 'edit', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">編集</a>
                             <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $user->id], ['class' => 'btn btn-outline-secondary btn-sm save-scroll-link', 'confirm' => __('退会は編集から「利用終了日時」を設定してください。本当に削除してよろしいですか？', $user->id)]) ?>
+                        </td>
+                        <td nowrap>
+                            <a href="<?= $this->Url->build(['action' => 'customerInformations', $user->id, '?' => $param]); ?>" class="btn btn-outline-primary btn-sm save-scroll-link">カルテ</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -172,6 +185,18 @@ $(document).ready(function() {
         };
         
         sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify(scrollData));
+    }
+    
+    // Function to scroll to top
+    function scrollToTop() {
+        // ページ全体をトップにスクロール
+        $('html, body').scrollTop(0);
+        
+        // テーブルコンテナもトップにスクロール
+        tableContainer.scrollTop(0);
+        
+        // 保存されたスクロール位置をクリア
+        sessionStorage.removeItem(SCROLL_STORAGE_KEY);
     }
     
     // Function to restore scroll position
@@ -225,7 +250,8 @@ $(document).ready(function() {
     
     // Save scroll position when clicking pagination links
     $('.pagination a').on('click', function() {
-        saveScrollPosition();
+        // ページネーションクリック時はスクロールをトップに移動
+        scrollToTop();
     });
     
     // Save scroll position when submitting search form

@@ -4,10 +4,6 @@ declare(strict_types=1);
 namespace App\Controller\Mypage;
 
 use App\Controller\AppController;
-use Cake\ORM\Query;
-use Cake\ORM\TableRegistry;
-
-use App\Mailer\AppMailer;
 use Cake\Mailer\MailerAwareTrait;
 
 use Cake\I18n\Time;
@@ -37,9 +33,12 @@ class MessagesController extends AppController
     public function index()
     {
         $messages = $this->Messages->find('all')
+            ->contain([
+                'Staffs'
+            ])
             ->where([
-                'user_id' => $this->Authentication->getIdentity()->id,
-                'is_deleted' => 0
+                'Messages.user_id' => $this->Authentication->getIdentity()->id,
+                'Messages.is_deleted' => 0
             ])
             ->all();
 
@@ -129,7 +128,7 @@ class MessagesController extends AppController
 
             if ($this->Messages->save($message)) {
                 $this->Flash->success(__('メッセージを送信しました。'));
-                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "messages_roperation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
+                $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $adminFullUrl, 'today' => $formattedDateTime]]);
                 $staff = $this->Staffs->find('all')
                     ->where([
                         'id' => $this->Authentication->getIdentity()->staff_id,
@@ -137,7 +136,7 @@ class MessagesController extends AppController
                     ->first();
                 if ($staff) {
                     if ($staff->email) {
-                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】脚やせ美脚リバースエイジングプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl, 'today' => $formattedDateTime]]);
+                        $this->getMailer('App')->send('sendGridEmail', ["【コミュニケーションツール】美脚セルフデザインプログラム", $staff->email, "messages_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "url" => $fullUrl, 'today' => $formattedDateTime]]);
                     } else {
                         $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
                     }
@@ -149,4 +148,31 @@ class MessagesController extends AppController
             $this->Flash->error(__('データを送信できませんでした。'));
         }
     }
+
+
+     /**
+     * Delete method
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function delete($id = null)
+    {
+        $this->request->allowMethod(['post', 'delete']);
+
+        $message = $this->Messages->get($id);
+        $userId = $this->Authentication->getIdentity()->id;
+
+        if ($message->user_id !== $userId || $message->sender !== '1') {
+            throw new \Cake\Http\Exception\ForbiddenException('削除権限がありません。');
+        }
+
+        if ($this->Messages->delete($message)) {
+            $this->Flash->success('メッセージを削除しました。');
+        } else {
+            $this->Flash->error('削除に失敗しました。');
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+
 }

@@ -67,12 +67,6 @@
                                         <div class="modal-body" style="position: relative;">
                                             <video style="width: 100%; height: auto;" id="video" autoplay
                                                 playsinline></video>
-                                            <!-- <video  controls
-                                                style="width: 100%; height: auto; display: none;"></video> -->
-                                            <img id="photo"
-                                                style="position: absolute; top: 0; left: 0; object-fit: fill; width: 100%; height: 100%"
-                                                src="/img/weekly-reports-img/weekly-report-<?= $requestPhotoNumber ?>.png">
-                                            <div><?= $captureComment[$requestPhotoNumber] ?></div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-primary" id="switchCamera">カメラ切り替え</button>
@@ -88,7 +82,7 @@
                             <a href="javascript:void(0)" class="btn btn-default" id="select-image">写真または動画を選択</a>
 
                             <input type="file" id="image_file" name="image_file"
-                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime,image/jpeg,image/x-png"
+                                accept="video/mp4,video/m4v,video/3gpp,video/quicktime,video/webm,image/jpeg,image/x-png"
                                 style="display:none">
 
                         <?php else: ?>
@@ -116,10 +110,6 @@
                                         <div class="modal-body" style="position: relative;">
                                             <video style="width: 100%; height: auto;" id="video" autoplay
                                                 playsinline></video>
-                                            <img id="photo"
-                                                style="position: absolute; top: 0; left: 0; object-fit: fill; width: 100%; height: 100%"
-                                                src="/img/weekly-reports-img/weekly-report-<?= $requestPhotoNumber ?>.png">
-                                            <div><?= $captureComment[$requestPhotoNumber] ?></div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-primary" id="switchCamera">カメラ切り替え</button>
@@ -201,7 +191,7 @@
             var fileList = document.getElementById("image_file").files;
             file_type = fileList[0].type;
 
-            if (file_type == 'video/mp4' || file_type == 'video/m4v' || file_type == 'video/3gpp' || file_type == 'video/quicktime') {
+            if (file_type == 'video/mp4' || file_type == 'video/m4v' || file_type == 'video/3gpp' || file_type == 'video/quicktime' || file_type == 'video/webm') {
                 $("#selected-movie").show();
                 $("#recordedVideo").attr('src', URL.createObjectURL(fileList[0]));
                 $("#recordedVideo").get(0).play();
@@ -249,23 +239,25 @@
             countdown--;
 
             if (countdown < 0) {
-                clearInterval(countdownInterval); // カウントダウン終了
-                countdownElement.textContent = ''; // カウントダウン表示をクリア
-
-                // 動画の録画を開始
+                clearInterval(countdownInterval);
+                countdownElement.textContent = '';
                 startRecording();
             }
-        }, 1000); // 1秒ごとにカウントダウンを更新
+        }, 1000);
 
-        // 録画を開始する関数
         function startRecording() {
             navigator.mediaDevices.getUserMedia({ video: true, audio: true })
                 .then(stream => {
                     video.srcObject = stream;
                     video.play();
 
-                    // MediaRecorderを初期化
-                    mediaRecorder = new MediaRecorder(stream);
+                    // ブラウザ対応フォーマットを自動選択
+                    const mimeType = getSupportedMimeType();
+                    if (!mimeType) {
+                        throw new Error('このブラウザでは動画録画がサポートされていません');
+                    }
+
+                    mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
                     mediaRecorder.ondataavailable = event => {
                         if (event.data.size > 0) {
                             recordedChunks.push(event.data);
@@ -273,29 +265,20 @@
                     };
 
                     mediaRecorder.onstop = () => {
-                        // 録画データをBlobに変換
-                        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                        const blob = new Blob(recordedChunks, { type: mimeType });
                         const url = URL.createObjectURL(blob);
+                        const fileExtension = getFileExtension(mimeType);
 
-                        // プレビュー用のvideo要素に設定
                         recordedVideo.src = url;
                         recordedVideo.style.display = 'block';
 
-                        // ダウンロードリンクの作成（任意）
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = url;
-                        downloadLink.download = 'recorded-video.webm';
-                        downloadLink.textContent = 'ダウンロード';
-                        document.body.appendChild(downloadLink);
                         // Fileオブジェクトを作成
-                        const file = new File([blob], "recorded-video.webm", { type: "video/webm" });
+                        const file = new File([blob], `recorded-video.${fileExtension}`, { type: mimeType });
 
                         // Fileオブジェクトをinput要素に設定
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         videoFileInput.files = dataTransfer.files;
-                        recordedVideo.src = url;
-                        recordedVideo.style.display = 'block';
 
                         if (videoFileInput.files.length > 0) {
                             document.getElementById("notification").innerHTML = "動画が登録されました。";
@@ -303,23 +286,62 @@
                             document.getElementById("notification").innerHTML = "動画が登録されていませんでした。";
                         }
 
-
                         document.getElementById('cancel-capture-movie').click();
-
-                        // ビデオストリームを停止
                         stopVideoStream(stream);
                     };
 
-                    // 録画を開始し、5秒後に停止
+                    mediaRecorder.onerror = (event) => {
+                        console.error('録画エラー:', event);
+                        document.getElementById("notification").innerHTML = "録画中にエラーが発生しました。";
+                    };
+
                     mediaRecorder.start();
                     setTimeout(() => {
-                        mediaRecorder.stop();
-                    }, 10000); // 10秒間録画
+                        if (mediaRecorder.state === 'recording') {
+                            mediaRecorder.stop();
+                        }
+                    }, 10000);
                 })
-                .catch(err => console.error('カメラにアクセスできません:', err));
+                .catch(err => {
+                    console.error('カメラにアクセスできません:', err);
+                    document.getElementById("notification").innerHTML = "カメラにアクセスできませんでした。";
+                });
         }
 
-        // ストリームを停止する関数
+        function getSupportedMimeType() {
+            const types = [
+                // HEVC対応を追加（iPhone Safari対応）
+                'video/mp4;codecs=hevc',
+                'video/mp4;codecs=h265',
+                'video/quicktime;codecs=hevc',
+                'video/quicktime;codecs=h265',
+                // 既存の対応形式
+                'video/mp4',
+                'video/quicktime',
+                'video/webm;codecs=vp9',
+                'video/webm;codecs=vp8',
+                'video/webm',
+                'video/x-matroska'
+            ];
+            
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        function getFileExtension(mimeType) {
+            const extensions = {
+                'video/mp4': 'mp4',
+                'video/quicktime': 'mov',
+                'video/webm': 'webm',
+                'video/x-matroska': 'mkv'
+            };
+            return extensions[mimeType.split(';')[0]] || 'mp4';
+        }
+
         function stopVideoStream(stream) {
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
@@ -419,4 +441,5 @@
             }
         }
     }
+</script>
 </script>

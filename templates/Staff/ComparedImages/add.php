@@ -19,8 +19,12 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+                <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
             </div>
+            <div class="col-md-3 mt-2">
+                <div class="input-group">
+                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id'], 'style' => 'margin-top: 1.75rem;']) ?>
+                </div>            </div>
             <input type="text" name="target_image" id="target_image" style="display: none;"
                 value="<?= $param['target_image'] ?>" />
             <input type="text" name="subject_image" id="subject_image" style="display: none;"
@@ -36,17 +40,66 @@
     </div>
 </div>
 <?= $this->Form->end() ?>
+<style>
+
+.uniform-image {
+  height: 100px;   /* 高さを固定 */
+  width: auto;     /* 横幅は自動調整 */
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  object-fit: contain; /* アスペクト比を維持 */
+}
+
+/* 新しいスタイル: 表示画像用の背景色オーバーレイ */
+.image-display-container {
+  position: relative;
+  display: inline-block;
+}
+
+.image-background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  z-index: 1;
+}
+
+.target-overlay {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
+.subject-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+</style>
+
 <div style="font-size: 24px; font-weight: bold;">画像選択</div>
 <div class="card">
     <div class="card-body">
         <div style="display: flex">
             <div id="target_image_display" style="width: 100px; height: 180px; margin-top: 24px; margin-bottom: 24px; margin-right: 24px;">
-                <div style="font-weight: bold; ">アフター画像</div>
-                <img src="" id="target_image_url" alt="target_image" style="max-width:100px; display: none; " />
+                <div style="font-weight: bold;">アフター画像</div>
+                <div class="image-display-container">
+                        <img src="" id="target_image_url" alt="target_image" style="max-width:100px; display: none;" />
+                    <div id="target_display_overlay" class="image-background-overlay target-overlay"></div>
+                </div>
             </div>
             <div id="subject_image_display" style="width: 100px; height: 180px;  margin-top: 24px; margin-bottom: 24px; margin-right: 24px;">
-                <div style="font-weight: bold; ">ビフォー画像</div>
-                <img src="" id="subject_image_url" alt="subject_image" style="max-width:100px; display: none; " />
+                <div style="font-weight: bold;">ビフォー画像</div>
+                <div class="image-display-container">
+                    <img src="" id="subject_image_url" alt="subject_image" style="max-width:100px; display: none;" />
+                    <div id="subject_display_overlay" class="image-background-overlay subject-overlay"></div>
+                </div>
             </div>
         </div>
 
@@ -64,6 +117,8 @@
                 <table class="table table-bordered table-striped overflow-y: scroll">
                     <thead>
                         <tr>
+                        <th nowrap style="min-width:120px">会員名</th>
+                        <th nowrap style="min-width:120px">測定日</th>
                             <?php foreach ($photoName as $key => $name): ?>
                                 <th nowrap style="min-width:120px">
                                     <?= h($name) ?>
@@ -74,6 +129,8 @@
                     <tbody>
                         <?php foreach ($weeklyReports as $key => $weeklyReport): ?>
                             <tr>
+                                <td><?= $weeklyReport->user->last_name . ' ' . $weeklyReport->user->first_name ?></td>
+                                <td><?= $weeklyReport->report_date->format('Y年m月d日') ?></td>
                                 <?php foreach ($weeklyReport->photos as $photo): ?>
                                     <td>
                                         <?php if ($photo->image_url): ?>
@@ -82,7 +139,7 @@
                                             <?php else: ?>
                                                 <div style="position: relative;" data-image="<?= $photo->image_url ?>"
                                                     data-date="<?= $photo->created ?>">
-                                                    <img src="<?= $photo->image_url ?>" class="selectElem image" style="max-width:100%;"
+                                                    <img src="<?= $photo->image_url ?>" class="selectElem image uniform-image"
                                                         data-image="<?= $photo->image_url ?>" data-date="<?= $photo->created ?>"
                                                         data-id="<?= $photo->id ?>" id="<?= $photo->id ?>">
                                                     <div id="mask_<?= $photo->id ?>" data-image="<?= $photo->image_url ?>"
@@ -102,11 +159,17 @@
             </div>
         <?php endif ?>
         <?= $this->Form->create(null, ['type' => 'get', 'action' => 'createComparedImage']) ?>
+        <?php foreach ($param as $key => $value): ?>
+            <input type="hidden" name="<?= h($key) ?>" value="<?= h($value) ?>">
+        <?php endforeach; ?>
         <input type="text" name="target_id" id="target_id" style="display: none;"
             value="<?= $param['target_image_id'] ?>" />
         <input type="text" name="subject_id" id="subject_id" style="display: none;"
             value="<?= $param['subject_image_id'] ?>" />
         <input type="text" name="user" id="user" style="display: none;" value="<?= $param['user_id'] ?>" />
+        <a class="btn btn-outline-secondary" href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>">
+            <i class="fas fa-arrow-circle-left"></i> 戻る
+        </a>
         <button type="submit" class="btn btn-primary" style="">画像作成ページへ</button>
         <?= $this->Form->end() ?>
     </div>
@@ -127,6 +190,32 @@
             }
         }
 
+        // 表示画像のオーバーレイを更新する関数
+        function updateDisplayOverlays() {
+            const targetOverlay = document.getElementById("target_display_overlay");
+            const subjectOverlay = document.getElementById("subject_display_overlay");
+            const targetImage = document.getElementById("target_image_url");
+            const subjectImage = document.getElementById("subject_image_url");
+
+            // アフター画像のオーバーレイ
+            if (selectedImageInfo.target.image_url !== "" && targetImage.style.display !== "none") {
+                targetOverlay.style.width = targetImage.offsetWidth + "px";
+                targetOverlay.style.height = targetImage.offsetHeight + "px";
+                targetOverlay.style.display = "flex";
+            } else {
+                targetOverlay.style.display = "none";
+            }
+
+            // ビフォー画像のオーバーレイ
+            if (selectedImageInfo.subject.image_url !== "" && subjectImage.style.display !== "none") {
+                subjectOverlay.style.width = subjectImage.offsetWidth + "px";
+                subjectOverlay.style.height = subjectImage.offsetHeight + "px";
+                subjectOverlay.style.display = "flex";
+            } else {
+                subjectOverlay.style.display = "none";
+            }
+        }
+
 
         function initLoad() {
             const target_image_url = "<?= $param["target_image"] ?>"
@@ -139,20 +228,32 @@
             selectedImageInfo.subject.id = subject_image_id
 
             if (target_image_url !== "") {
-                document.getElementById("target_image_url").style.display = "block"
-                document.getElementById("target_image_url").src = target_image_url
+                const targetImage = document.getElementById("target_image_url");
+                targetImage.style.display = "block";
+                targetImage.src = target_image_url;
+
+                // 画像読み込み完了後にオーバーレイを更新
+                targetImage.onload = function() {
+                    updateDisplayOverlays();
+                };
             }
 
             if (subject_image_url !== "") {
-                document.getElementById("subject_image_url").style.display = "block";
-                document.getElementById("subject_image_url").src = subject_image_url
+                const subjectImage = document.getElementById("subject_image_url");
+                subjectImage.style.display = "block";
+                subjectImage.src = subject_image_url;
 
+                // 画像読み込み完了後にオーバーレイを更新
+                subjectImage.onload = function() {
+                    updateDisplayOverlays();
+                };
             }
             Array.from(document.getElementsByClassName("image")).forEach(element => {
                 if (element.dataset.image === target_image_url) {
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px"
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
+                    mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                     mask.style.display = "flex"
                     mask.textContent = "アフター"
                 }
@@ -161,6 +262,7 @@
                     const mask = document.getElementById("mask_" + element.dataset.id);
                     mask.style.width = document.getElementById(element.dataset.id).width + "px";
                     mask.style.height = document.getElementById(element.dataset.id).height + "px";
+                    mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                     mask.style.display = "flex"
                     mask.textContent = "ビフォー"
                 }
@@ -234,24 +336,40 @@
 
                     if (selectedImageInfo.subject.id !== "") {
                         const mask = document.getElementById("mask_" + selectedImageInfo.subject.id);
-                        document.getElementById("subject_image_url").style.display = "block"
+                        const subjectImage = document.getElementById("subject_image_url");
+                        subjectImage.style.display = "block";
+
+                        // 画像読み込み完了後にオーバーレイとマスクを更新
+                        subjectImage.onload = function() {
+                            updateDisplayOverlays();
+                        };
                         mask.style.width = document.getElementById(selectedImageInfo.subject.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.subject.id).height + "px";
+                        mask.style.backgroundColor = "rgba(0,0,0,0.5)";
                         mask.style.display = "flex"
                         mask.textContent = "ビフォー";
                     } else {
-                        document.getElementById("subject_image_url").style.display = "none"
+                        document.getElementById("subject_image_url").style.display = "none";
+                        updateDisplayOverlays();
                     }
 
                     if (selectedImageInfo.target.id !== "") {
                         const mask = document.getElementById("mask_" + selectedImageInfo.target.id);
-                        document.getElementById("target_image_url").style.display = "block"
+                        const targetImage = document.getElementById("target_image_url");
+                        targetImage.style.display = "block";
+
+                        // 画像読み込み完了後にオーバーレイとマスクを更新
+                        targetImage.onload = function() {
+                            updateDisplayOverlays();
+                        };
                         mask.style.width = document.getElementById(selectedImageInfo.target.id).width + "px"
                         mask.style.height = document.getElementById(selectedImageInfo.target.id).height + "px";
                         mask.style.display = "flex"
+                        mask.style.backgroundColor = "rgba(255,0,0,0.3)";
                         mask.textContent = "アフター"
                     } else {
-                        document.getElementById("target_image_url").style.display = "none"
+                        document.getElementById("target_image_url").style.display = "none";
+                        updateDisplayOverlays();
                     }
 
                 })

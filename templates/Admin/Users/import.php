@@ -8,20 +8,25 @@
         <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> CSVインポートについて</h5>
             <ul>
-                <li>CSVファイルの文字コードはUTF-8（BOM付き）で保存してください。</li>
                 <li>1行目はヘッダー行として扱われます。</li>
-                <li>必須項目：会員番号、メールアドレス、姓、名、利用開始日時</li>
-                <li>日付形式：YYYY-MM-DD または YYYY/MM/DD</li>
-                <li>日時形式：YYYY-MM-DD HH:MM:SS または YYYY-MM-DD HH:MM</li>
+                <li>必須項目：メールアドレス、姓、姓（よみがな）、名、名（よみがな）、携帯番号、生年月日、お住まい（郵便番号）、お住まい（住所）、申し込みプログラム</li>
+                <li>プログラム開始日、担当講師、男女、パスワードの列は以下のサンプルを参考に追加してください。</li>
+                <li>生年月日形式：YYYY/MM/DD</li>
+                <li>プログラム開始日形式：YYYY/MM/DD</li>
             </ul>
         </div>
         
         <div class="alert alert-warning">
             <h5><i class="icon fas fa-exclamation-triangle"></i> 注意事項</h5>
             <ul>
-                <li>メールアドレスと会員番号は重複できません。</li>
-                <li>パスワードは「password123」で設定されます。</li>
-                <li>担当講師は講師名で指定してください。</li>
+                <li>メールアドレスは重複できません。</li>
+                <li>パスワードは「来月の年月の文字列」で設定されます。（例：202508）</li>
+                <li>郵便番号は7桁の数字で入力してください。</li>
+                <li>性別は「男性」か「女性」で入力してください。</li>
+                <li>プログラム開始日が空白の場合は来月の1日になります。</li>
+                <li>担当講師が空白の場合、または存在しない講師の場合はSHOCOさんになります。</li>
+                <li>性別が空白の場合は女性になります。</li>
+                <li>パスワードが空白の場合は来月の年月の文字列になります。</li>
             </ul>
         </div>
         
@@ -33,6 +38,9 @@
         
         <div class="mt-3">
             <a href="<?= $this->Url->build(['action' => 'index', '?' => $param]) ?>" class="btn btn-secondary">戻る</a>
+            <a href="<?= $this->Url->build(['action' => 'downloadTemplate']) ?>" class="btn btn-success">
+                <i class="fas fa-download"></i> テンプレートダウンロード
+            </a>
             <button type="submit" class="btn btn-primary">インポート実行</button>
         </div>
         <?= $this->Form->end() ?>
@@ -43,30 +51,42 @@
                 <table class="table table-bordered table-sm">
                     <thead>
                         <tr>
-                            <th>メールアドレス</th>
-                            <th>Q1.姓</th>
-                            <th>Q2.名</th>
-                            <th>Q3.電話番号</th>
-                            <th>Q4.生年月日</th>
-                            <th>Q5.お住まい</th>
-                            <th>Q6.備考</th>
-                            <th>利用開始日時</th>
-                            <th>パスワード</th>
+                            <th>タイムスタンプ</th>
+                            <th>メールアドレス<span class="text-danger">（必須）</span></th>
+                            <th>姓<span class="text-danger">（必須）</span></th>
+                            <th>姓（よみがな）<span class="text-danger">（必須）</span></th>
+                            <th>名<span class="text-danger">（必須）</span></th>
+                            <th>名（よみがな）<span class="text-danger">（必須）</span></th>
+                            <th>携帯番号<span class="text-danger">（必須）</span></th>
+                            <th>生年月日<span class="text-danger">（必須）</span></th>
+                            <th>お住まい（郵便番号）<span class="text-danger">（必須）</span></th>
+                            <th>お住まい（住所）<span class="text-danger">（必須）</span></th>
+                            <th>申し込みプログラム<span class="text-danger">（必須）</span></th>
+                            <th>プログラム開始日</th>
                             <th>担当講師</th>
+                            <th>男女（性別）</th>
+                            <th>パスワード</th>
+                            <th>プログラム終了日</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
+                          <td>2025/06/20 11:27:40</td>
                           <td>test1@example.com</td>
                           <td>田中</td>
+                          <td>たなか</td>
                           <td>太郎</td>
-                          <td>090-1234-5678</td>
-                          <td>1990-01-01</td>
-                          <td>東京都</td>
-                          <td>サンプルデータ</td>
-                          <td>2024-01-01 10:00:00</td>
-                          <td>password123</td>
-                          <td>山田先生</td>
+                          <td>たろう</td>
+                          <td>09012345678</td>
+                          <td>1990/01/01</td>
+                          <td>1000000</td>
+                          <td>東京都千代田区1-1-1</td>
+                          <td>エバーコース</td>
+                          <td>2025/08/01</td>
+                          <td>SHOCO</td>
+                          <td>男性</td>
+                          <td>202508</td>
+                          <td>2025/12/01</td>
                         </tr>
                     </tbody>
                 </table>

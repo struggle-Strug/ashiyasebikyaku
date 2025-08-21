@@ -9,6 +9,10 @@ use Cake\Core\Configure;
 use Cake\Routing\Router;
 use Cake\Filesystem\Filesystem;
 use Cake\Filesystem\File;
+use App\Mailer\AppMailer;
+use Cake\Mailer\MailerAwareTrait;
+use Cake\I18n\Time;
+
 
 
 /**
@@ -19,6 +23,7 @@ use Cake\Filesystem\File;
  */
 class ComparedImagesController extends AppController
 {
+    use MailerAwareTrait;
     /**
      * Index method
      *
@@ -30,6 +35,7 @@ class ComparedImagesController extends AppController
         parent::initialize();
         $this->loadModel('WeeklyReports'); // ユーザーテーブルを読み込む
         $this->loadModel('Photos');
+        $this->loadModel('Users');
     }
 
     public function beforeFilter(\Cake\Event\EventInterface $event)
@@ -391,6 +397,12 @@ class ComparedImagesController extends AppController
         $comparedImage = $this->ComparedImages->get($id, [
             'contain' => [],
         ]);
+        $user = $this->Users->find('all')
+        ->where([
+            'Users.id' => $comparedImage->user_id,
+            'Users.is_deleted' => 0
+        ])
+        ->first();
         if ($this->request->is(['patch', 'post', 'put'])) {
             $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $this->request->getData());
             if ($this->ComparedImages->save($comparedImage)) {
@@ -401,7 +413,7 @@ class ComparedImagesController extends AppController
             $this->Flash->error(__('コメントを更新できませんでした。'));
         }
         $users = $this->ComparedImages->Users->find('list', ['limit' => 200])->all();
-        $this->set(compact('comparedImage', 'users', 'param'));
+        $this->set(compact('comparedImage', 'users', 'param', 'user'));
     }
     
 
@@ -428,23 +440,51 @@ class ComparedImagesController extends AppController
         } else {
             $this->Flash->error(__('比較画像が削除されませんでした。'));
         }
-        return $this->redirect(['action' => 'index']);
+        $param = $this->request->getQuery();
+
+        return $this->redirect(['action' => 'index', '?' => $param]);
     }
 
     public function setActive($id = null)
     {
         $comparedImage = $this->ComparedImages->get($id, [
-            'contain' => [],
+            'contain' => ['Users'],
         ]);
+
         $this->request->allowMethod(['post', 'delete']);
-        $data = [];
-        $data["active"] = 1;
-        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
+
+        $comparedImage = $this->ComparedImages->patchEntity($comparedImage, ['active' => 1]);
+
         if ($this->ComparedImages->save($comparedImage)) {
+            $host = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
+            $port = $this->request->getUri()->getPort();
+            $path = '/mypage/weekly-reports/compared-images';
+            $fullUrl = $host . ($port ? ":$port" : '') . $path;
+
+            $now = Time::now();
+            $formattedDateTime = $now->i18nFormat('yyyy年MM月dd日 HH時mm分ss秒');
+
+            // Send email using AppMailer
+            $this->getMailer('App')->send('sendGridEmail', [
+                "【ビフォーアフター】美脚セルフデザインプログラム",
+                $comparedImage->user->email,
+                "before_after",
+                [
+                    'url' => $fullUrl,
+                    'today' => $formattedDateTime
+                ]
+            ]);
+
             $this->Flash->success(__('送信完了いたしました。'));
-            return $this->redirect(['action' => 'index']);
+        } else {
+            $this->Flash->error(__('送信に失敗しました。'));
         }
+
+        $param = $this->request->getQuery();
+
+        return $this->redirect(['action' => 'index', '?' => $param]);
     }
+
 
     public function setNotActive($id = null)
     {
@@ -457,7 +497,9 @@ class ComparedImagesController extends AppController
         $comparedImage = $this->ComparedImages->patchEntity($comparedImage, $data);
         if ($this->ComparedImages->save($comparedImage)) {
             $this->Flash->success(__('送信取り消し完了いたしました。'));
-            return $this->redirect(['action' => 'index']);
+            $param = $this->request->getQuery();
+
+            return $this->redirect(['action' => 'index', '?' => $param]);
         }
 
     }

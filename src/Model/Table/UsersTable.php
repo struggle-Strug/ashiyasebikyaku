@@ -64,6 +64,30 @@ class UsersTable extends Table
         $this->hasMany('UserPoints', [
             'foreignKey' => 'user_id',
         ]);
+        $this->hasMany('ComparedImages', [
+            'foreignKey' => 'user_id',
+        ]);
+        $this->hasMany('Habits', [
+            'foreignKey' => 'user_id',
+        ]);
+        $this->hasMany('Purposes', [
+            'foreignKey' => 'user_id',
+        ]);
+        $this->hasMany('BodyDatas', [
+            'foreignKey' => 'user_id',
+        ]);
+        $this->hasMany('Mentions', [
+            'foreignKey' => 'user_id',
+        ]);
+        $this->hasMany('Consults', [
+            'foreignKey' => 'user_id',
+        ]);
+        $this->hasMany('SelfDatas', [
+            'foreignKey' => 'user_id',
+        ]);
+        $this->hasMany('Differences', [
+            'foreignKey' => 'user_id',
+        ]);
     }
 
     /**

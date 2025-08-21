@@ -184,14 +184,16 @@ class WeeklyReportsController extends AppController
                     $typeProfile = '.mov';
                 } elseif ($imageFile->getClientMediaType() == 'video/webm') {
                     $typeProfile = '.webm';
+                } elseif ($imageFile->getClientMediaType() == 'video/hevc') {
+                    $typeProfile = '.hevc';
                 }
 
                 // check MIME-TYPE
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
                 $mimetype = finfo_file($finfo, $_FILES['image_file']['tmp_name']);
                 finfo_close($finfo);
-                if ($mimetype != 'image/jpeg' && $mimetype != 'image/png' && $mimetype != 'video/mp4' && $mimetype != 'video/m4v' && $mimetype != 'video/3gpp' && $mimetype != 'video/quicktime' && $mimetype != 'video/x-matroska') {
-                    $this->Flash->error('写真はJPEG/PNGファイル、動画はMP4/M4V/MOV/3GP/WEBMファイルのみ登録できます。');
+                if ($mimetype != 'image/jpeg' && $mimetype != 'image/png' && $mimetype != 'video/mp4' && $mimetype != 'video/m4v' && $mimetype != 'video/3gpp' && $mimetype != 'video/quicktime' && $mimetype != 'video/x-matroska' && $mimetype != 'video/hevc') {
+                    $this->Flash->error('写真はJPEG/PNGファイル、動画はMP4/M4V/MOV/3GP/WEBM/HEVCファイルのみ登録できます。');
                     $this->set(compact('weeklyReport', 'photo', 'photoName', 'requestPhotoNumber', 'nowPhotoNumber', 'firstWeeklyReport'));
                     return;
                 }
@@ -298,8 +300,8 @@ class WeeklyReportsController extends AppController
         if ($this->request->is(['patch', 'post', 'put'])) {
             $weeklyReport->is_draft = 0;
             $this->WeeklyReports->save($weeklyReport);
-            $this->getMailer('App')->send('sendGridEmail', ["【週報提出】脚やせ美脚リバースエイジングプログラム", $this->Authentication->getIdentity()->email, "weekly_report", ['today' => $formattedDateTime]]);
-            $this->getMailer('App')->send('sendGridEmail', ["【週報提出】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl, 'today' => $formattedDateTime]]);
+            $this->getMailer('App')->send('sendGridEmail', ["【週報提出】美脚セルフデザインプログラム", $this->Authentication->getIdentity()->email, "weekly_report", ['today' => $formattedDateTime]]);
+            $this->getMailer('App')->send('sendGridEmail', ["【週報提出】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl, 'today' => $formattedDateTime]]);
             $staff = $this->Staffs->find('all')
                 ->where([
                     'id' => $this->Authentication->getIdentity()->staff_id,
@@ -307,7 +309,7 @@ class WeeklyReportsController extends AppController
                 ->first();
             if ($staff) {
                 if ($staff->email) {
-                    $this->getMailer('App')->send('sendGridEmail', ["【週報提出】脚やせ美脚リバースエイジングプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl, 'today' => $formattedDateTime]]);
+                    $this->getMailer('App')->send('sendGridEmail', ["【週報提出】美脚セルフデザインプログラム", "ysonoda@someonelikeyou.co.jp", "weekly_report_operation", ["name" => $this->Authentication->getIdentity()->last_name . $this->Authentication->getIdentity()->first_name, "reportUrl" => $fullUrl, 'today' => $formattedDateTime]]);
                 } else {
                     $this->Flash->error(__('講師のメールアドレスが設定されていません。'));
                 }

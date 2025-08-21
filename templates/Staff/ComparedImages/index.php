@@ -18,7 +18,12 @@
             </div>
             <div class="col-md-3 mt-2">
                 <label>会員名</label>
-                <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id']]) ?>
+                <?= $this->Form->input('user_name', ['class' => 'form-control mr-4', 'empty' => '-', 'placeholder' => '会員名', 'default' => $param['user_name']]) ?>
+            </div>
+            <div class="col-md-3 mt-2">
+                <div class="input-group">
+                    <?= $this->Form->select('user_id', $users, ['class' => 'form-control', 'empty' => '-', 'default' => $param['user_id'], 'style' => 'margin-top: 1.75rem;']) ?>
+                </div>
             </div>
             <div class="col-md-12 text-right mt-2">
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
@@ -30,7 +35,7 @@
 
 <div class="card">
     <div class="card-header">
-        <a href="<?= $this->Url->build(['action' => 'add']); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
+        <a href="<?= $this->Url->build(['action' => 'add', '?' => $param]); ?>" class="btn btn-outline-primary">新規比較画像作成</a>
     </div>
     <div class="card-body">
         <?php if (!$comparedImages || count($comparedImages) == 0): ?>
@@ -52,13 +57,13 @@
                                     <div style="margin: 4px">
                                         <a href="<?= $this->Url->build(['action' => 'editComment', $comparedImage->id, '?' => $param]) ?>" class="btn btn-outline-primary btn-sm">コメント編集</a>
                                         <?php if ($comparedImage->active): ?>
-                                            <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                            <?= $this->Form->postLink(__('送信取消'), ['action' => 'setNotActive', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信取り消ししてもよろしいでしょうか？', $comparedImage->id)]) ?>
                                         <?php else: ?>
-                                            <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                            <?= $this->Form->postLink(__('送信'), ['action' => 'setActive', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-success btn-sm', 'confirm' => __('送信してもよろしいでしょうか？', $comparedImage->id)]) ?>
                                         <?php endif ?>
                                     </div>
                                     <div style="margin: 4px">
-                                        <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?>
+                                        <?= $this->Form->postLink(__('削除'), ['action' => 'delete', $comparedImage->id, '?' => $param], ['class' => 'btn btn-outline-danger btn-sm', 'confirm' => __('削除してもよろしいでしょうか？', $comparedImage->id)]) ?>
                                     </div>
                                 </div>
                             </h5>
@@ -103,5 +108,39 @@
                 slidesPerView: 2,
             },
         },
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.querySelector(".table-responsive-md");
+
+        if (container) {
+            const savedScroll = sessionStorage.getItem("innerScrollPos");
+            if (savedScroll !== null) {
+                container.scrollTop = parseInt(savedScroll, 10);
+            }
+
+            container.addEventListener("scroll", function () {
+                sessionStorage.setItem("innerScrollPos", container.scrollTop);
+            });
+        }
+
+        document.querySelectorAll("a, button").forEach(el => {
+            el.addEventListener("click", () => {
+                const c = document.querySelector(".table-responsive-md");
+                if (c) sessionStorage.setItem("innerScrollPos", c.scrollTop);
+            });
+        });
+    });
+
+    window.addEventListener("pageshow", function () {
+        const container = document.querySelector(".table-responsive-md");
+        if (container) {
+            const savedScroll = sessionStorage.getItem("innerScrollPos");
+            if (savedScroll !== null) {
+                // Use a small delay to wait for content render
+                setTimeout(() => {
+                    container.scrollTop = parseInt(savedScroll, 10);
+                }, 50);
+            }
+        }
     });
 </script>
