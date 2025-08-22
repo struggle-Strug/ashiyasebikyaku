@@ -444,6 +444,7 @@ let finalSvgHeight = 500;
 
         // 初期化時にカラーピッカーの値を設定
 $(document).ready(function() {
+    localStorage.setItem('lineColor', '#ff0000');
     document.getElementById('line-color').value = lineColor;
     
     if (localStorage.getItem('lineColor')) {
