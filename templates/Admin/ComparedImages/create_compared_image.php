@@ -633,7 +633,7 @@ function addMouseWheelZoom(svgElement) {
             const image = svgElement.querySelector('image');
             if (image) {
                 const matrix = image.transform.baseVal[0].matrix;
-                const delta = event.deltaY > 0 ? 0.9 : 1.1; // ズームイン/アウト
+                const delta = event.deltaY > 0 ? 0.99 : 1.01; // ズームイン/アウト
                 
                 // ズーム制限
                 const newScale = matrix.a * delta;
