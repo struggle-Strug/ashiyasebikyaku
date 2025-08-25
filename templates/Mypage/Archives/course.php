@@ -31,7 +31,8 @@
                                 $videoUrl = h($courseMovie->info_movie_url);
                                 if (strpos($videoUrl, 'vimeo') !== false): 
                                     $separator = strpos($videoUrl, '?') !== false ? '&' : '?';
-                                    $videoUrl .= $separator . 'controls=0&fullscreen=0&byline=0&portrait=0&title=0&autoplay=0&muted=0';
+                                    // iOS Safari対応のため、muted=1を追加
+                                    $videoUrl .= $separator . 'controls=0&fullscreen=0&byline=0&portrait=0&title=0&autoplay=0&muted=1';
                                 ?>
                                     <div class="video-content" style="padding:56.25% 0 0 0;position:relative;">
                                         <iframe src="<?= $videoUrl ?>"
@@ -72,7 +73,8 @@
                                 $videoUrl = h($courseMovie->movie_url);
                                 if (strpos($videoUrl, 'vimeo') !== false): 
                                     $separator = strpos($videoUrl, '?') !== false ? '&' : '?';
-                                    $videoUrl .= $separator . 'controls=0&fullscreen=0&byline=0&portrait=0&title=0&autoplay=0&muted=0';
+                                    // iOS Safari対応のため、muted=1を追加
+                                    $videoUrl .= $separator . 'controls=0&fullscreen=0&byline=0&portrait=0&title=0&autoplay=0&muted=1';
                                 ?>
                                     <iframe src="<?= $videoUrl ?>"
                                         style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0"
@@ -554,12 +556,16 @@ class EnhancedVideoPlayer {
             if (this.isPlaying) {
                 this.vimeoPlayer.pause();
             } else {
+                // iOS Safari対応：再生時に音声を有効化
+                this.vimeoPlayer.setVolume(1);
                 this.vimeoPlayer.play();
             }
         } else if (this.video) {
             if (this.isPlaying) {
                 this.video.pause();
             } else {
+                // 通常のvideo要素でも音声を有効化
+                this.video.muted = false;
                 this.video.play();
             }
         }
