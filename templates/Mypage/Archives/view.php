@@ -10,6 +10,8 @@
             <div class="video-container" data-video-id="lesson-video">
                 <div class="video-controls">
                     <button class="control-btn play-pause" title="再生/停止">▶</button>
+                    <button class="control-btn rewind" title="10秒戻る">⏪</button>
+                    <button class="control-btn fast-forward" title="10秒進む">⏩</button>
                     <button class="control-btn zoom-out" title="ズームアウト">-</button>
                     <button class="control-btn zoom-in" title="ズームイン">+</button>
                     <button class="control-btn reset" title="リセット">⟲</button>
@@ -42,6 +44,18 @@
                             </video>
                         </div>
                     <?php endif; ?>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-track">
+                            <div class="progress-fill"></div>
+                            <div class="progress-handle"></div>
+                        </div>
+                    </div>
+                    <div class="time-display">
+                        <span class="current-time">0:00</span>
+                        <span class="duration">0:00</span>
+                    </div>
                 </div>
                 <div class="zoom-indicator">100%</div>
             </div>
@@ -234,6 +248,17 @@
     background: rgba(244, 67, 54, 1);
 }
 
+/* Rewind and Fast Forward button specific styling */
+.control-btn.rewind,
+.control-btn.fast-forward {
+    background: rgba(33, 150, 243, 0.8);
+}
+
+.control-btn.rewind:hover,
+.control-btn.fast-forward:hover {
+    background: rgba(33, 150, 243, 1);
+}
+
 .zoom-indicator {
     position: absolute;
     bottom: 10px;
@@ -327,6 +352,78 @@
     margin-bottom: 0;
 }
 
+/* Progress bar styles */
+.progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    padding: 10px 15px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.time-display {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    white-space: nowrap;
+}
+
+.progress-bar { 
+    position:relative; 
+    height:6px; width:100%; 
+    background:rgba(255,255,255,0.6); 
+    border:1px solid rgba(255,255,255,0.8); 
+    border-radius:4px; 
+    cursor:pointer; 
+    margin-bottom:10px; 
+    transition:height .2s ease; 
+    box-shadow:0 1px 3px rgba(0,0,0,.5); 
+}
+
+.progress-bar:hover { 
+    height:8px; background:rgba(255,255,255,0.8); 
+}
+
+.progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #dc2626;
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+.progress-handle {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    background: #dc2626;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    left: 0%;
+    transition: all 0.1s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-handle:hover,
+.progress-handle.dragging {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .video-controls {
@@ -363,14 +460,20 @@
         font-size: 12px;
         max-width: 200px;
     }
-}
-
-/* Prevent text selection during drag */
-.video-wrapper.dragging * {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    
+    .progress-container {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+    
+    .time-display {
+        font-size: 12px;
+    }
+    
+    .progress-handle {
+        width: 20px;
+        height: 20px;
+    }
 }
 </style>
 
@@ -387,6 +490,14 @@ class EnhancedVideoPlayer {
         this.iframe = container.querySelector('iframe');
         this.video = container.querySelector('video');
         
+        this.progressContainer = container.querySelector('.progress-container');
+        this.progressBar = container.querySelector('.progress-bar');
+        this.progressTrack = container.querySelector('.progress-track');
+        this.progressFill = container.querySelector('.progress-fill');
+        this.progressHandle = container.querySelector('.progress-handle');
+        this.currentTimeDisplay = container.querySelector('.current-time');
+        this.durationDisplay = container.querySelector('.duration');
+        
         this.scale = 1;
         this.translateX = 0;
         this.translateY = 0;
@@ -396,6 +507,11 @@ class EnhancedVideoPlayer {
         this.isFullscreen = false;
         this.isPlaying = false;
         this.vimeoPlayer = null;
+        
+        this.currentTime = 0;
+        this.duration = 0;
+        this.isProgressDragging = false;
+        this.progressUpdateInterval = null;
         
         this.minScale = 0.5;
         this.maxScale = 3;
@@ -409,59 +525,100 @@ class EnhancedVideoPlayer {
         this.updateTransform();
         this.updateUI();
         this.initializePlayer();
+        this.startProgressTracking();
     }
     
     initializePlayer() {
         if (this.iframe && this.iframe.src.includes('vimeo')) {
-            // Initialize Vimeo player
             if (typeof Vimeo !== 'undefined') {
                 this.vimeoPlayer = new Vimeo.Player(this.iframe);
                 
-                // Listen for play/pause events
                 this.vimeoPlayer.on('play', () => {
                     this.isPlaying = true;
                     this.updatePlayButton();
                     this.hidePlayOverlay();
+                    this.startProgressTracking();
                 });
                 
                 this.vimeoPlayer.on('pause', () => {
                     this.isPlaying = false;
                     this.updatePlayButton();
+                    this.stopProgressTracking();
                 });
                 
                 this.vimeoPlayer.on('ended', () => {
                     this.isPlaying = false;
                     this.updatePlayButton();
                     this.showPlayOverlay();
+                    this.stopProgressTracking();
+                });
+                
+                this.vimeoPlayer.getDuration().then((duration) => {
+                    this.duration = duration;
+                    this.updateTimeDisplay();
+                });
+                
+                this.vimeoPlayer.on('timeupdate', (data) => {
+                    if (!this.isProgressDragging) {
+                        this.currentTime = data.seconds;
+                        this.updateProgressBar();
+                        this.updateTimeDisplay();
+                    }
                 });
             }
         } else if (this.video) {
-            // Handle regular video element
             this.video.addEventListener('play', () => {
                 this.isPlaying = true;
                 this.updatePlayButton();
                 this.hidePlayOverlay();
+                this.startProgressTracking();
             });
             
             this.video.addEventListener('pause', () => {
                 this.isPlaying = false;
                 this.updatePlayButton();
+                this.stopProgressTracking();
             });
             
             this.video.addEventListener('ended', () => {
                 this.isPlaying = false;
                 this.updatePlayButton();
                 this.showPlayOverlay();
+                this.stopProgressTracking();
+            });
+            
+            this.video.addEventListener('loadedmetadata', () => {
+                this.duration = this.video.duration;
+                this.updateTimeDisplay();
+            });
+            
+            this.video.addEventListener('timeupdate', () => {
+                if (!this.isProgressDragging) {
+                    this.currentTime = this.video.currentTime;
+                    this.updateProgressBar();
+                    this.updateTimeDisplay();
+                }
             });
         }
     }
     
     bindEvents() {
-        // Control buttons
         this.container.querySelector('.play-pause').addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             this.togglePlayPause();
+        });
+        
+        this.container.querySelector('.rewind').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.rewind();
+        });
+        
+        this.container.querySelector('.fast-forward').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.fastForward();
         });
         
         this.container.querySelector('.zoom-in').addEventListener('click', (e) => {
@@ -488,37 +645,175 @@ class EnhancedVideoPlayer {
             this.toggleFullscreen();
         });
         
-        // Large play button
         this.playButtonLarge.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             this.togglePlayPause();
         });
         
-        // Drag events on overlay only
+        this.progressBar.addEventListener('click', (e) => this.handleProgressClick(e));
+        this.progressHandle.addEventListener('mousedown', (e) => this.handleProgressDragStart(e));
+        document.addEventListener('mousemove', (e) => this.handleProgressDrag(e));
+        document.addEventListener('mouseup', () => this.handleProgressDragEnd());
+        
+        this.progressHandle.addEventListener('touchstart', (e) => this.handleProgressTouchStart(e));
+        document.addEventListener('touchmove', (e) => this.handleProgressTouchMove(e));
+        document.addEventListener('touchend', () => this.handleProgressTouchEnd());
+        
         this.dragOverlay.addEventListener('mousedown', (e) => this.handleMouseDown(e));
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleMouseUp());
         
-        // Wheel zoom on wrapper
         this.videoWrapper.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false });
         
-        // Touch events on overlay only
         this.dragOverlay.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
         document.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
         document.addEventListener('touchend', () => this.handleTouchEnd());
         
-        // Fullscreen change events
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
         
-        // Keyboard events
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         
-        // Prevent context menu on drag overlay
         this.dragOverlay.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+    
+    rewind() {
+        const newTime = Math.max(this.currentTime - 10, 0);
+        this.seekTo(newTime);
+    }
+    
+    fastForward() {
+        const newTime = Math.min(this.currentTime + 10, this.duration);
+        this.seekTo(newTime);
+    }
+    
+    seekTo(time) {
+        if (this.vimeoPlayer) {
+            this.vimeoPlayer.setCurrentTime(time);
+        } else if (this.video) {
+            this.video.currentTime = time;
+        }
+        this.currentTime = time;
+        this.updateProgressBar();
+        this.updateTimeDisplay();
+    }
+    
+    handleProgressClick(e) {
+        if (this.duration === 0) return;
+        
+        const rect = this.progressTrack.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+        const newTime = percentage * this.duration;
+        
+        this.seekTo(newTime);
+    }
+    
+    handleProgressDragStart(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.isProgressDragging = true;
+        this.progressHandle.classList.add('dragging');
+    }
+    
+    handleProgressDrag(e) {
+        if (!this.isProgressDragging || this.duration === 0) return;
+        
+        const rect = this.progressTrack.getBoundingClientRect();
+        const dragX = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(1, dragX / rect.width));
+        const newTime = percentage * this.duration;
+        
+        this.currentTime = newTime;
+        this.updateProgressBar();
+        this.updateTimeDisplay();
+    }
+    
+    handleProgressDragEnd() {
+        if (!this.isProgressDragging) return;
+        
+        this.isProgressDragging = false;
+        this.progressHandle.classList.remove('dragging');
+        this.seekTo(this.currentTime);
+    }
+    
+    handleProgressTouchStart(e) {
+        e.preventDefault();
+        this.isProgressDragging = true;
+        this.progressHandle.classList.add('dragging');
+    }
+    
+    handleProgressTouchMove(e) {
+        if (!this.isProgressDragging || this.duration === 0) return;
+        
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = this.progressTrack.getBoundingClientRect();
+        const dragX = touch.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(1, dragX / rect.width));
+        const newTime = percentage * this.duration;
+        
+        this.currentTime = newTime;
+        this.updateProgressBar();
+        this.updateTimeDisplay();
+    }
+    
+    handleProgressTouchEnd() {
+        if (!this.isProgressDragging) return;
+        
+        this.isProgressDragging = false;
+        this.progressHandle.classList.remove('dragging');
+        this.seekTo(this.currentTime);
+    }
+    
+    updateProgressBar() {
+        if (this.duration === 0) return;
+        
+        const percentage = (this.currentTime / this.duration) * 100;
+        this.progressFill.style.width = `${percentage}%`;
+        this.progressHandle.style.left = `${percentage}%`;
+    }
+    
+    updateTimeDisplay() {
+        this.currentTimeDisplay.textContent = this.formatTime(this.currentTime);
+        this.durationDisplay.textContent = this.formatTime(this.duration);
+    }
+    
+    formatTime(seconds) {
+        if (isNaN(seconds) || seconds < 0) return '0:00';
+        
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    
+    startProgressTracking() {
+        this.stopProgressTracking();
+        this.progressUpdateInterval = setInterval(() => {
+            if (this.isPlaying && !this.isProgressDragging) {
+                if (this.vimeoPlayer) {
+                    this.vimeoPlayer.getCurrentTime().then((time) => {
+                        this.currentTime = time;
+                        this.updateProgressBar();
+                        this.updateTimeDisplay();
+                    });
+                } else if (this.video && !this.video.paused) {
+                    this.currentTime = this.video.currentTime;
+                    this.updateProgressBar();
+                    this.updateTimeDisplay();
+                }
+            }
+        }, 100);
+    }
+    
+    stopProgressTracking() {
+        if (this.progressUpdateInterval) {
+            clearInterval(this.progressUpdateInterval);
+            this.progressUpdateInterval = null;
+        }
     }
     
     togglePlayPause() {
@@ -526,7 +821,6 @@ class EnhancedVideoPlayer {
             if (this.isPlaying) {
                 this.vimeoPlayer.pause();
             } else {
-                // iOS Safari対応：再生時に音声を有効化
                 this.vimeoPlayer.setVolume(1);
                 this.vimeoPlayer.play();
             }
@@ -534,7 +828,6 @@ class EnhancedVideoPlayer {
             if (this.isPlaying) {
                 this.video.pause();
             } else {
-                // 通常のvideo要素でも音声を有効化
                 this.video.muted = false;
                 this.video.play();
             }
@@ -770,6 +1063,14 @@ class EnhancedVideoPlayer {
                 e.preventDefault();
                 this.togglePlayPause();
                 break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                this.rewind();
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                this.fastForward();
+                break;
             case '+':
             case '=':
                 e.preventDefault();
@@ -792,10 +1093,8 @@ class EnhancedVideoPlayer {
     }
     
     updateUI() {
-        // Update zoom indicator
         this.zoomIndicator.textContent = Math.round(this.scale * 100) + '%';
         
-        // Update container classes
         if (this.scale !== 1) {
             this.container.classList.add('zoomed');
             this.videoWrapper.classList.add('draggable');
@@ -804,13 +1103,11 @@ class EnhancedVideoPlayer {
             this.videoWrapper.classList.remove('draggable');
         }
         
-        // Update button states
         this.container.querySelector('.zoom-in').disabled = this.scale >= this.maxScale;
         this.container.querySelector('.zoom-out').disabled = this.scale <= this.minScale;
     }
 }
 
-// Initialize players when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     const videoContainers = document.querySelectorAll('.video-container');
     videoContainers.forEach(container => {
