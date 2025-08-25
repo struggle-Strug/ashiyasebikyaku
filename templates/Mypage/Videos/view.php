@@ -17,6 +17,17 @@
                                 <button class="control-btn play-pause" title="再生/停止" aria-label="再生/停止 (Space)">▶</button>
                                 <button class="control-btn rewind" title="10秒戻る" aria-label="10秒戻る">⏪</button>
                                 <button class="control-btn fast-forward" title="10秒進む" aria-label="10秒進む">⏩</button>
+                                <div class="speed-control">
+                                    <button class="control-btn speed-btn" title="再生速度" aria-label="再生速度切替">1x</button>
+                                    <div class="speed-dropdown">
+                                        <div class="speed-option" data-speed="0.5">0.5x</div>
+                                        <div class="speed-option" data-speed="0.75">0.75x</div>
+                                        <div class="speed-option active" data-speed="1">1x</div>
+                                        <div class="speed-option" data-speed="1.25">1.25x</div>
+                                        <div class="speed-option" data-speed="1.5">1.5x</div>
+                                        <div class="speed-option" data-speed="2">2x</div>
+                                    </div>
+                                </div>
                                 <button class="control-btn zoom-out" title="ズームアウト" aria-label="ズームアウト">-</button>
                                 <button class="control-btn zoom-in" title="ズームイン" aria-label="ズームイン">+</button>
                                 <button class="control-btn reset" title="リセット" aria-label="ズーム/位置リセット">⟲</button>
@@ -74,6 +85,17 @@
                             <button class="control-btn play-pause" title="再生/停止" aria-label="再生/停止 (Space)">▶</button>
                             <button class="control-btn rewind" title="10秒戻る" aria-label="10秒戻る">⏪</button>
                             <button class="control-btn fast-forward" title="10秒進む" aria-label="10秒進む">⏩</button>
+                            <div class="speed-control">
+                                <button class="control-btn speed-btn" title="再生速度" aria-label="再生速度切替">1x</button>
+                                <div class="speed-dropdown">
+                                    <div class="speed-option" data-speed="0.5">0.5x</div>
+                                    <div class="speed-option" data-speed="0.75">0.75x</div>
+                                    <div class="speed-option active" data-speed="1">1x</div>
+                                    <div class="speed-option" data-speed="1.25">1.25x</div>
+                                    <div class="speed-option" data-speed="1.5">1.5x</div>
+                                    <div class="speed-option" data-speed="2">2x</div>
+                                </div>
+                            </div>
                             <button class="control-btn zoom-out" title="ズームアウト" aria-label="ズームアウト">-</button>
                             <button class="control-btn zoom-in" title="ズームイン" aria-label="ズームイン">+</button>
                             <button class="control-btn reset" title="リセット" aria-label="ズーム/位置リセット">⟲</button>
@@ -192,6 +214,17 @@
     .time-display { font-size:11px; margin-top:6px; }
 }
 .video-wrapper.dragging * { user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
+
+.speed-control { position: relative; display: inline-block; }
+.speed-btn { background: rgba(156, 39, 176, 0.8) !important; min-width: 40px; font-size: 12px; font-weight: bold; }
+.speed-btn:hover { background: rgba(156, 39, 176, 1) !important; }
+.speed-dropdown { position: absolute; top: 100%; left: 0; background: rgba(0, 0, 0, 0.95); border-radius: 4px; min-width: 60px; z-index: 10001; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
+.speed-control:hover .speed-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+.speed-option { padding: 8px 12px; color: #fff; cursor: pointer; font-size: 12px; font-weight: bold; text-align: center; transition: all 0.2s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.speed-option:last-child { border-bottom: none; }
+.speed-option:hover { background: rgba(156, 39, 176, 0.3); color: #e1bee7; }
+.speed-option.active { background: rgba(156, 39, 176, 0.8); color: #fff; }
+.speed-option.active:hover { background: rgba(156, 39, 176, 1); }
 </style>
 
 <script>
@@ -232,6 +265,10 @@ class EnhancedVideoPlayer {
         this.minScale = 0.5;
         this.maxScale = 3;
         this.scaleStep = 0.2;
+
+        this.currentSpeed = 1;
+        this.speedBtn = container.querySelector('.speed-btn');
+        this.speedOptions = container.querySelectorAll('.speed-option');
 
         this.init();
     }
@@ -373,6 +410,18 @@ class EnhancedVideoPlayer {
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
 
         this.dragOverlay.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Speed control event listeners
+        if (this.speedBtn) {
+            this.speedOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const speed = parseFloat(option.dataset.speed);
+                    this.setPlaybackSpeed(speed);
+                });
+            });
+        }
     }
 
     // 10s step forward/back
@@ -665,6 +714,22 @@ class EnhancedVideoPlayer {
         }
         this.container.querySelector('.zoom-in').disabled = this.scale >= this.maxScale;
         this.container.querySelector('.zoom-out').disabled = this.scale <= this.minScale;
+    }
+
+    setPlaybackSpeed(speed) {
+        this.currentSpeed = speed;
+        
+        if (this.vimeoPlayer) {
+            this.vimeoPlayer.setPlaybackRate(speed).catch(() => {});
+        } else if (this.video) {
+            this.video.playbackRate = speed;
+        }
+        
+        // Update UI
+        this.speedBtn.textContent = speed + 'x';
+        this.speedOptions.forEach(option => {
+            option.classList.toggle('active', parseFloat(option.dataset.speed) === speed);
+        });
     }
 }
 

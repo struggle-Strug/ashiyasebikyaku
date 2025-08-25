@@ -12,6 +12,18 @@
                     <button class="control-btn play-pause" title="再生/停止">▶</button>
                     <button class="control-btn rewind" title="10秒戻る">⏪</button>
                     <button class="control-btn fast-forward" title="10秒進む">⏩</button>
+                    <!-- Added playback speed control dropdown -->
+                    <div class="speed-control">
+                        <button class="control-btn speed-btn" title="再生速度">1x</button>
+                        <div class="speed-dropdown">
+                            <div class="speed-option" data-speed="0.5">0.5x</div>
+                            <div class="speed-option" data-speed="0.75">0.75x</div>
+                            <div class="speed-option active" data-speed="1">1x</div>
+                            <div class="speed-option" data-speed="1.25">1.25x</div>
+                            <div class="speed-option" data-speed="1.5">1.5x</div>
+                            <div class="speed-option" data-speed="2">2x</div>
+                        </div>
+                    </div>
                     <button class="control-btn zoom-out" title="ズームアウト">-</button>
                     <button class="control-btn zoom-in" title="ズームイン">+</button>
                     <button class="control-btn reset" title="リセット">⟲</button>
@@ -354,31 +366,32 @@
 
 /* Progress bar styles */
 .progress-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: transparent;
-    padding: 10px 15px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    position:absolute; 
+    bottom:0; 
+    left:0; 
+    right:0; 
+    background:rgba(0,0,0,0.9); 
+    padding:12px 20px; 
+    z-index:1000; 
+    backdrop-filter: blur(10px); 
+    border-top:1px solid rgba(255,255,255,0.1);
 }
 
 .time-display {
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    white-space: nowrap;
+    display:flex; 
+    justify-content:space-between; 
+    color:#fff; 
+    font-size:13px; 
+    font-weight:600; 
+    text-shadow:0 1px 2px rgba(0,0,0,.5); 
+    margin-top:8px;
+    width:100%;
 }
 
-.progress-bar { 
+.progress-bar {
     position:relative; 
-    height:6px; width:100%; 
+    height:6px; 
+    width:100%; 
     background:rgba(255,255,255,0.6); 
     border:1px solid rgba(255,255,255,0.8); 
     border-radius:4px; 
@@ -389,7 +402,19 @@
 }
 
 .progress-bar:hover { 
-    height:8px; background:rgba(255,255,255,0.8); 
+    height:8px; 
+    background:rgba(255,255,255,0.8); 
+    box-shadow:0 1px 3px rgba(0,0,0,.5); 
+}
+
+
+.progress-track {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    overflow: visible;
 }
 
 .progress-fill {
@@ -475,6 +500,56 @@
         height: 20px;
     }
 }
+
+/* Added speed control styling */
+.speed-control {
+    position: relative;
+    display: inline-block;
+}
+
+.speed-btn {
+    background: rgba(156, 39, 176, 0.8);
+    min-width: 40px;
+}
+
+.speed-btn:hover {
+    background: rgba(156, 39, 176, 1);
+}
+
+.speed-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 3px;
+    padding: 5px 0;
+    min-width: 60px;
+    display: none;
+    z-index: 1001;
+    margin-top: 2px;
+}
+
+.speed-control:hover .speed-dropdown {
+    display: block;
+}
+
+.speed-option {
+    padding: 8px 12px;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.speed-option:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.speed-option.active {
+    background: rgba(156, 39, 176, 0.8);
+    color: white;
+}
 </style>
 
 <script>
@@ -517,6 +592,10 @@ class EnhancedVideoPlayer {
         this.maxScale = 3;
         this.scaleStep = 0.2;
         
+        this.isVimeo = this.iframe && this.iframe.src.includes('vimeo');
+        
+        this.playbackSpeed = 1;
+        
         this.init();
     }
     
@@ -529,43 +608,41 @@ class EnhancedVideoPlayer {
     }
     
     initializePlayer() {
-        if (this.iframe && this.iframe.src.includes('vimeo')) {
-            if (typeof Vimeo !== 'undefined') {
-                this.vimeoPlayer = new Vimeo.Player(this.iframe);
-                
-                this.vimeoPlayer.on('play', () => {
-                    this.isPlaying = true;
-                    this.updatePlayButton();
-                    this.hidePlayOverlay();
-                    this.startProgressTracking();
-                });
-                
-                this.vimeoPlayer.on('pause', () => {
-                    this.isPlaying = false;
-                    this.updatePlayButton();
-                    this.stopProgressTracking();
-                });
-                
-                this.vimeoPlayer.on('ended', () => {
-                    this.isPlaying = false;
-                    this.updatePlayButton();
-                    this.showPlayOverlay();
-                    this.stopProgressTracking();
-                });
-                
-                this.vimeoPlayer.getDuration().then((duration) => {
-                    this.duration = duration;
+        if (this.isVimeo && typeof Vimeo !== 'undefined') {
+            this.vimeoPlayer = new Vimeo.Player(this.iframe);
+            
+            this.vimeoPlayer.on('play', () => {
+                this.isPlaying = true;
+                this.updatePlayButton();
+                this.hidePlayOverlay();
+                this.startProgressTracking();
+            });
+            
+            this.vimeoPlayer.on('pause', () => {
+                this.isPlaying = false;
+                this.updatePlayButton();
+                this.stopProgressTracking();
+            });
+            
+            this.vimeoPlayer.on('ended', () => {
+                this.isPlaying = false;
+                this.updatePlayButton();
+                this.showPlayOverlay();
+                this.stopProgressTracking();
+            });
+            
+            this.vimeoPlayer.getDuration().then((duration) => {
+                this.duration = duration;
+                this.updateTimeDisplay();
+            });
+            
+            this.vimeoPlayer.on('timeupdate', (data) => {
+                if (!this.isProgressDragging) {
+                    this.currentTime = data.seconds;
+                    this.updateProgressBar();
                     this.updateTimeDisplay();
-                });
-                
-                this.vimeoPlayer.on('timeupdate', (data) => {
-                    if (!this.isProgressDragging) {
-                        this.currentTime = data.seconds;
-                        this.updateProgressBar();
-                        this.updateTimeDisplay();
-                    }
-                });
-            }
+                }
+            });
         } else if (this.video) {
             this.video.addEventListener('play', () => {
                 this.isPlaying = true;
@@ -678,6 +755,15 @@ class EnhancedVideoPlayer {
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         
         this.dragOverlay.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        const speedOptions = this.container.querySelectorAll('.speed-option');
+        speedOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const speed = parseFloat(option.dataset.speed);
+                this.setPlaybackSpeed(speed);
+            });
+        });
     }
     
     rewind() {
@@ -1105,6 +1191,29 @@ class EnhancedVideoPlayer {
         
         this.container.querySelector('.zoom-in').disabled = this.scale >= this.maxScale;
         this.container.querySelector('.zoom-out').disabled = this.scale <= this.minScale;
+    }
+    
+    setPlaybackSpeed(speed) {
+        this.playbackSpeed = speed;
+        
+        if (this.isVimeo && this.vimeoPlayer) {
+            this.vimeoPlayer.setPlaybackRate(speed);
+        } else if (this.video) {
+            this.video.playbackRate = speed;
+        }
+        
+        // Update UI
+        const speedBtn = this.container.querySelector('.speed-btn');
+        speedBtn.textContent = speed + 'x';
+        
+        // Update active option
+        const speedOptions = this.container.querySelectorAll('.speed-option');
+        speedOptions.forEach(option => {
+            option.classList.remove('active');
+            if (parseFloat(option.dataset.speed) === speed) {
+                option.classList.add('active');
+            }
+        });
     }
 }
 
