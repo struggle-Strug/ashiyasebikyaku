@@ -19,27 +19,6 @@
     <?php endforeach ?>
 </div>
 
-<!-- <a href="<?= $this->Url->build(['controller' => 'Courses', 'action' => 'index']); ?>">
-    <div class="col-lg-6 col-sm-6">
-        <div class="card">
-            <div class="card-content">
-                <div class="row">
-                    <div class="col-xs-3">
-                        <div class="icon-big icon-primary text-center">
-                            <i class="fa-solid fa-user-lock"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="h5 text-primary">
-                            パーソナルプログラム
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</a>
-
 <a href="<?= $this->Url->build(['controller' => 'LessonMovies', 'action' => 'index']); ?>">
     <div class="col-lg-6 col-sm-6">
         <div class="card">

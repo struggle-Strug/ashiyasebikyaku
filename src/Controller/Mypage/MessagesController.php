@@ -53,12 +53,12 @@ class MessagesController extends AppController
         // 既読にする
         $this->Messages->updateAll(
             [
-                'is_read' => 1
+                'is_user_read' => 1
             ],
             [
                 'user_id' => $this->Authentication->getIdentity()->id,
                 'sender IN' => ['2', '3'],
-                'is_read' => 0
+                'is_user_read' => 0
             ]
         );
 
