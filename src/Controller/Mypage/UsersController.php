@@ -121,7 +121,7 @@ class UsersController extends AppController
                 return $q->where([
                     'Messages.user_id' => $this->Authentication->getIdentity()->id,
                     'Messages.sender IN' => ['2', '3'],
-                    'Messages.is_read' => 0
+                    'Messages.is_user_read' => 0
                 ]);
             },
             'UserPoints' => function (Query $q) {
