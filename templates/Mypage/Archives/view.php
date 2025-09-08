@@ -1174,8 +1174,26 @@ class EnhancedVideoPlayer {
     }
     
     updateTransform() {
-        const transform = `scale(${this.scale}) translate(${this.translateX / this.scale}px, ${this.translateY / this.scale}px)`;
+        // Apply translate first, then scale to maintain consistent panning behavior
+        // Clamp panning so content doesn't get lost off-screen
+        const wrapper = this.videoWrapper;
+        const baseW = wrapper.clientWidth;
+        const baseH = wrapper.clientHeight;
+
+        const scaledW = baseW * this.scale;
+        const scaledH = baseH * this.scale;
+
+        const maxX = Math.max(0, (scaledW - baseW) / 2);
+        const maxY = Math.max(0, (scaledH - baseH) / 2);
+
+        // clamp
+        this.translateX = Math.min(Math.max(this.translateX, -maxX), maxX);
+        this.translateY = Math.min(Math.max(this.translateY, -maxY), maxY);
+
+        const transform = `translate(${this.translateX}px, ${this.translateY}px) scale(${this.scale})`;
         this.videoContent.style.transform = transform;
+        if (this.scale !== 1) this.videoContent.style.willChange = 'transform';
+        else this.videoContent.style.willChange = 'auto';
     }
     
     updateUI() {
